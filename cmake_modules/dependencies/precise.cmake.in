@@ -1,0 +1,1 @@
+set ( CPACK_DEBIAN_PACKAGE_DEPENDS "hpccsystems-platform (>= ${HPCC_MAJOR}.${HPCC_MINOR}.${HPCC_POINT}-${HPCC_SEQUENCE})")
