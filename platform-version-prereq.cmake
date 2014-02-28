@@ -13,6 +13,7 @@ set ( HPCC_SEQUENCE_REQ 1 )
 
 ##List of HPCC Changes which directly affect this plug-in:
 
-#JIRA NUMBER | GITHUB PULL REQ | HPCC Ver | DESCRIPTION
-#HPCC-10826  |                            | WSWORKUNITS source logic visibility
-#HPCC-10699  |                            | Configmgr plug-in support changes
+#JIRA NUMBER | PULL REQ | HPCC Branch | Merge Date   | DESCRIPTION
+#HPCC-10826  |          |             |              | WSWORKUNITS source logic visibility
+#HPCC-10699  |          |             |              | Configmgr plug-in support changes
+#HPCC-10837  | 5389     | master      | Feb 21, 2014 | Fixed buildbreak issue
