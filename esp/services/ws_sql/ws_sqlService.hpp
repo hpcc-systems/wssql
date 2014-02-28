@@ -79,7 +79,7 @@ public:
     static void fetchRequiredHpccFiles(IArrayOf<SQLTable> * sqltables, HpccFiles * hpccfilecache);
     HPCCSQLTreeWalker * parseSQL(IEspContext &context, StringBuffer & sqltext);
 
-    bool executePublishedQueryByname(IEspContext &context, const char * queryset, const char * queryname, StringBuffer &clonedwuid, const char *paramXml, IArrayOf<IConstNamedValue> *variables, const char * targetcluster, int start, int count);
+    bool executePublishedQueryByName(IEspContext &context, const char * queryset, const char * queryname, StringBuffer &clonedwuid, const char *paramXml, IArrayOf<IConstNamedValue> *variables, const char * targetcluster, int start, int count);
     bool executePublishedQueryByWuId(IEspContext &context, const char * targetwuid, StringBuffer &clonedwuid, const char *paramXml, IArrayOf<IConstNamedValue> *variables, const char * targetcluster, int start, int count);
     bool executePublishedQuery(IEspContext &context, const char * queryset, const char * queryname, StringBuffer &resp, int start, int count, int waittime);
     bool executePublishedQuery(IEspContext &context, const char * wuid, StringBuffer &resp, int start, int count, int waittime);

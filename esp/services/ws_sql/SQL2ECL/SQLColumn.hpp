@@ -146,7 +146,7 @@ public:
         keyedField = false;
     }
 
-    ~HPCCColumnMetaData()
+    virtual ~HPCCColumnMetaData()
     {
 #ifdef _DEBUG
         fprintf(stderr, "leaving columnmetadata.");

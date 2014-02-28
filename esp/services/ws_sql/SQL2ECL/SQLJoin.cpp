@@ -31,7 +31,7 @@ SQLJoin::SQLJoin(SQLJoinType jointype)
     {
         case SQLJoinTypeImplicit:
         case SQLJoinTypeInner:
-        case SQLJoinTypeOutter:
+        case SQLJoinTypeOuter:
             type = jointype;
             break;
         default:
@@ -56,7 +56,7 @@ void SQLJoin::getSQLTypeStr(StringBuffer & outstr)
         case SQLJoinTypeInner:
             outstr.append(" INNER JOIN ");
             break;
-        case SQLJoinTypeOutter:
+        case SQLJoinTypeOuter:
             outstr.append(" OUTER JOIN ");
             break;
         default:
@@ -73,7 +73,7 @@ void SQLJoin::getECLTypeStr(StringBuffer & outstr)
         case SQLJoinTypeInner:
             outstr.append(" INNER ");
             break;
-        case SQLJoinTypeOutter:
+        case SQLJoinTypeOuter:
             outstr.append(" FULL OUTER ");
             break;
         default:

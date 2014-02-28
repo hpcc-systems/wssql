@@ -49,7 +49,7 @@ public:
         userdesc->set(username, passwd);
     }
 
-    ~HPCCFileCache()
+    virtual ~HPCCFileCache()
     {
         HashIterator sIter(cache);
         for(sIter.first();sIter.isValid();sIter.next())

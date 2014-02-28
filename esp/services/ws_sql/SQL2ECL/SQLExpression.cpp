@@ -70,7 +70,7 @@ SQLFieldsExpression::~SQLFieldsExpression()
          return Integer_LogicType;
      else if (strnicmp(type,"REAL",4)==0)
          return Decimal_LogicType;
-     else if (strnicmp(type,"DECIMAL",78)==0)
+     else if (strnicmp(type,"DECIMAL",7)==0)
          return Decimal_LogicType;
      else
          return Unknown_LogicType;
@@ -88,7 +88,7 @@ SQLFieldsExpression::~SQLFieldsExpression()
      StringBuffer translation;
      map->getProp(getParentTableName(),translation);
 
-     if (translation.length() <= 0 && getParentTableName() != NULL)
+     if (translation.length() == 0 && getParentTableName() != NULL)
          return;
 
      if ( translation.length() > 0)
@@ -811,7 +811,7 @@ void SQLListExpression::getExpressionFromColumnName(const char * colname, String
     {
        entries.item(idx).getExpressionFromColumnName(colname, paramresult.clear());
     
-       if (paramresult.length() <= 0)
+       if (paramresult.length() == 0)
            return;
     
        if ( idx > 0 )

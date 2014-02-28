@@ -1022,7 +1022,7 @@ bool Cws_sqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, I
     try
     {
         if (!context.validateFeatureAccess(WSSQLACCESS, SecAccess_Write, false))
-            throw MakeStringException(-1, "Failed to execute SQL. Permission denied.");
+            throw MakeStringException(-1, "Failed to Prepare SQL. Permission denied.");
 
         sqltext.set(req.getSqlText());
 
@@ -1158,7 +1158,7 @@ bool Cws_sqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, I
     return true;
 }
 
-bool Cws_sqlEx::executePublishedQueryByname(IEspContext &context, const char * queryset, const char * queryname, StringBuffer &clonedwuid, const char *paramXml, IArrayOf<IConstNamedValue> *variables, const char * targetcluster, int start, int count)
+bool Cws_sqlEx::executePublishedQueryByName(IEspContext &context, const char * queryset, const char * queryname, StringBuffer &clonedwuid, const char *paramXml, IArrayOf<IConstNamedValue> *variables, const char * targetcluster, int start, int count)
 {
     bool success = true;
 
@@ -1426,12 +1426,6 @@ bool Cws_sqlEx::publishWorkunit(IEspContext &context, const char * queryname, co
     StringBuffer queryId;
 
     addQueryToQuerySet(wu, target.str(), queryName.str(), NULL, MAKE_ACTIVATE, queryId, context.queryUserId());
-
-    //Owned<IPropertyTree> queryTree = getQueryById(target.str(), queryId, false);
-    //updateMemoryLimitSetting(queryTree, req.getMemoryLimit());
-    //updateQuerySetting(req.getTimeLimit_isNull(), queryTree, "@timeLimit", req.getTimeLimit());
-    // updateQuerySetting(req.getWarnTimeLimit_isNull(), queryTree, "@warnTimeLimit", req.getWarnTimeLimit());
-    //updateQueryPriority(queryTree, req.getPriority());
 
     wu->commit();
     wu.clear();

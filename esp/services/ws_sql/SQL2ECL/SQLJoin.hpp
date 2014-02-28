@@ -24,7 +24,7 @@ typedef enum _SQLJoinType
 {
     SQLJoinTypeUnknown=-1,
     SQLJoinTypeInner,
-    SQLJoinTypeOutter,
+    SQLJoinTypeOuter,
     SQLJoinTypeImplicit
 } SQLJoinType;
 

@@ -48,6 +48,9 @@ void ECLEngine::generateIndexSetupAndFetch(SQLTable * table, int tableindex, HPC
     bool avoidindex = false;
     StringBuffer indexname;
 
+    if (!table)
+        return;
+
     const char * tname = table->getName();
 
     if (table->hasIndexHint())
@@ -60,7 +63,7 @@ void ECLEngine::generateIndexSetupAndFetch(SQLTable * table, int tableindex, HPC
             WARNLOG("Will not use any index.");
             indexhint.clear();
         }
-        else if (indexhint.length() <= 0)
+        else if (indexhint.length() == 0)
         {
             WARNLOG("Empty index hint found!");
         }
@@ -68,8 +71,8 @@ void ECLEngine::generateIndexSetupAndFetch(SQLTable * table, int tableindex, HPC
         if (!avoidindex)
         {
             findAppropriateIndex(indexhint.str(), selectsqlobj, indexname);
-            if (indexname.length() <= 0)
-                WARNLOG("Cannot use USE INDEX hint: %s", indexname.str());
+            if (indexname.length() == 0)
+                WARNLOG("Empty USE INDEX detected.");
         }
     }
 
@@ -100,12 +103,14 @@ void ECLEngine::generateIndexSetupAndFetch(SQLTable * table, int tableindex, HPC
                 eclEntities->appendProp("PAYLOADINDEX", "true");
 
             idxsetupstr.clear();
-            idxsetupstr.append("Idx");
+            idxsetupstr.appendf("Idx%d := INDEX(TblDS%d, {", tableindex, tableindex);
+
+            /*idxsetupstr.append("Idx");
             idxsetupstr.append(tableindex);
             idxsetupstr.append(" := INDEX(TblDS");
             idxsetupstr.append(tableindex);
-            idxsetupstr.append(", {");
-            indexfile->getKeyedFieldsAsDelmitedString(',', "", idxsetupstr);
+            idxsetupstr.append(", {");*/
+            indexfile->getKeyedFieldsAsDelimitedString(',', "", idxsetupstr);
             idxsetupstr.append("}");
 
             if (indexfile->getNonKeyedColumnsCount() > 0)
@@ -115,7 +120,8 @@ void ECLEngine::generateIndexSetupAndFetch(SQLTable * table, int tableindex, HPC
                 idxsetupstr.append(" }");
             }
 
-            idxsetupstr.append(",\'~").append(indexfile->getFullname()).append("\');\n");
+            idxsetupstr.appendf(",\'~%s\');\n",indexfile->getFullname());
+            //idxsetupstr.append(",\'~").append(indexfile->getFullname()).append("\');\n");
 
             eclEntities->appendProp("IndexDef", idxsetupstr.str());
 
@@ -124,17 +130,20 @@ void ECLEngine::generateIndexSetupAndFetch(SQLTable * table, int tableindex, HPC
             if (isPayloadIndex)
             {
                 WARNLOG(" as PAYLOAD");
-                idxsetupstr.append("IdxDS")
+                idxsetupstr.appendf("IdxDS%d := Idx%d(%s", tableindex, tableindex, keyedAndWild.str());
+                /*idxsetupstr.append("IdxDS")
                                   .append(tableindex)
                                   .append(" := Idx")
                                   .append(tableindex)
                                   .append("(")
                                   .append(keyedAndWild.str());
+                                  */
             }
             else
             {
                 WARNLOG(" Not as PAYLOAD");
-                idxsetupstr.append("IdxDS")
+                idxsetupstr.appendf("IdxDS%d := FETCH(TblDS%d, Idx%d( %s ), RIGHT.%s", tableindex, tableindex, tableindex, keyedAndWild.str(), indexfile->getIdxFilePosField());
+                /*idxsetupstr.append("IdxDS")
                                   .append(tableindex)
                                   .append(" := FETCH(TblDS")
                                   .append(tableindex)
@@ -144,6 +153,7 @@ void ECLEngine::generateIndexSetupAndFetch(SQLTable * table, int tableindex, HPC
                                   .append(keyedAndWild.str())
                                   .append("), RIGHT.")
                                   .append(indexfile->getIdxFilePosField());
+                                  */
             }
             idxsetupstr.append(");\n");
 
@@ -171,7 +181,7 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
         selectsqlobj->getWhereClause()->eclDeclarePlaceHolders(out, 0,0);
     }
 
-    IArrayOf<SQLTable> * tables = selectsqlobj->getTableList();
+    const IArrayOf<SQLTable> * tables = selectsqlobj->getTableList();
 
     ForEachItemIn(tableidx, *tables)
     {
@@ -214,24 +224,27 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
 
             if (!file->isFileKeyed())
             {
-                out.append(currntTblDS);
+                out.appendf("%s := DATASET(\'~%s\', %s, %s);\n", currntTblDS.str(), file->getFullname(), currntTblRecDef.str(), file->getFormat());
+                /*out.append(currntTblDS);
                 out.append(" := DATASET(\'~");
                 out.append(file->getFullname());
                 out.append("\', ");
                 out.append(currntTblRecDef);
                 out.append(", ");
                 out.append(file->getFormat());
-                out.append(");\n");
+                out.append(");\n");*/
             }
             else
             {
-                out.append(currntTblDS);
-                out.append(" := INDEX( {");
-                file->getKeyedFieldsAsDelmitedString(',', "TblDS0RecDef", out);
+                out.appendf("%s := INDEX( {", currntTblDS.str());
+                //out.append(currntTblDS);
+                //out.append(" := INDEX( {");
+                file->getKeyedFieldsAsDelimitedString(',', "TblDS0RecDef", out);
                 out.append("},{");
                 file->getNonKeyedFieldsAsDelmitedString(',', "TblDS0RecDef", out);
-                out.append("},");
-                out.append("\'~").append(file->getFullname()).append("\');\n");
+                out.appendf("},%s\');\n",file->getFullname());
+                //out.append("},");
+                //out.append("\'~").append(file->getFullname()).append("\');\n");
             }
 
             if (tableidx > 0)
@@ -248,22 +261,22 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
                 else
                 {
                     //Nth Join, previous DS is JndDS(N-1)
-                    out.append("JndDS");
-                    out.append(tableidx-1);
-                    latestDS.set("JndDS");
-                    latestDS.append(tableidx);
+                    out.appendf("JndDS%d",tableidx-1);
+                    //out.append("JndDS");
+                    //out.append(tableidx-1);
+                    latestDS.appendf("JndDS%d",tableidx);
+                    //latestDS.set("JndDS");
+                    //latestDS.append(tableidx);
                 }
 
                 StringBuffer translatedAndFilteredOnClause;
                 SQLJoin * tablejoin = table.getJoin();
                 if (tablejoin && tablejoin->doesHaveOnclause())
                 {
-                    //translatedAndFilteredOnClause = tablejoin->getOnClause()->toECLStringTranslateSource(translator,true, false, false, false);
                     tablejoin->getOnClause()->toECLStringTranslateSource(translatedAndFilteredOnClause, translator,true, false, false, false);
                     if (selectsqlobj->hasWhereClause())
                     {
                         translatedAndFilteredOnClause.append(" AND ");
-                        //translatedAndFilteredOnClause.append(selectsqlobj->getWhereClause()->toECLStringTranslateSource(translator, true, true, false, false));
                         selectsqlobj->getWhereClause()->toECLStringTranslateSource(translatedAndFilteredOnClause, translator, true, true, false, false);
                     }
                 }
@@ -271,7 +284,6 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
                 {
                     if (translatedAndFilteredOnClause.length() > 0)
                         translatedAndFilteredOnClause.append(" AND ");
-                    //translatedAndFilteredOnClause.append(selectsqlobj->getWhereClause()->toECLStringTranslateSource(translator, true, true, false, false));
                     selectsqlobj->getWhereClause()->toECLStringTranslateSource(translatedAndFilteredOnClause, translator, true, true, false, false);
                 }
                 else
@@ -280,12 +292,13 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
                 if (translatedAndFilteredOnClause.length() <= 0)
                     throw MakeStringException(-1,"Join condition does not contain proper join condition between tables %s, and earlier table", tname);
 
-                out.append(", ");
+                out.appendf(", %s, %s, ", currntTblDS.str(), translatedAndFilteredOnClause.length() > 0 ? translatedAndFilteredOnClause.str() : "TRUE");
+                /*out.append(", ");
                 out.append(currntTblDS);
                 out.append(", ");
                 out.append(translatedAndFilteredOnClause.length() > 0 ? translatedAndFilteredOnClause.str() : "TRUE");
-
                 out.append(", ");
+                 */
                 tablejoin->getECLTypeStr(out);
 
                 if (tablejoin->getOnClause() != NULL && !tablejoin->getOnClause()->containsEqualityCondition(translator, "LEFT", "RIGHT"))
@@ -298,10 +311,7 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
 
                 //move this file to LEFT for possible next iteration
                 translator->setProp(tname, "LEFT");
-
-                //eclDSSourceMapping.put(hpccJoinFileName, "JndDS"+joinsCount);
             }
-            //eclDSSourceMapping.put(queryFileName, "JndDS"+joinsCount);
             eclEntities->setProp("JoinQuery", "1");
         }
     }
@@ -324,9 +334,9 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
             //if (sqlParser.getWhereClause() != null && !eclEntities.containsKey("JoinQuery"))
             if (selectsqlobj->hasWhereClause())
             {
-                out.append(latestDS).append("Filtered := ");
-                out.append(latestDS);
-
+                out.appendf("%sFiltered := %s",latestDS.str(), latestDS.str());
+                //out.append(latestDS).append("Filtered := ");
+                //out.append(latestDS);
                 addFilterClause(selectsqlobj, out);
                 out.append(";\n");
                 latestDS.append("Filtered");
@@ -385,7 +395,6 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
         eclEntities->getProp("IndexRead",out);
         StringBuffer latestDS = "IdxDS0";
 
-
         //if (eclEntities.containsKey("COUNTDEDUP"))
         //    eclCode.append(eclEntities.get("COUNTDEDUP"));
 
@@ -418,8 +427,6 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
 
             const char *selectstr = eclEntities->queryProp("SELECTSTRUCT");
             out.append(selectstr);
-
-
             out.append(latestDS)
             .append("Table := TABLE(")
             .append(latestDS)
@@ -474,13 +481,14 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
             out.append(")");
         }
 
-        out.append(",NAMED(\'");
-        out.append(SELECTOUTPUTNAME);
-        out.append("\'));");
+        out.appendf(",NAMED(\'%s\'));", SELECTOUTPUTNAME);
+        //out.append(",NAMED(\'");
+        //out.append(SELECTOUTPUTNAME);
+        //out.append("\'));");
     }
 }
 
-void ECLEngine::generateSelectStruct(HPCCSQLTreeWalker * selectsqlobj, IProperties* eclEntities,  IArrayOf<ISQLExpression> & expectedcolumns, const char * datasource)
+void ECLEngine::generateSelectStruct(HPCCSQLTreeWalker * selectsqlobj, IProperties* eclEntities,  const IArrayOf<ISQLExpression> & expectedcolumns, const char * datasource)
 {
     StringBuffer selectStructSB = "SelectStruct := RECORD\n";
 
@@ -491,11 +499,12 @@ void ECLEngine::generateSelectStruct(HPCCSQLTreeWalker * selectsqlobj, IProperti
 
         if (col->getExpType() == Value_ExpressionType)
         {
-            selectStructSB.append(col->getECLType());
-            selectStructSB.append(" ");
-            selectStructSB.append(col->getNameOrAlias());
-            selectStructSB.append(i);//should only do this if the alias was not set
-            selectStructSB.append(" := ");
+            selectStructSB.appendf("%s %s%d := ", col->getECLType(), col->getNameOrAlias(), i);
+            //selectStructSB.append(col->getECLType());
+            //selectStructSB.append(" ");
+            //selectStructSB.append(col->getNameOrAlias());
+            //selectStructSB.append(i);//should only do this if the alias was not set
+            //selectStructSB.append(" := ");
             col->toString(selectStructSB, false);
             selectStructSB.append("; ");
 
@@ -578,7 +587,7 @@ void ECLEngine::generateSelectStruct(HPCCSQLTreeWalker * selectsqlobj, IProperti
                 if ((strcmp(func.name,"COUNT"))!=0  && funccols->length() > 0)
                 {
                     const char * paramname = funccols->item(0).getName();
-                    if (paramname[0]!='*' && funccols->item(0).getExpType() != Value_ExpressionType)
+                    if (paramname && paramname[0]!='*' && funccols->item(0).getExpType() != Value_ExpressionType)
                     {
                         selectStructSB.append(", ");
                         selectStructSB.append(datasource);
@@ -606,14 +615,15 @@ void ECLEngine::generateSelectStruct(HPCCSQLTreeWalker * selectsqlobj, IProperti
         else
         {
             eclEntities->setProp("NONSCALAREXPECTED", "TRUE");
-            selectStructSB.append(col->getECLType());
-            selectStructSB.append(" ");
-            selectStructSB.append(col->getNameOrAlias());
-            selectStructSB.append(" := ");
-            selectStructSB.append(datasource);
-            selectStructSB.append(".");
-            selectStructSB.append(col->getName());
-            selectStructSB.append(";");
+            selectStructSB.appendf("%s %s := %s.%s;", col->getECLType(), col->getNameOrAlias(), datasource, col->getName());
+            //selectStructSB.append(col->getECLType());
+            //selectStructSB.append(" ");
+            //selectStructSB.append(col->getNameOrAlias());
+            //selectStructSB.append(" := ");
+            //selectStructSB.append(datasource);
+            //selectStructSB.append(".");
+            //selectStructSB.append(col->getName());
+            //selectStructSB.append(";");
         }
 
         selectStructSB.append("\n");
@@ -623,11 +633,11 @@ void ECLEngine::generateSelectStruct(HPCCSQLTreeWalker * selectsqlobj, IProperti
     eclEntities->setProp("SELECTSTRUCT", selectStructSB.toCharArray());
 }
 
-bool containsPayload(HPCCFile * indexfiletotest, HPCCSQLTreeWalker * selectsqlobj)
+bool containsPayload(const HPCCFile * indexfiletotest, const HPCCSQLTreeWalker * selectsqlobj)
 {
     if (selectsqlobj)
     {
-        IArrayOf <ISQLExpression> * selectlist = selectsqlobj->getSelectList();
+        const IArrayOf <ISQLExpression> * selectlist = selectsqlobj->getSelectList();
 
         for (int j = 0; j < selectlist->length(); j++)
         {
@@ -655,8 +665,9 @@ bool containsPayload(HPCCFile * indexfiletotest, HPCCSQLTreeWalker * selectsqlob
                 }
             }
         }
+        return true;
     }
-    return true;
+    return false;
 }
 
 bool ECLEngine::processIndex(HPCCFile * indexfiletouse, StringBuffer & keyedandwild, HPCCSQLTreeWalker * selectsqlobj)
@@ -765,7 +776,7 @@ void ECLEngine::findAppropriateIndex(StringArray * relindexes, HPCCSQLTreeWalker
         const char * indexname = relindexes->item(indexcounter);
         HPCCFilePtr indexfile = dynamic_cast<HPCCFile *>(selectsqlobj->queryHPCCFileCache()->getHpccFileByName(indexname));
 
-        IArrayOf<ISQLExpression> * expectedretcolumns =selectsqlobj->getSelectList();
+        const IArrayOf<ISQLExpression> * expectedretcolumns =selectsqlobj->getSelectList();
         if (indexfile && indexfile->isFileKeyed() && indexfile->hasValidIdxFilePosField())
         {
             //The more fields this index has in common with the select columns higher score
@@ -814,16 +825,11 @@ void ECLEngine::findAppropriateIndex(StringArray * relindexes, HPCCSQLTreeWalker
                     ForEachItemIn(uniqueidx, uniquenames)
                     {
                         if(strcmp( uniquenames.item(uniqueidx), currcol.getColumnName())==0)
-                        {
                             keycolscount++;
-                            //RODRIGO need to verify this
-                            //int paramindex = indexfile.getKeyColumnIndex(currentparam);
-                            //if (localleftmostindex > paramindex)
-                            //    localleftmostindex = paramindex;
-                        }
                     }
                 }
             }
+
             if (keycolscount == 0)
             {
                 scores.add(std::numeric_limits<int>::min(), indexcounter);
@@ -832,17 +838,8 @@ void ECLEngine::findAppropriateIndex(StringArray * relindexes, HPCCSQLTreeWalker
 
             int keycolsscore = keycolscount * NumberofColsKeyedInThisIndex_WEIGHT;
             scores.add(keycolsscore + scores.item(indexcounter), indexcounter);
-            if (commonparamscount == expectedretcolumns->length() && keycolscount > 0
-                //&& !parser.whereClauseContainsOrOperator()
-               )
+            if (commonparamscount == expectedretcolumns->length() && keycolscount > 0)
                     payloadIdxWithAtLeast1KeyedFieldFound = true; // during scoring, give this priority
-
-            //int leftmostindexscore = 0;
-            //if (localleftmostindex != -1 )
-            //{
-            //    leftmostindexscore = ((localleftmostindex / totalparamcount) - 1 ) * LeftMostKeyIndexPosition_WEIGHT;
-            //    scores.add( scores.item(indexcounter) - leftmostindexscore, indexcounter);
-            //}
         }
     }
 
@@ -883,7 +880,7 @@ void ECLEngine::addHavingCluse(HPCCSQLTreeWalker * sqlobj, StringBuffer & sb)
     }
 }
 
-bool ECLEngine::appendTranslatedHavingClause(HPCCSQLTreeWalker * sqlobj, StringBuffer sb, const char * latesDSName)
+bool ECLEngine::appendTranslatedHavingClause(HPCCSQLTreeWalker * sqlobj, StringBuffer & sb, const char * latesDSName)
 {
     bool success = false;
     if (sqlobj)
@@ -892,7 +889,7 @@ bool ECLEngine::appendTranslatedHavingClause(HPCCSQLTreeWalker * sqlobj, StringB
         {
             Owned<IProperties> translator = createProperties(true);
 
-            IArrayOf<SQLTable> * tables = sqlobj->getTableList();
+            const IArrayOf<SQLTable> * tables = sqlobj->getTableList();
             ForEachItemIn(tableidx, *tables)
             {
                 SQLTable table = tables->item(tableidx);
@@ -905,11 +902,12 @@ bool ECLEngine::appendTranslatedHavingClause(HPCCSQLTreeWalker * sqlobj, StringB
 
             if (havingclause.length() > 0)
             {
-                sb.append(latesDSName).append("Having").append(" := HAVING( ");
-                sb.append(latesDSName);
-                sb.append(", ");
-                sb.append(havingclause);
-                sb.append(" );\n");
+                sb.appendf("%sHaving := HAVING( %s, %s );\n", latesDSName, latesDSName, havingclause.str());
+                //sb.append(latesDSName).append("Having").append(" := HAVING( ");
+                //sb.append(latesDSName);
+                //sb.append(", ");
+                //sb.append(havingclause);
+                //sb.append(" );\n");
             }
             success = true;
         }

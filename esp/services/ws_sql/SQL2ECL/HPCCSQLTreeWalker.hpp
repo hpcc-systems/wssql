@@ -131,14 +131,15 @@ public:
         return parameterizedCount;
     }
 
-    IArrayOf<SQLTable>* getTableList()
+    const IArrayOf<SQLTable>* getTableList() const
     {
-        return &tableList;
+        return const_cast <const IArrayOf<SQLTable>*> (&tableList);
     }
 
-    IArrayOf<ISQLExpression>* getSelectList()
+    const IArrayOf<ISQLExpression>* getSelectList() const
     {
-        return &selectList;
+        return const_cast <const IArrayOf<ISQLExpression>*> (&selectList);
+        //return &selectList;
     }
 
     int getLimit() const

@@ -153,13 +153,6 @@ bool HPCCFileCache::cacheHpccFileByName(const char * filename)
     if(properties.hasProp("ECL"))
         file->setEcl(properties.queryProp("ECL"));
 
-    //TODO extract index info if present
-    //StringBuffer strDesc = properties.queryProp("@description");
-    //if (strDesc.length() > 0 )
-    //{
-    //    fprintf(stderr, ">>>%s", strDesc.str());
-    //}
-
     //unfortunately @format sometimes holds the file format, sometimes @kind does
     const char * kind = properties.queryProp("@kind");
     if (kind)
@@ -178,21 +171,13 @@ bool HPCCFileCache::cacheHpccFileByName(const char * filename)
 
             Owned<IResultSetFactory> resultSetFactory = getSecResultSetFactory(secmgr, secuser, username.str(), passwd.str());
             Owned<INewResultSet> result;
-            //if (m_clusterName.length() > 0)
-            //{
-            //    result.setown(resultSetFactory->createNewFileResultSet(logicalNameStr.str(), m_clusterName.str()));
-            //}
-            //else
-            //{
-                result.setown(resultSetFactory->createNewFileResultSet(filename, NULL));
-            //}
+            result.setown(resultSetFactory->createNewFileResultSet(filename, NULL));
 
             Owned<IResultSetCursor> cursor = result->createCursor();
             const IResultSetMetaData & meta = cursor->queryResultSet()->getMetaData();
             int columnCount = meta.getColumnCount();
             int keyedColumnCount = meta.getNumKeyedColumns();
 
-//            for (int i = keyedColumnCount-1; i >= 0 ; i--)
             for (int i = 0; i < keyedColumnCount; i++)
             {
                 SCMStringBuffer columnLabel;

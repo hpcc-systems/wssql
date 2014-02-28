@@ -118,6 +118,7 @@ bool HPCCFile::setFileColumns(const char * eclString)
        StringBuffer errtext;
        IECLError *first = errs.firstError();
        first->toString(errtext);
+       ESPLOG(LogNormal, "Could not set HPCC file columns: %s", errtext.str());
        return false;
     }
 
@@ -156,7 +157,6 @@ HPCCColumnMetaData * HPCCFile::getColumn(const char * colname)
 {
     ForEachItemIn(colidx, columns)
     {
-       // HPCCColumnMetaData currcol = columns.item(colidx);
         if (strcmp(columns.item(colidx).getColumnName(), colname)==0)
         {
             return &(columns.item(colidx));
@@ -165,7 +165,7 @@ HPCCColumnMetaData * HPCCFile::getColumn(const char * colname)
     return NULL;
 }
 
-void HPCCFile::getKeyedFieldsAsDelmitedString(char delim, const char * prefix, StringBuffer & out)
+void HPCCFile::getKeyedFieldsAsDelimitedString(char delim, const char * prefix, StringBuffer & out)
 {
     getFieldsAsDelmitedString(delim, prefix, out, true);
 }
@@ -198,7 +198,8 @@ void HPCCFile::getFieldsAsDelmitedString(char delim, const char * prefix, String
         }
     }
 }
-bool HPCCFile::containsField(SQLColumn * field, bool verifyEclType)
+
+bool HPCCFile::containsField(SQLColumn * field, bool verifyEclType) const
 {
     const char *  fieldName = field->getName();
 

@@ -76,7 +76,7 @@ void HPCCSQLTreeWalker::fromTreeWalker(pANTLR3_BASE_TREE fromsqlAST)
             if (tokenType != ID && tokenType != TOKEN_INDEX_HINT && tokenType != TOKEN_AVOID_INDEX)
             {
                 if (tokenType == TOKEN_OUTTER_JOIN)
-                    jointype = SQLJoinTypeOutter;
+                    jointype = SQLJoinTypeOuter;
                 else if (tokenType == TOKEN_INNER_JOIN)
                     jointype = SQLJoinTypeInner;
                 else

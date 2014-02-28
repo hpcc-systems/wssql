@@ -14,6 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ############################################################################## */
+#ifndef SQLEXPRESSION_HPP_
+#define SQLEXPRESSION_HPP_
 
 #include "ws_sql.hpp"
 #include "SQLColumn.hpp"
@@ -30,9 +32,6 @@ limitations under the License.
 #endif
 #include "HPCCSQLLexer.h"
 /* undef SOCKET definitions to avoid collision in Antlrdefs.h*/
-
-#ifndef SQLEXPRESSION_HPP_
-#define SQLEXPRESSION_HPP_
 
 typedef enum _SQLExpressionType
 {
@@ -58,8 +57,6 @@ typedef enum _SQLLogicType
     Integer_LogicType,
     Decimal_LogicType
 } SQLLogicType;
-
-#define parameterizedPrefix "PARAM";
 
 interface ISQLExpression : public CInterface, public IInterface
 {
@@ -296,7 +293,7 @@ class SQLFieldsExpression : implements ISQLExpression
 public:
     IMPLEMENT_IINTERFACE;
     void getExpressionFromColumnName(const char * colname, StringBuffer & str){ UNIMPLEMENTED_X("This method should never be accessed for SQLFieldsExpression!");}
-    void getUniqueExpressionColumnNames(StringArray & uniquenames){ UNIMPLEMENTED_X("This method should never be accessed for SQLFieldsExpression!");}
+    void getUniqueExpressionColumnNames(StringArray & uniquenames){ UNIMPLEMENTED_X("Method SQLFieldsExpression::getUniqueExpressionColumnNames should never be accessed!");}
 
     void eclDeclarePlaceHolders(StringBuffer & eclstr, int op, int sibtype) {return;}
     virtual SQLLogicType getLogicType(){return Unknown_LogicType;}
@@ -442,7 +439,7 @@ public:
             return Integer_LogicType;
         else if (strnicmp(type,"REAL",4)==0)
             return Decimal_LogicType;
-        else if (strnicmp(type,"DECIMAL",78)==0)
+        else if (strnicmp(type,"DECIMAL",7)==0)
             return Decimal_LogicType;
         else
             return Unknown_LogicType;

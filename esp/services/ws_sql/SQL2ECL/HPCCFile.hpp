@@ -120,7 +120,7 @@ public:
 
     void setFullname(const char * fullname)
     {
-        this->fullname = fullname;
+        this->fullname.set(fullname);
     }
 
     bool isFileKeyed() const
@@ -150,7 +150,7 @@ public:
 
     void setName(const char * name)
     {
-        this->name = name;
+        this->name.set(name);
     }
 
     void setKeyedColumn(const char * name);
@@ -158,7 +158,7 @@ public:
     bool getFileRecDef(StringBuffer & out, const char * structname, const char * linedelimiter  = "\n", const char * recordindent  = "\t");
     int getNonKeyedColumnsCount();
     int getKeyedColumnsCount();
-    void getKeyedFieldsAsDelmitedString(char delim, const char * prefix, StringBuffer & out);
+    void getKeyedFieldsAsDelimitedString(char delim, const char * prefix, StringBuffer & out);
     void getNonKeyedFieldsAsDelmitedString(char delim, const char * prefix, StringBuffer & out);
     const char * getIdxFilePosField()
     {
@@ -173,7 +173,7 @@ public:
 
     static HPCCFile * createHPCCFile();
 
-    bool containsField(SQLColumn * field, bool verifyEclType);
+    bool containsField(SQLColumn * field, bool verifyEclType) const;
     void setIdxFilePosField(const char * idxfileposfieldname)
     {
         idxFilePosField.set(idxfileposfieldname);

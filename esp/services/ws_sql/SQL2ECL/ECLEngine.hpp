@@ -15,16 +15,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ############################################################################## */
 
+#ifndef ECLENGINE_HPP_
+#define ECLENGINE_HPP_
+
 #include "HPCCSQLTreeWalker.hpp"
 #include "HPCCFile.hpp"
 #include "SQLColumn.hpp"
 
-#ifndef ECLENGINE_HPP_
-#define ECLENGINE_HPP_
-
-#define NumberOfCommonParamInThisIndex_WEIGHT    5;
-#define LeftMostKeyIndexPosition_WEIGHT          3;
-#define NumberofColsKeyedInThisIndex_WEIGHT      2;
+#define NumberOfCommonParamInThisIndex_WEIGHT    5
+#define NumberofColsKeyedInThisIndex_WEIGHT      2
 
 class ECLEngine
 {
@@ -42,10 +41,10 @@ private:
     static void findAppropriateIndex(StringArray * relindexes, HPCCSQLTreeWalker * selectsqlobj, StringBuffer & indexname);
     static bool processIndex(HPCCFile * indexfiletouse, StringBuffer & keyedandwild, HPCCSQLTreeWalker * selectsqlobj);
 
-    static void generateSelectStruct(HPCCSQLTreeWalker * selectsqlobj, IProperties* eclEntities, IArrayOf<ISQLExpression> & expectedcolumns, const char * datasource);
+    static void generateSelectStruct(HPCCSQLTreeWalker * selectsqlobj, IProperties* eclEntities, const IArrayOf<ISQLExpression> & expectedcolumns, const char * datasource);
     static void addFilterClause(HPCCSQLTreeWalker * sqlobj, StringBuffer & sb);
     static void addHavingCluse(HPCCSQLTreeWalker * sqlobj, StringBuffer & sb);
-    static bool appendTranslatedHavingClause(HPCCSQLTreeWalker * sqlobj, StringBuffer sb, const char * latesDSName);
+    static bool appendTranslatedHavingClause(HPCCSQLTreeWalker * sqlobj, StringBuffer & sb, const char * latesDSName);
     static void generateIndexSetupAndFetch(SQLTable * table, int tableindex, HPCCSQLTreeWalker * selectsqlobj, IProperties* eclEntities);
 
     static const char * SELECTOUTPUTNAME;

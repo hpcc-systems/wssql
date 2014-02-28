@@ -109,7 +109,7 @@ SET(CPACK_PACKAGE_VERSION_PATCH ${point}${stagever})
 
 SET( CPACK_PACKAGE_CONTACT "HPCCSystems <ossdevelopment@lexisnexis.com>" )
 SET( CPACK_SOURCE_GENERATOR TGZ )
-SET( CPACK_RPM_PACKAGE_RELEASE "${version}${stagever}")
+SET( CPACK_RPM_PACKAGE_RELEASE "${version}-${stagever}")
 
 IF    ( ${ARCH64BIT} EQUAL 1 )
     SET ( CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
