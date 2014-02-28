@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+################################################################################
+#    HPCC SYSTEMS software Copyright (C) 2014 HPCC Systems.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+################################################################################
+-->
+<Environment>
+	<Programs>
+		<Build name="_" url="/opt/HPCCSystems">
+			<BuildSet deployable="no"
+              			installSet="deploy_map.xml"
+		              name="ws_sql"
+              path="componentfiles/ws_sql"
+              processName="EspService"
+              schema="esp_service_wssql.xsd">
+        <Properties bindingType="ws_sqlSoapBinding"
+                  defaultPort="8009"
+                  defaultResourcesBasedn="ou=WsSql,ou=EspServices,ou=ecl"
+                  defaultSecurePort="18009"
+                  plugin="ws_sql"
+                  type="ws_sql">
+            <Authenticate access="Read"
+                      description="Root access to WS SQL service"
+                      path="/"
+                      required="Read"
+                      resource="WsSqlAccess"/>
+                <AuthenticateFeature description="Access to WS SQL service"
+                             path="WsSQLAccess"
+                             resource="WsSqlAccess"
+                             service="ws_sql"/>
+                <AuthenticateFeature description="Access to own workunits"
+                          path="OwnWorkunitsAccess"
+                          resource="OwnWorkunitsAccess"
+                          service="ws_sql"/>
+                <AuthenticateFeature description="Access to others&apos; workunits"
+                          path="OthersWorkunitsAccess"
+                          resource="OthersWorkunitsAccess"
+                          service="ws_sql"/>
+        </Properties>
+    </BuildSet>
+  </Build>
+</Programs>
+</Environment>
+ 
