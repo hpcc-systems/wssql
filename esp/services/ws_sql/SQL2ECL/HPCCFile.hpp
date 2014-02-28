@@ -23,6 +23,7 @@ limitations under the License.
 
 #include "ws_sql_esp.ipp"
 #include "hqlerror.hpp"
+#include "hqlexpr.hpp"
 
 typedef enum _HPCCFileFormat
 {
