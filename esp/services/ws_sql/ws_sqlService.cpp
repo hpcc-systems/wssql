@@ -776,7 +776,7 @@ bool Cws_sqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, I
                 wu->commit();
                 wu.clear();
 
-                WsWuProcess::submitWsWorkunit(context, compiledwuid.str(), cluster, NULL, 0, true, false, false, NULL, NULL, NULL);
+                WsWuHelpers::submitWsWorkunit(context, compiledwuid.str(), cluster, NULL, 0, true, false, false, NULL, NULL, NULL);
                 waitForWorkUnitToCompile(compiledwuid.str(), req.getWait());
             }
         }
@@ -812,7 +812,7 @@ bool Cws_sqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, I
             }
             else
             {
-                WsWuProcess::submitWsWorkunit(context, compiledwuid.str(), cluster, NULL, 0, false, true, true, NULL, NULL, NULL);
+                WsWuHelpers::submitWsWorkunit(context, compiledwuid.str(), cluster, NULL, 0, false, true, true, NULL, NULL, NULL);
                 runningwuid.set(compiledwuid.str());
                 cachedSQLQueries.insert(std::pair<std::string,std::string>(normalizedSQL.str(), runningwuid.str()));
             }
@@ -1135,7 +1135,7 @@ bool Cws_sqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, I
                 wu->commit();
                 wu.clear();
 
-                WsWuProcess::submitWsWorkunit(context, wuid.str(), req.getTargetCluster(), NULL, 0, true, false, false, xmlparams.str(), NULL, NULL);
+                WsWuHelpers::submitWsWorkunit(context, wuid.str(), req.getTargetCluster(), NULL, 0, true, false, false, xmlparams.str(), NULL, NULL);
                 waitForWorkUnitToCompile(wuid.str(), req.getWait());
             }
 
@@ -1299,7 +1299,7 @@ bool Cws_sqlEx::cloneAndExecuteWU(IEspContext &context, const char * originalwui
 
            StringBufferAdaptor isvWuid(clonedwuid);
 
-           WsWuProcess::runWsWorkunit(
+           WsWuHelpers::runWsWorkunit(
                    context,
                    clonedwuid,
                    originalwuid,
