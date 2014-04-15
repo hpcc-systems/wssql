@@ -776,70 +776,73 @@ void ECLEngine::findAppropriateIndex(StringArray * relindexes, HPCCSQLTreeWalker
         const char * indexname = relindexes->item(indexcounter);
         HPCCFilePtr indexfile = dynamic_cast<HPCCFile *>(selectsqlobj->queryHPCCFileCache()->getHpccFileByName(indexname));
 
-        const IArrayOf<ISQLExpression> * expectedretcolumns =selectsqlobj->getSelectList();
-        if (indexfile && indexfile->isFileKeyed() && indexfile->hasValidIdxFilePosField())
+        if (indexfile)
         {
-            //The more fields this index has in common with the select columns higher score
-            int commonparamscount = 0;
-            for (int j = 0; j < expectedretcolumns->length(); j++)
+            const IArrayOf<ISQLExpression> * expectedretcolumns =selectsqlobj->getSelectList();
+            if (indexfile && indexfile->isFileKeyed() && indexfile->hasValidIdxFilePosField())
             {
-                ISQLExpression * exp = &expectedretcolumns->item(j);
-                if (exp->getExpType() == FieldValue_ExpressionType)
+                //The more fields this index has in common with the select columns higher score
+                int commonparamscount = 0;
+                for (int j = 0; j < expectedretcolumns->length(); j++)
                 {
-                    SQLFieldValueExpression * fieldexp = dynamic_cast<SQLFieldValueExpression *>(exp);
-                    if (indexfile->containsField(fieldexp->queryField(), true))
-                        commonparamscount++;
-                }
-                else if (exp->getExpType() == Function_ExpressionType)
-                {
-                    SQLFunctionExpression * currentfunccol = dynamic_cast<SQLFunctionExpression *>(exp);
-
-                    IArrayOf<ISQLExpression> * funcparams = currentfunccol->getParams();
-                    ForEachItemIn(paramidx, *funcparams)
+                    ISQLExpression * exp = &expectedretcolumns->item(j);
+                    if (exp->getExpType() == FieldValue_ExpressionType)
                     {
-                        ISQLExpression * param = &(funcparams->item(paramidx));
-                        if (param->getExpType() == FieldValue_ExpressionType)
+                        SQLFieldValueExpression * fieldexp = dynamic_cast<SQLFieldValueExpression *>(exp);
+                        if (indexfile->containsField(fieldexp->queryField(), true))
+                            commonparamscount++;
+                    }
+                    else if (exp->getExpType() == Function_ExpressionType)
+                    {
+                        SQLFunctionExpression * currentfunccol = dynamic_cast<SQLFunctionExpression *>(exp);
+
+                        IArrayOf<ISQLExpression> * funcparams = currentfunccol->getParams();
+                        ForEachItemIn(paramidx, *funcparams)
                         {
-                            SQLFieldValueExpression * currentselectcol = dynamic_cast<SQLFieldValueExpression *>(param);
-                            if (indexfile->containsField(currentselectcol->queryField(), true))
-                                commonparamscount++;
+                            ISQLExpression * param = &(funcparams->item(paramidx));
+                            if (param->getExpType() == FieldValue_ExpressionType)
+                            {
+                                SQLFieldValueExpression * currentselectcol = dynamic_cast<SQLFieldValueExpression *>(param);
+                                if (indexfile->containsField(currentselectcol->queryField(), true))
+                                    commonparamscount++;
+                            }
                         }
                     }
                 }
-            }
-            int commonparamsscore = commonparamscount * NumberOfCommonParamInThisIndex_WEIGHT;
-            scores.add(commonparamsscore, indexcounter);
+                int commonparamsscore = commonparamscount * NumberOfCommonParamInThisIndex_WEIGHT;
+                scores.add(commonparamsscore, indexcounter);
 
-            if (payloadIdxWithAtLeast1KeyedFieldFound && commonparamscount == 0)
-                break; // Don't bother with this index
+                if (payloadIdxWithAtLeast1KeyedFieldFound && commonparamscount == 0)
+                    break; // Don't bother with this index
 
-            //The more keyed fields this index has in common with the where clause, the higher score
-            //int localleftmostindex = -1;
-            int keycolscount = 0;
-            IArrayOf<HPCCColumnMetaData> * columns = indexfile->getColumns();
-            ForEachItemIn(colidx, *columns)
-            {
-                HPCCColumnMetaData currcol = columns->item(colidx);
-                if (currcol.isKeyedField())
+                //The more keyed fields this index has in common with the where clause, the higher score
+                //int localleftmostindex = -1;
+                int keycolscount = 0;
+                IArrayOf<HPCCColumnMetaData> * columns = indexfile->getColumns();
+                ForEachItemIn(colidx, *columns)
                 {
-                    ForEachItemIn(uniqueidx, uniquenames)
+                    HPCCColumnMetaData currcol = columns->item(colidx);
+                    if (currcol.isKeyedField())
                     {
-                        if(strcmp( uniquenames.item(uniqueidx), currcol.getColumnName())==0)
-                            keycolscount++;
+                        ForEachItemIn(uniqueidx, uniquenames)
+                        {
+                            if(strcmp( uniquenames.item(uniqueidx), currcol.getColumnName())==0)
+                                keycolscount++;
+                        }
                     }
                 }
-            }
 
-            if (keycolscount == 0)
-            {
-                scores.add(std::numeric_limits<int>::min(), indexcounter);
-                continue;
-            }
+                if (keycolscount == 0)
+                {
+                    scores.add(std::numeric_limits<int>::min(), indexcounter);
+                    continue;
+                }
 
-            int keycolsscore = keycolscount * NumberofColsKeyedInThisIndex_WEIGHT;
-            scores.add(keycolsscore + scores.item(indexcounter), indexcounter);
-            if (commonparamscount == expectedretcolumns->length() && keycolscount > 0)
-                    payloadIdxWithAtLeast1KeyedFieldFound = true; // during scoring, give this priority
+                int keycolsscore = keycolscount * NumberofColsKeyedInThisIndex_WEIGHT;
+                scores.add(keycolsscore + scores.item(indexcounter), indexcounter);
+                if (commonparamscount == expectedretcolumns->length() && keycolscount > 0)
+                        payloadIdxWithAtLeast1KeyedFieldFound = true; // during scoring, give this priority
+            }
         }
     }
 
