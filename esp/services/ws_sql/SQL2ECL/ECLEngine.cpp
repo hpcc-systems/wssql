@@ -18,7 +18,7 @@ limitations under the License.
 #include "ECLEngine.hpp"
 #include <limits>       // std::numeric_limits
 
-const char * ECLEngine::SELECTOUTPUTNAME = "JDBCSelectQueryResult";
+const char * ECLEngine::SELECTOUTPUTNAME = "WSSQLSelectQueryResult";
 
 ECLEngine::ECLEngine(){}
 

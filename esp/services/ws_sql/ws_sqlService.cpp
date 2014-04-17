@@ -737,34 +737,27 @@ bool Cws_sqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, I
             }
             else
             {
-                NewWsWorkunit wu(context);
-
-                wu->getWuid(compiledwuid);
-
-                if (notEmpty(cluster))
-                {
-                    if (isValidCluster(cluster))
-                        wu->setClusterName(cluster);
-                    else
-                        throw MakeStringException(-1, "Invalid cluster name: %s", cluster);
-                }
-                else
-                {
+                if (isEmpty(cluster))
                     throw MakeStringException(-1,"Target cluster not set.");
-                }
 
-                if (clonable)
-                    wu->setCloneable(true);
-                wu->setAction(WUActionCompile);
+                if (!isValidCluster(cluster))
+                    throw MakeStringException(-1, "Invalid cluster name: %s", cluster);
 
                 ECLEngine::generateECL(parsedSQL,ecltext.clear());
 #if defined _DEBUG
                 fprintf(stderr, "GENERATED ECL:\n%s\n", ecltext.toCharArray());
 #endif
-                if (notEmpty(ecltext))
-                   wu.setQueryText(ecltext.str( ));
-                else
+                if (isEmpty(ecltext))
                    throw MakeStringException(1,"Could not generate ECL from SQL.");
+
+                NewWsWorkunit wu(context);
+                wu->getWuid(compiledwuid);
+
+                wu.setQueryText(ecltext.str( ));
+                wu->setClusterName(cluster);
+                if (clonable)
+                    wu->setCloneable(true);
+                wu->setAction(WUActionCompile);
 
                 if (resultLimit)
                     wu->setResultLimit(resultLimit);
@@ -1097,37 +1090,28 @@ bool Cws_sqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, I
             }
             else
             {
-                NewWsWorkunit wu(context);
-                wu->getWuid(wuid);
 
                 const char  *cluster = req.getTargetCluster();
-                if (notEmpty(cluster))
-                {
-                    wu->setClusterName(req.getTargetCluster());
-                    if (isValidCluster(cluster))
-                       wu->setClusterName(cluster);
-                    else
-                       throw MakeStringException(-1/*ECLWATCH_INVALID_CLUSTER_NAME*/, "Invalid cluster name: %s", cluster);
-                }
-                else
+                if (isEmpty(cluster))
                     throw MakeStringException(1,"Target cluster not set.");
 
-                wu->setCloneable(true);
-                wu->setAction(WUActionCompile);
+                if (!isValidCluster(cluster))
+                    throw MakeStringException(-1/*ECLWATCH_INVALID_CLUSTER_NAME*/, "Invalid cluster name: %s", cluster);
 
                 ECLEngine::generateECL(parsedSQL,ecltext.clear());
 #if defined _DEBUG
                 fprintf(stderr, "GENERATED ECL:\n%s\n", ecltext.toCharArray());
 #endif
 
-                if (notEmpty(ecltext))
-                {
-                   wu.setQueryText(ecltext.str());
-                }
-                else
-                {
-                   throw MakeStringException(1,"Could not generate ECL from SQL.");
-                }
+                if (isEmpty(ecltext))
+                    throw MakeStringException(1,"Could not generate ECL from SQL.");
+
+                NewWsWorkunit wu(context);
+                wu->getWuid(wuid);
+                wu->setClusterName(cluster);
+                wu->setCloneable(true);
+                wu->setAction(WUActionCompile);
+                wu.setQueryText(ecltext.str());
 
                 StringBuffer xmlparams;
                 createXMLParams(xmlparams, parsedSQL, NULL, NULL);
