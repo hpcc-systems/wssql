@@ -367,6 +367,18 @@ SQLValueExpression::SQLValueExpression(int type, const char * value)
     this->value = value;
 }
 
+void SQLValueExpression::trimTextQuotes()
+{
+    if (this->type == TEXT_STRING)
+    {
+        if (this->value.charAt(0) == '\'' && this->value.charAt(value.length()-1) == '\'')
+        {
+            this->value.remove(this->value.length()-1, 1);
+            this->value.remove(0, 1);
+        }
+    }
+}
+
 void SQLValueExpression::toString(StringBuffer & targetstr, bool fullOutput)
 {
     targetstr.append(value.str());
