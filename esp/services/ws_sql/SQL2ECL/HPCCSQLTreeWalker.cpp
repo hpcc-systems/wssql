@@ -403,7 +403,22 @@ void HPCCSQLTreeWalker::callStatementTreeWalker(pANTLR3_BASE_TREE callsqlAST)
                         ANTLR3_UINT32 tokenType = ithchild->getType(ithchild);
                         tokenText = (char *)ithchild->toString(ithchild)->chars;
 
-                        paramList.append(*expressionTreeWalker(ithchild, NULL));
+                        Owned<ISQLExpression> exp = expressionTreeWalker(ithchild,NULL);
+                        if (exp.get())
+                        {
+                            //Call parameter strings have to be single quoted in order to be distinguished from
+                            //Identifiers, however, the string parameters passed to the stored procedures are not quoted.
+                            //If the content needs to be quoted, they have to be escaped, within the first set of single quotes.
+                            //The first set of single quotes are stripped here.
+                            if (tokenType == TEXT_STRING)
+                            {
+                                SQLValueExpression * valexp = dynamic_cast<SQLValueExpression *>(exp.get());
+                                valexp->trimTextQuotes();
+                            }
+                            paramList.append(*exp.getLink());
+                        }
+                        else
+                            throw MakeStringException(-1, "\nError in call list\n");
                     }
                 }
             }

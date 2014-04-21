@@ -758,7 +758,6 @@ bool Cws_sqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, I
                 if (clonable)
                     wu->setCloneable(true);
                 wu->setAction(WUActionCompile);
-
                 if (resultLimit)
                     wu->setResultLimit(resultLimit);
 

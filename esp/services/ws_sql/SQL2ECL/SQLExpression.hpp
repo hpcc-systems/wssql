@@ -491,6 +491,7 @@ public:
         return 0;
     }
 
+    virtual void         trimTextQuotes();
     virtual void         setECLType(const char * type);
     virtual const char * getECLType();
     virtual const char * getName();
