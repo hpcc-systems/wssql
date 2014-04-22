@@ -75,6 +75,7 @@ bool Cws_sqlEx::onGetDBMetaData(IEspContext &context, IEspGetDBMetaDataRequest &
             if ( querysetfilter && *querysetfilter && stricmp(setname, querysetfilter)!=0)
                 continue;
 
+
             Owned<IEspHPCCQuerySet> pqset = createHPCCQuerySet();
             pqset->setName(setname);
             pquerysets.append(*pqset.getLink());
@@ -82,13 +83,12 @@ bool Cws_sqlEx::onGetDBMetaData(IEspContext &context, IEspGetDBMetaDataRequest &
             Owned<IPropertyTree> settree = getQueryRegistry(setname, true);
 
             if (!settree)
-               return false;
+                return false;
 
             IArrayOf<IEspPublishedQuery> queries;
             Owned<IPropertyTreeIterator> iter = settree->getElements("Query");
             ForEach(*iter)
             {
-
                 const char * id = iter->query().queryProp("@id");
                 const char * qname = iter->query().queryProp("@name");
                 const char * wuid = iter->query().queryProp("@wuid");
@@ -820,9 +820,12 @@ bool Cws_sqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, I
             resp.setResultWindowCount( (unsigned)resultWindowCount);
             resp.setResultWindowStart( (unsigned)resultWindowStart);
 
-            StringBuffer result;
-            if (getWUResult(context, runningwuid.str(), result, (unsigned)resultWindowStart,  (unsigned)resultWindowCount))
-                resp.setResult(result.str());
+            if (req.getIncludeResults())
+            {
+                StringBuffer result;
+                if (getWUResult(context, runningwuid.str(), result, (unsigned)resultWindowStart,  (unsigned)resultWindowCount))
+                    resp.setResult(result.str());
+            }
 
             WsWuInfo winfo(context, runningwuid);
             winfo.getCommon(resp.updateWorkunit(), WUINFO_All);
@@ -982,15 +985,18 @@ bool Cws_sqlEx::onExecutePreparedSQL(IEspContext &context, IEspExecutePreparedSQ
 
            resp.setParentWuId(parentWuId);
 
-           StringBuffer result;
            __int64 resultWindowStart = req.getResultWindowStart();
            __int64 resultWindowCount = req.getResultWindowCount();
 
            if (resultWindowStart < 0 || resultWindowCount <0 )
                throw MakeStringException(-1,"Invalid result window value");
 
-           if (getWUResult(context, runningWuId.str(), result, (unsigned)resultWindowStart, (unsigned)resultWindowCount))
-               resp.setResult(result.str());
+           if (req.getIncludeResults())
+           {
+               StringBuffer result;
+               if (getWUResult(context, runningWuId.str(), result, (unsigned)resultWindowStart, (unsigned)resultWindowCount))
+                   resp.setResult(result.str());
+           }
 
             WsWuInfo winfo(context, runningWuId);
             winfo.getCommon(resp.updateWorkunit(), WUINFO_All);
