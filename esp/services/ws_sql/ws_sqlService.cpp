@@ -82,8 +82,8 @@ bool Cws_sqlEx::onGetDBMetaData(IEspContext &context, IEspGetDBMetaDataRequest &
 
             Owned<IPropertyTree> settree = getQueryRegistry(setname, true);
 
-            if (!settree)
-                return false;
+            if (settree == NULL)
+               continue;
 
             IArrayOf<IEspPublishedQuery> queries;
             Owned<IPropertyTreeIterator> iter = settree->getElements("Query");
