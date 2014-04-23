@@ -111,7 +111,7 @@ bool HPCCFileCache::cacheAllHpccFiles(const char * filterby)
        StringBuffer name(attr.queryProp("@name"));
 
        if (name.length()>0)
-           cacheHpccFileByName(name.str());
+           success &= cacheHpccFileByName(name.str());
     }
 
     return success;
@@ -210,6 +210,7 @@ bool HPCCFileCache::cacheHpccFileByName(const char * filename)
                     se->errorMessage(s);
                     DBGLOG("Error fetching keyed file %s info: %s", fname, s.str());
                     se->Release();
+                    return false;
                 }
             }
         }
@@ -226,6 +227,7 @@ bool HPCCFileCache::cacheHpccFileByName(const char * filename)
         se->errorMessage(s);
         DBGLOG("Error fetching HPCC file %s info: %s", filename, s.str());
         se->Release();
+        return false;
     }
 
     if (file)

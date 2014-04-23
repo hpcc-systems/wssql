@@ -117,7 +117,8 @@ void HPCCSQLTreeWalker::fromTreeWalker(pANTLR3_BASE_TREE fromsqlAST)
                         tablealias = (char *)indexhint->toString(indexhint)->chars;
                         temptable->setIndexhint(tablealias);
 
-                        tmpHPCCFileCache->cacheHpccFileByName(tablealias);
+                        if (!tmpHPCCFileCache->cacheHpccFileByName(tablealias))
+                            ERRLOG("Invalid index hint found: %s\n", tablealias);
                     }
                     else if ( childType == TOKEN_AVOID_INDEX)
                     {
@@ -129,7 +130,9 @@ void HPCCSQLTreeWalker::fromTreeWalker(pANTLR3_BASE_TREE fromsqlAST)
                     }
                 }
 
-                tmpHPCCFileCache->cacheHpccFileByName(tablename);
+                if (!tmpHPCCFileCache->cacheHpccFileByName(tablename))
+                    throw MakeStringException(-1, "Invalid table name detected: %s\n", tablename);
+
                 tableList.append(*temptable.getLink());
 
                 if (jointype == -1 && i > 0) //multiple tables
@@ -342,7 +345,11 @@ ISQLExpression * HPCCSQLTreeWalker::expressionTreeWalker(pANTLR3_BASE_TREE exprA
 
                 if (file)
                 {
-                    tmpfve->setECLType(file->getColumn(colname)->getColumnType());
+                    HPCCColumnMetaData * col = file->getColumn(colname);
+                    if (col)
+                        tmpfve->setECLType(col->getColumnType());
+                    else
+                        throw MakeStringException(-1, "INVALID SELECT COLUMN FOUND: %s\n", colname );
                 }
 
                 tmpexp.setown(tmpfve.getLink());
