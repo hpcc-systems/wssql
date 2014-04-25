@@ -111,7 +111,7 @@ bool Cws_sqlEx::onGetDBMetaData(IEspContext &context, IEspGetDBMetaDataRequest &
                     Owned<IResultSetFactory> resultSetFactory(getResultSetFactory(username, passwd));
 
                     //Each published query can have multiple results (datasets)
-                    IConstWUResultIterator &results = wsinfo.wu->getResults();
+                    IConstWUResultIterator &results = wsinfo.ensureWorkUnit()->getResults();
                     ForEach(results)
                     {
                         Owned<IEspOutputDataset> outputdataset = createOutputDataset();
@@ -146,7 +146,7 @@ bool Cws_sqlEx::onGetDBMetaData(IEspContext &context, IEspGetDBMetaDataRequest &
                     }
 
                     //Each query can have multiple input parameters
-                    IConstWUResultIterator &vars = wsinfo.wu->getVariables();
+                    IConstWUResultIterator &vars = wsinfo.ensureWorkUnit()->getVariables();
                     ForEach(vars)
                     {
                         Owned<IEspHPCCColumn> col = createHPCCColumn();
@@ -731,7 +731,7 @@ bool Cws_sqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, I
             if (parsedSQL->getSqlType() == SQLTypeCall)
             {
                 WsEclWuInfo wsinfo("", parsedSQL->getQuerySetName(), parsedSQL->getStoredProcName(), username.str(), passwd);
-                wsinfo.wu->getWuid(compiledwuid);
+                compiledwuid.set(wsinfo.ensureWuid());
 
                 clonable = true;
             }
@@ -1057,7 +1057,7 @@ bool Cws_sqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, I
                 context.getUserID(username);
                 const char* passwd = context.queryPassword();
                 WsEclWuInfo wsinfo("", parsedSQL->getQuerySetName(), parsedSQL->getStoredProcName(), username.str(), passwd);
-                wsinfo.wu->getWuid(wuid);
+                wuid.set(wsinfo.ensureWuid());
 
                 //if call somePublishedQuery(1,2,3);
                 //                   or
@@ -1162,7 +1162,7 @@ bool Cws_sqlEx::executePublishedQueryByName(IEspContext &context, const char * q
 
         WsEclWuInfo wsinfo(wuid, queryset, queryname, username.str(), passwd);
 
-        success = executePublishedQueryByWuId(context, wsinfo.wuid.get(), clonedwuid, paramXml, variables, targetcluster, start, count);
+        success = executePublishedQueryByWuId(context, wsinfo.ensureWuid(), clonedwuid, paramXml, variables, targetcluster, start, count);
     }
     else
         success = false;
@@ -1212,7 +1212,7 @@ bool Cws_sqlEx::executePublishedQuery(IEspContext &context, const char * queryse
         WsEclWuInfo wsinfo(wuid, queryset, queryname, username.str(), passwd);
 
         StringBuffer clonedwui;
-        cloneAndExecuteWU(context, wsinfo.wuid.get(), clonedwui, NULL, NULL, NULL, "");
+        cloneAndExecuteWU(context, wsinfo.ensureWuid(), clonedwui, NULL, NULL, NULL, "");
 
         if (waittime != 0)
             waitForWorkUnitToComplete(clonedwui.str(), waittime);
@@ -1244,7 +1244,7 @@ bool Cws_sqlEx::executePublishedQuery(IEspContext &context, const char * wuid, S
         WsEclWuInfo wsinfo(wuid, "", "", username.str(), passwd);
 
         StringBuffer clonedwui;
-        cloneAndExecuteWU(context, wsinfo.wuid.get(), clonedwui, NULL, NULL, NULL, "");
+        cloneAndExecuteWU(context, wsinfo.ensureWuid(), clonedwui, NULL, NULL, NULL, "");
 
         if (waittime != 0)
             waitForWorkUnitToComplete(clonedwui.str(), waittime);
