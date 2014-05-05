@@ -16,5 +16,5 @@
 
     Install ( FILES "${CMAKE_CURRENT_SOURCE_DIR}/cgencomplist.xml"       DESTINATION "componentfiles/configxml/plugins/wssql" COMPONENT Runtime)
     Install ( FILES "${CMAKE_CURRENT_SOURCE_DIR}/esp_service_wssql.xsd"  DESTINATION "componentfiles/configxml" COMPONENT Runtime)
-    #Install ( FILES "${CMAKE_CURRENT_SOURCE_DIR}/buildset.xml"          DESTINATION "componentfiles/configxml/@temp" COMPONENT Runtime)
-    Install ( FILES "${CMAKE_CURRENT_SOURCE_DIR}/esp_service_wssql.xsl" DESTINATION "componentfiles/configxml/@temp" COMPONENT Runtime)
+    Install ( FILES "${CMAKE_CURRENT_SOURCE_DIR}/buildset.xml"           DESTINATION "componentfiles/configxml/plugins/wssql" COMPONENT Runtime)
+    Install ( FILES "${CMAKE_CURRENT_SOURCE_DIR}/esp_service_wssql.xsl"  DESTINATION "componentfiles/configxml/@temp" COMPONENT Runtime)

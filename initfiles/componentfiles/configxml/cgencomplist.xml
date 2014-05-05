@@ -17,7 +17,7 @@
 -->
 
 <Components>
-  <Component name="espsmc">
+  <Component name="ws_sql">
        <File name="@temp/esp_service_wssql.xsl" method="esp_service_module"/>
   </Component>
 </Components>
