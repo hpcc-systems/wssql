@@ -17,11 +17,11 @@
 ################################################################################
 -->
 <Environment>
-	<Programs>
-		<Build name="_" url="/opt/HPCCSystems">
-			<BuildSet deployable="no"
-              			installSet="deploy_map.xml"
-		              name="ws_sql"
+    <Programs>
+        <Build name="_" url="/opt/HPCCSystems">
+            <BuildSet deployable="no"
+                      installSet="deploy_map.xml"
+                      name="ws_sql"
               path="componentfiles/ws_sql"
               processName="EspService"
               schema="esp_service_wssql.xsd">

@@ -25,7 +25,7 @@ xmlns:set="http://exslt.org/sets" exclude-result-prefixes="set">
     <xsl:template match="EspBinding">
         <xsl:param name="authNode"/>
 
-     <xsl:variable name="serviceNode" select="/Environment/Software/EspService[@name=$espServiceName and @name=current()/@service and Properties/@type='WsSMC']"/>
+     <xsl:variable name="serviceNode" select="/Environment/Software/EspService[@name=$espServiceName and @name=current()/@service and Properties/@type='ws_sql']"/>
         <xsl:apply-templates select="$serviceNode" mode="WsSQL">
             <xsl:with-param name="bindingNode" select="."/>
             <xsl:with-param name="authNode" select="$authNode"/>
@@ -48,7 +48,7 @@ xmlns:set="http://exslt.org/sets" exclude-result-prefixes="set">
         </xsl:variable>
         <EspService name="{$serviceName}" type="{$serviceType}" plugin="{$servicePlugin}"/>
         <EspBinding name="{$bindName}" service="{$serviceName}" protocol="{$bindingNode/@protocol}" type="{$bindType}"
-             plugin="{$servicePlugin}" netAddress="0.0.0.0" port="8018" defaultBinding="true">
+            plugin="{$servicePlugin}" netAddress="0.0.0.0" port="{$bindingNode/@port}" defaultBinding="true">
             <xsl:call-template name="bindAuthentication">
                 <xsl:with-param name="bindingNode" select="$bindingNode"/>
                 <xsl:with-param name="authMethod" select="$authNode/@method"/>
@@ -57,4 +57,4 @@ xmlns:set="http://exslt.org/sets" exclude-result-prefixes="set">
         </EspBinding>
     </xsl:template>
 </xsl:stylesheet>
-                    
+
