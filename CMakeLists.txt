@@ -59,9 +59,10 @@ INCLUDE(${HPCC_WSSQL_SOURCE_DIR}/version.cmake)
 INCLUDE(${HPCC_WSSQL_SOURCE_DIR}/platform-version-prereq.cmake)
 INCLUDE(${HPCC_SOURCE_DIR}/version.cmake)
 
-IF (${HPCC_MAJOR_REQ} GREATER ${HPCC_MAJOR})
- MESSAGE(FATAL_ERROR "Project ${project} requires HPCC Platform version ${HPCC_MAJOR_REQ}.${HPCC_MINOR_REQ} or greater." )
-ELSEIF(${HPCC_MINOR_REQ} GREATER ${HPCC_MINOR})
+MESSAGE("-- Minimum HPCC Platform version required: ${HPCC_MAJOR_REQ}.${HPCC_MINOR_REQ}")
+MESSAGE("--- Building against HPCC Platform version: ${HPCC_MAJOR}.${HPCC_MINOR}.${HPCC_POINT}-${HPCC_SEQUENCE}")
+
+IF (${HPCC_MAJOR_REQ} GREATER ${HPCC_MAJOR} OR ( ${HPCC_MAJOR_REQ} EQUAL ${HPCC_MAJOR} AND ${HPCC_MINOR_REQ} GREATER ${HPCC_MINOR} ))
  MESSAGE(FATAL_ERROR "Project ${project} requires HPCC Platform version ${HPCC_MAJOR_REQ}.${HPCC_MINOR_REQ} or greater." )
 ENDIF()
 
