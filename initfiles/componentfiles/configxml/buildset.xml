@@ -26,9 +26,9 @@
               processName="EspService"
               schema="esp_service_wssql.xsd">
         <Properties bindingType="ws_sqlSoapBinding"
-                  defaultPort="8009"
+                  defaultPort="8510"
                   defaultResourcesBasedn="ou=WsSql,ou=EspServices,ou=ecl"
-                  defaultSecurePort="18009"
+                  defaultSecurePort="18510"
                   plugin="ws_sql"
                   type="ws_sql">
             <Authenticate access="Read"
