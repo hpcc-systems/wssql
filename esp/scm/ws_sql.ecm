@@ -90,7 +90,6 @@ ESPrequest PrepareSQLRequest
     [rows(28), cols(80)] string SqlText;
     string TargetCluster; //where should this be compiled
     string TargetQuerySet; //pertaining to Stored Proc calls
-    //boolean IncludeResults;
     int Wait(-1);
     //not so sure about this setting result limits in the prepare
     //int resultLimit(0);
@@ -109,6 +108,7 @@ ESPrequest ExecuteSQLRequest
     string TargetCluster; //where should this compile and execute
     string TargetQuerySet; //pertaining to Stored Proc calls
     boolean IncludeResults(true);
+    boolean SuppressXmlSchema(true);
     int Wait(-1);
     int resultLimit(0);
     int ResultWindowStart(0);
@@ -117,7 +117,6 @@ ESPrequest ExecuteSQLRequest
 
 ESPresponse [exceptions_inline] ExecuteSQLResponse
 {
-    //string WuId;
     string ParentWuId;
     string Result;
     ESPstruct ECLWorkunit Workunit;
@@ -133,6 +132,7 @@ ESPrequest ExecutePreparedSQLRequest
     string TargetCluster; //where should this execute
     string TargetQuerySet; //pertaining to Stored Proc calls
     boolean IncludeResults(true);
+    boolean SuppressXmlSchema(true);
     int Wait(-1);
     int resultLimit(0);
     int ResultWindowStart(0);
@@ -187,7 +187,7 @@ ESPresponse [exceptions_inline] GetDBMetaDataResponse
 ESPrequest GetResultsRequest
 {
     string  WuId;
-    boolean SuppressXmlSchema;
+    boolean SuppressXmlSchema(true);
     int     ResultWindowStart(0);
     int     ResultWindowCount(0);
 };
