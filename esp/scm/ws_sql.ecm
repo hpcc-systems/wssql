@@ -107,7 +107,7 @@ ESPrequest ExecuteSQLRequest
     string UserName;
     string TargetCluster; //where should this compile and execute
     string TargetQuerySet; //pertaining to Stored Proc calls
-    boolean IncludeResults(true);
+    boolean SuppressResults(false);
     boolean SuppressXmlSchema(true);
     int Wait(-1);
     int resultLimit(0);
@@ -131,7 +131,7 @@ ESPrequest ExecutePreparedSQLRequest
     string UserName;
     string TargetCluster; //where should this execute
     string TargetQuerySet; //pertaining to Stored Proc calls
-    boolean IncludeResults(true);
+    boolean SuppressResults(true);
     boolean SuppressXmlSchema(true);
     int Wait(-1);
     int resultLimit(0);
