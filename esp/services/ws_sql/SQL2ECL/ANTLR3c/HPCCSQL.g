@@ -174,19 +174,24 @@ POWER_OP    : '^' ;
 GTH         : '>' ;
 LTH         : '<' ;
 
-fragment LETTERS
+fragment LETTER_FRAGMENT
 :
     ( 'A'..'Z' | 'a'..'z')
 ;
 
 INTEGER_NUM
 :
-  ('0'..'9')+
+    DIGIT_FRAGMENT+
+;
+
+fragment DIGIT_FRAGMENT
+:
+    ( '0'..'9')
 ;
 
 fragment HEX_DIGIT_FRAGMENT
 :
-  ( 'a'..'f' | 'A'..'F' | '0'..'9' )
+   ( 'a'..'f' | 'A'..'F' | DIGIT_FRAGMENT )
 ;
 
 HEX_DIGIT
@@ -206,7 +211,7 @@ BIT_NUM
 REAL_NUMBER
 :
   (  INTEGER_NUM DOT INTEGER_NUM | INTEGER_NUM DOT | DOT INTEGER_NUM | INTEGER_NUM  )
-  (  ('E'|'e') ( PLUS | MINUS )? INTEGER_NUM  )?
+  (  (Ei) ( PLUS | MINUS )? INTEGER_NUM  )?
 ;
 
 TEXT_STRING
@@ -233,12 +238,12 @@ quoted_id
 
 ID
 :
-   LETTERS ( ID_FRAGMENT )*
+   LETTER_FRAGMENT ( ID_FRAGMENT )*
 ;
 
 fragment ID_FRAGMENT
 :
-  ( LETTERS | '_' | INTEGER_NUM | '::' )
+  ( LETTER_FRAGMENT | '_' | INTEGER_NUM | '::' )
 ;
 
 WHITE_SPACE
@@ -531,20 +536,14 @@ join_condition
 
 index_hint
 :
-  USE_SYM INDEX_SYM LPAREN ( index_name | v='0' ) RPAREN -> {$v != NULL}? ^(TOKEN_AVOID_INDEX index_name)
+  USE_SYM INDEX_SYM LPAREN ( index_name | v= 'NONE' ) RPAREN -> {$v != NULL}? ^(TOKEN_AVOID_INDEX index_name)
                                                          -> ^(TOKEN_INDEX_HINT index_name)
-;
-
-index_list
-:
-  index_name (COMMA index_name)*
 ;
 
 root_statement
 @init
 {
 }
-
 :
   ( data_manipulation_statements)(SEMI)? -> ^(TOKEN_ROOT data_manipulation_statements)
 ;
@@ -602,7 +601,6 @@ orderby_item
 :
   column_spec^ (ASC! | DESC)?
 ;
-
 
 limit_clause
 :
