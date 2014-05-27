@@ -120,8 +120,8 @@ void ECLEngine::generateIndexSetupAndFetch(SQLTable * table, int tableindex, HPC
                 idxsetupstr.append(" }");
             }
 
+            //Note, currently '~' is not valid char, if it is ever allowed, we'd have verify that the file name does not lead off with ~
             idxsetupstr.appendf(",\'~%s\');\n",indexfile->getFullname());
-            //idxsetupstr.append(",\'~").append(indexfile->getFullname()).append("\');\n");
 
             eclEntities->appendProp("IndexDef", idxsetupstr.str());
 
@@ -237,14 +237,11 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
             else
             {
                 out.appendf("%s := INDEX( {", currntTblDS.str());
-                //out.append(currntTblDS);
-                //out.append(" := INDEX( {");
                 file->getKeyedFieldsAsDelimitedString(',', "TblDS0RecDef", out);
                 out.append("},{");
                 file->getNonKeyedFieldsAsDelmitedString(',', "TblDS0RecDef", out);
-                out.appendf("},%s\');\n",file->getFullname());
-                //out.append("},");
-                //out.append("\'~").append(file->getFullname()).append("\');\n");
+                //Note, currently '~' is not valid char, if it is ever allowed, we'd have verify that the file name does not lead off with ~
+                out.appendf("},\'~%s\');\n",file->getFullname());
             }
 
             if (tableidx > 0)
