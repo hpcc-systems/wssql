@@ -240,7 +240,7 @@ bool HPCCFileCache::cacheHpccFileByName(const char * filename)
 
 HPCCFilePtr HPCCFileCache::getHpccFileByName(const char * filename)
 {
-    return *(cache.getValue(filename));
+    return isHpccFileCached(filename) ? *(cache.getValue(filename)) : NULL;
 }
 
 bool HPCCFileCache::isHpccFileCached(const char * filename)
