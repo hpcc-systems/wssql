@@ -820,7 +820,7 @@ bool Cws_sqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, I
             resp.setResultWindowCount( (unsigned)resultWindowCount);
             resp.setResultWindowStart( (unsigned)resultWindowStart);
 
-            if (req.getIncludeResults())
+            if (!req.getSuppressResults())
             {
                 StringBuffer result;
                 if (getWUResult(context, runningwuid.str(), result, (unsigned)resultWindowStart, (unsigned)resultWindowCount, 0, req.getSuppressXmlSchema() ? NULL : WSSQLRESULTSCHEMA))
@@ -991,7 +991,7 @@ bool Cws_sqlEx::onExecutePreparedSQL(IEspContext &context, IEspExecutePreparedSQ
            if (resultWindowStart < 0 || resultWindowCount <0 )
                throw MakeStringException(-1,"Invalid result window value");
 
-           if (req.getIncludeResults())
+           if (!req.getSuppressResults())
            {
                StringBuffer result;
                if (getWUResult(context, runningWuId.str(), result, (unsigned)resultWindowStart, (unsigned)resultWindowCount, 0, req.getSuppressXmlSchema() ? NULL : WSSQLRESULTSCHEMA))
