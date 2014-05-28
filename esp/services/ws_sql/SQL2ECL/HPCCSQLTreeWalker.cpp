@@ -73,7 +73,7 @@ void HPCCSQLTreeWalker::fromTreeWalker(pANTLR3_BASE_TREE fromsqlAST)
             pANTLR3_BASE_TREE onclausenode = NULL;
 
             SQLJoinType jointype = SQLJoinTypeUnknown;
-            if (tokenType != ID && tokenType != TOKEN_INDEX_HINT && tokenType != TOKEN_AVOID_INDEX)
+            if (tokenType != ABSOLUTE_FILE_ID && tokenType != ID && tokenType != TOKEN_INDEX_HINT && tokenType != TOKEN_AVOID_INDEX)
             {
                 if (tokenType == TOKEN_OUTTER_JOIN)
                     jointype = SQLJoinTypeOuter;
@@ -92,10 +92,9 @@ void HPCCSQLTreeWalker::fromTreeWalker(pANTLR3_BASE_TREE fromsqlAST)
                 tokenType = ithchild->getType(ithchild);
             }
 
-            if (tokenType == ID)
+            if (tokenType == ID || tokenType == ABSOLUTE_FILE_ID)
             {
                 tablename = (char *)ithchild->toString(ithchild)->chars;
-                temptable->setName(tablename);
 
                 int tablechildcount = ithchild->getChildCount(ithchild);
 
@@ -115,10 +114,12 @@ void HPCCSQLTreeWalker::fromTreeWalker(pANTLR3_BASE_TREE fromsqlAST)
                     {
                         pANTLR3_BASE_TREE indexhint = (pANTLR3_BASE_TREE)tablechild->getChild(tablechild, 0);
                         tablealias = (char *)indexhint->toString(indexhint)->chars;
-                        temptable->setIndexhint(tablealias);
 
-                        if (!tmpHPCCFileCache->cacheHpccFileByName(tablealias))
+                        const char * fullindexhintname = tmpHPCCFileCache->cacheHpccFileByName(tablealias);
+                        if (!fullindexhintname || !*fullindexhintname)
                             ERRLOG("Invalid index hint found: %s\n", tablealias);
+                        else
+                            temptable->setIndexhint(fullindexhintname);
                     }
                     else if ( childType == TOKEN_AVOID_INDEX)
                     {
@@ -130,8 +131,11 @@ void HPCCSQLTreeWalker::fromTreeWalker(pANTLR3_BASE_TREE fromsqlAST)
                     }
                 }
 
-                if (!tmpHPCCFileCache->cacheHpccFileByName(tablename))
-                    throw MakeStringException(-1, "Invalid table name detected: %s\n", tablename);
+                const char * fullTableName = tmpHPCCFileCache->cacheHpccFileByName(tablename);
+                if (!fullTableName || !*fullTableName)
+                    throw MakeStringException(-1, "Invalid table name or file type not supported: %s\n", tablename);
+                else
+                    temptable->setName(fullTableName);
 
                 tableList.append(*temptable.getLink());
 
