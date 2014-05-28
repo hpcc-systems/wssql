@@ -77,7 +77,7 @@ bool HPCCFileCache::fetchHpccFilesByTableName(IArrayOf<SQLTable> * sqltables, Hp
     ForEachItemIn(tableindex, *sqltables)
     {
        SQLTable table = sqltables->item(tableindex);
-       allFound &= cacheHpccFileByName(table.getName());
+       allFound &= (strcmp(cacheHpccFileByName(table.getName()),table.getName())==0);
     }
 
     return allFound;
@@ -111,16 +111,16 @@ bool HPCCFileCache::cacheAllHpccFiles(const char * filterby)
        StringBuffer name(attr.queryProp("@name"));
 
        if (name.length()>0)
-           success &= cacheHpccFileByName(name.str());
+           success &= (strcmp(cacheHpccFileByName(name.str()), name.str())==0);
     }
 
     return success;
 }
 
-bool HPCCFileCache::cacheHpccFileByName(const char * filename)
+const char * HPCCFileCache::cacheHpccFileByName(const char * filename)
 {
     if(cache.getValue(filename))
-        return true;
+        return filename;
 
     Owned<HPCCFile> file;
 
@@ -132,10 +132,16 @@ bool HPCCFileCache::cacheHpccFileByName(const char * filename)
         if(!df)
             throw MakeStringException(-1,"Cannot find file %s.",filename);
 
-        file.setown(HPCCFile::createHPCCFile());
-        const char* lname=df->queryLogicalName(), *fname=strrchr(lname,':');
-        file->setFullname(lname);
-        file->setName(fname ? fname+1 : lname);
+        const char* lname=df->queryLogicalName();
+        if (lname && *lname)
+        {
+            file.setown(HPCCFile::createHPCCFile());
+            const char* fname=strrchr(lname,':');
+            file->setFullname(lname);
+            file->setName(fname ? fname+1 : lname);
+        }
+        else
+            throw MakeStringException(-1,"Cannot find file %s.",filename);
 
         //Do we care about the clusters??
         //StringArray clusters;
@@ -156,6 +162,8 @@ bool HPCCFileCache::cacheHpccFileByName(const char * filename)
 
         if(properties.hasProp("ECL"))
             file->setEcl(properties.queryProp("ECL"));
+        else
+            throw MakeStringException(-1,"File %s does not contain required ECL record layout.",filename);
 
         //unfortunately @format sometimes holds the file format, sometimes @kind does
         const char * kind = properties.queryProp("@kind");
@@ -208,9 +216,9 @@ bool HPCCFileCache::cacheHpccFileByName(const char * filename)
                 {
                     StringBuffer s;
                     se->errorMessage(s);
-                    DBGLOG("Error fetching keyed file %s info: %s", fname, s.str());
+                    DBGLOG("Error fetching keyed file %s info: %s", filename, s.str());
                     se->Release();
-                    return false;
+                    return "";
                 }
             }
         }
@@ -227,15 +235,16 @@ bool HPCCFileCache::cacheHpccFileByName(const char * filename)
         se->errorMessage(s);
         DBGLOG("Error fetching HPCC file %s info: %s", filename, s.str());
         se->Release();
-        return false;
+        return "";
     }
 
     if (file)
+    {
         cache.setValue(file->getFullname(), file.getLink());
-    else
-        cache.setValue(filename, NULL); //avoid attempting to fetch next time
+        return file->getFullname();
+    }
 
-    return true;
+    return "";
 }
 
 HPCCFilePtr HPCCFileCache::getHpccFileByName(const char * filename)

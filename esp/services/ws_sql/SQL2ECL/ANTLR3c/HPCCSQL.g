@@ -114,7 +114,7 @@ LOWER       : (Li Oi Wi Ei Ri) | (Li Ci Ai Si Ei) ;
 MAX_SYM     : Mi Ai Xi  ;
 MIN_SYM     : Mi Ii Ni  ;
 MOD         : Mi Oi Di  ;
-NOT_SYM     : ('_'Ni Oi Ti) | (Ni Oi Ti) | ('!') ;
+NOT_SYM     : (UNDERSCORE Ni Oi Ti) | (Ni Oi Ti) | ('!') ;
 NULL_SYM    : Ni Ui Li Li  ;
 OFFSET_SYM  : Oi Fi Fi Si Ei Ti  ;
 ON          : Oi Ni  ;
@@ -148,7 +148,7 @@ GET         : '>=' ;
 SET_VAR     : ':=' ;
 SHIFT_LEFT  : '<<' ;
 SHIFT_RIGHT : '>>' ;
-ALL_FIELDS  : '.*' ;
+//ALL_FIELDS  : '.*' ;
 SQUOTE      : '\'' ;
 //DQUOTE      : '\"' ;
 DQUOTE      : '"' ;
@@ -173,6 +173,12 @@ BITAND      : '&' ;
 POWER_OP    : '^' ;
 GTH         : '>' ;
 LTH         : '<' ;
+
+fragment UNDERSCORE  : '_' ;
+
+fragment DCOLON      : '::' ;
+
+fragment DEFSCOPE    : DOT DCOLON ;
 
 fragment LETTER_FRAGMENT
 :
@@ -230,20 +236,37 @@ quoted_id
     DQUOTE! ID DQUOTE!
 ;
 
+quoted_table_id
+:
+    DQUOTE! (ABSOLUTE_FILE_ID | ID) DQUOTE!
+;
+
 //Cannot rewrite lexer rules see above parser rule
 //QUOTED_ID
 //:
 //  DQUOTE! ID DQUOTE!
 //;
 
+fragment ABSOLUTE_FILE_ID_PREFIX
+:
+    NEGATION |
+    DEFSCOPE |
+    NEGATION DEFSCOPE
+;
+
+ABSOLUTE_FILE_ID
+:
+    ABSOLUTE_FILE_ID_PREFIX ID
+;
+
 ID
 :
-   LETTER_FRAGMENT ( ID_FRAGMENT )*
+    LETTER_FRAGMENT ( ID_FRAGMENT )*
 ;
 
 fragment ID_FRAGMENT
 :
-  ( LETTER_FRAGMENT | '_' | INTEGER_NUM | '::' )
+    LETTER_FRAGMENT | UNDERSCORE | INTEGER_NUM | DCOLON
 ;
 
 WHITE_SPACE
@@ -326,8 +349,8 @@ group_functions
 
 query_set_name      : ID ;
 schema_name         : ID ;
-table_name          : ID ;
-quoted_table_name   : quoted_id ;
+table_name          : ABSOLUTE_FILE_ID | ID ;
+quoted_table_name   : quoted_table_id;
 engine_name         : ID ;
 column_name         : ID ;
 quoted_column_name  : quoted_id ;
