@@ -77,7 +77,8 @@ bool HPCCFileCache::fetchHpccFilesByTableName(IArrayOf<SQLTable> * sqltables, Hp
     ForEachItemIn(tableindex, *sqltables)
     {
        SQLTable table = sqltables->item(tableindex);
-       allFound &= (strcmp(cacheHpccFileByName(table.getName()),table.getName())==0);
+       const char * cachedKey = cacheHpccFileByName(table.getName());
+       allFound &= (cachedKey && *cachedKey);
     }
 
     return allFound;
@@ -111,7 +112,10 @@ bool HPCCFileCache::cacheAllHpccFiles(const char * filterby)
        StringBuffer name(attr.queryProp("@name"));
 
        if (name.length()>0)
-           success &= (strcmp(cacheHpccFileByName(name.str()), name.str())==0);
+       {
+           const char * cachedKey = cacheHpccFileByName(name.str());
+           success &= (cachedKey && *cachedKey);
+       }
     }
 
     return success;
