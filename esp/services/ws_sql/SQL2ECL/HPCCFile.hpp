@@ -25,6 +25,19 @@ limitations under the License.
 #include "hqlerror.hpp"
 #include "hqlexpr.hpp"
 
+/* undef SOCKET definitions to avoid collision in Antlrdefs.h*/
+#ifdef INVALID_SOCKET
+    //#pragma message( "UNDEFINING INVALID_SOCKET - Will be redefined by ANTLRDEFS.h" )
+    #undef INVALID_SOCKET
+#endif
+#ifdef SOCKET
+    //#pragma message( "UNDEFINING SOCKET - Will be redefined by ANTLRDEFS.h" )
+    #undef SOCKET
+#endif
+
+#include "HPCCSQLLexer.h"
+#include "HPCCSQLParser.h"
+
 typedef enum _HPCCFileFormat
 {
     HPCCFileFormatUnknown=-1,
@@ -154,6 +167,7 @@ public:
         this->name.set(name);
     }
 
+    static bool validateFileName(const char * fullname);
     void setKeyedColumn(const char * name);
     bool getFileRecDefwithIndexpos(HPCCColumnMetaData * fieldMetaData, StringBuffer & out, const char * structname);
     bool getFileRecDef(StringBuffer & out, const char * structname, const char * linedelimiter  = "\n", const char * recordindent  = "\t");
@@ -175,16 +189,26 @@ public:
     static HPCCFile * createHPCCFile();
 
     bool containsField(SQLColumn * field, bool verifyEclType) const;
-    void setIdxFilePosField(const char * idxfileposfieldname)
+    void setIdxFilePosField(const char* idxfileposfieldname)
     {
         idxFilePosField.set(idxfileposfieldname);
     }
 
+    bool containsNestedColumns() const
+    {
+        return hasNestedColumns;
+    }
+
+    void setHasNestedColumns(bool hasNestedColumns)
+    {
+        this->hasNestedColumns = hasNestedColumns;
+    }
+
 private:
-    void getFieldsAsDelmitedString(char delim, const char * prefix, StringBuffer & out, bool onlykeyed);
-    bool setFileColumns(const char * eclString);
+    void getFieldsAsDelmitedString(char delim, const char* prefix, StringBuffer& out, bool onlykeyed);
+    bool setFileColumns(const char* eclString);
     void setKeyCounts();
-    const char * getLastNonKeyedNumericField()
+    const char* getLastNonKeyedNumericField()
     {
         // TODO get numeric field
         for (int i = columns.length() - 1; i >= 0; i--)
@@ -195,6 +219,7 @@ private:
                return columns.item(i).getColumnName();
            }
         }
+
         return NULL;
     }
 
@@ -210,6 +235,7 @@ private:
     IArrayOf<HPCCColumnMetaData> columns;
     int keyedCount;
     int nonKeyedCount;
+    bool hasNestedColumns;
 };
 
 #endif /* HPCCFILE_HPP_ */

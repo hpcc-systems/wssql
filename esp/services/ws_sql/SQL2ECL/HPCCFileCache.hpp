@@ -38,7 +38,7 @@ public:
     static HPCCFileCache * createFileCache(const char * username, const char * passwd);
     bool cacheAllHpccFiles(const char * filterby);
     bool fetchHpccFilesByTableName(IArrayOf<SQLTable> * sqltables, HpccFiles * hpccfilecache);
-    const char * cacheHpccFileByName(const char * filename);
+    const char * cacheHpccFileByName(const char * filename, bool namevalidated = false);
     bool isHpccFileCached(const char * filename);
     HPCCFilePtr getHpccFileByName(const char * filename);
     bool populateTablesResponse(IEspGetDBMetaDataResponse & tablesrespstruct, const char * filterby);
