@@ -30,6 +30,7 @@ HPCCFile::HPCCFile()
     issuperfile=false;
     keyedCount = -1;
     nonKeyedCount = -1;
+    hasNestedColumns = false;
 }
 
 HPCCFile::~HPCCFile()
@@ -40,6 +41,71 @@ HPCCFile::~HPCCFile()
 
     columns.kill(false);
 
+}
+
+bool HPCCFile::validateFileName(const char * fullname)
+{
+    if (!fullname || !*fullname)
+        return false;
+
+    pHPCCSQLLexer hpccSqlLexer = NULL;
+    pANTLR3_COMMON_TOKEN_STREAM sqlTokens = NULL;
+    pANTLR3_INPUT_STREAM sqlInputStream = NULL;
+
+    try
+    {
+
+        pANTLR3_UINT8 input_string = (pANTLR3_UINT8)fullname;
+        pANTLR3_INPUT_STREAM sqlinputstream = antlr3StringStreamNew(input_string,
+                ANTLR3_ENC_8BIT,
+                strlen(fullname),
+                (pANTLR3_UINT8)"File Name");
+
+        pHPCCSQLLexer hpccsqllexer = HPCCSQLLexerNew(sqlinputstream);
+
+        pANTLR3_COMMON_TOKEN_STREAM sqltokens = antlr3CommonTokenStreamSourceNew(ANTLR3_SIZE_HINT, TOKENSOURCE(hpccsqllexer));
+        if (sqltokens == NULL)
+        {
+            throw MakeStringException(-1, "Out of memory trying to allocate ANTLR HPCCSQLParser token stream.");
+        }
+
+        pANTLR3_VECTOR tvect = sqltokens->getTokens(sqltokens);
+        for (int i = 0; i < tvect->count; i++)
+        {
+            pANTLR3_COMMON_TOKEN  token = (pANTLR3_COMMON_TOKEN  )tvect->get(tvect, i);
+            if (token->type != ID && token->type != ABSOLUTE_FILE_ID_PREFIX)
+            {
+#if defined _DEBUG
+    fprintf(stderr, "\nNot reporting file %s as supported.\n", fullname);
+#endif
+                return false;
+            }
+        }
+
+        sqltokens->free(sqltokens);
+        hpccsqllexer->free(hpccsqllexer);
+        sqlinputstream->free(sqlinputstream);
+    }
+    catch(...)
+    {
+        try
+        {
+            if (sqlTokens)
+                sqlTokens->free(sqlTokens);
+            if (hpccSqlLexer)
+                hpccSqlLexer->free(hpccSqlLexer);
+            if (sqlInputStream)
+                sqlInputStream->free(sqlInputStream);
+        }
+        catch (...)
+        {
+            ERRLOG("!!! Unable to free HPCCSQL parser/lexer objects.");
+        }
+
+        return false;
+    }
+
+    return true;
 }
 
 bool HPCCFile::getFileRecDef(StringBuffer & out, const char * structname, const char * linedelimiter, const char * recordindent)
@@ -138,6 +204,9 @@ bool HPCCFile::setFileColumns(const char * eclString)
     ForEach(*fields)
     {
       fields->query().getProp("@ecltype", ecltype.clear());
+      if (strncmp(ecltype, "table of", 8)==0)
+          setHasNestedColumns(true);
+
       fields->query().getProp("@name", colname.clear());
       colsize = fields->query().getPropInt("@size", -1);
       colindex = fields->query().getPropInt("@position", -1);

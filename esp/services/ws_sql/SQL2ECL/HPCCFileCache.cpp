@@ -111,9 +111,9 @@ bool HPCCFileCache::cacheAllHpccFiles(const char * filterby)
 
        StringBuffer name(attr.queryProp("@name"));
 
-       if (name.length()>0)
+       if (name.length()>0 && HPCCFile::validateFileName(name.str()))
        {
-           const char * cachedKey = cacheHpccFileByName(name.str());
+           const char * cachedKey = cacheHpccFileByName(name.str(), true);
            success &= (cachedKey && *cachedKey);
        }
     }
@@ -121,7 +121,7 @@ bool HPCCFileCache::cacheAllHpccFiles(const char * filterby)
     return success;
 }
 
-const char * HPCCFileCache::cacheHpccFileByName(const char * filename)
+const char * HPCCFileCache::cacheHpccFileByName(const char * filename, bool namevalidated)
 {
     if(cache.getValue(filename))
         return filename;
@@ -130,6 +130,7 @@ const char * HPCCFileCache::cacheHpccFileByName(const char * filename)
 
     try
     {
+        //queryDistributedFileDirectory returns singleton
         IDistributedFileDirectory & dfd = queryDistributedFileDirectory();
         Owned<IDistributedFile> df = dfd.lookup(filename, userdesc);
 
@@ -139,8 +140,11 @@ const char * HPCCFileCache::cacheHpccFileByName(const char * filename)
         const char* lname=df->queryLogicalName();
         if (lname && *lname)
         {
-            file.setown(HPCCFile::createHPCCFile());
+
             const char* fname=strrchr(lname,':');
+            if (!namevalidated && !HPCCFile::validateFileName(lname))
+                throw MakeStringException(-1,"Invalid SQL file name detected %s.", fname);
+            file.setown(HPCCFile::createHPCCFile());
             file->setFullname(lname);
             file->setName(fname ? fname+1 : lname);
         }
@@ -222,7 +226,8 @@ const char * HPCCFileCache::cacheHpccFileByName(const char * filename)
                     se->errorMessage(s);
                     DBGLOG("Error fetching keyed file %s info: %s", filename, s.str());
                     se->Release();
-                    return "";
+                    if (file)
+                        file.clear();
                 }
             }
         }
@@ -232,14 +237,15 @@ const char * HPCCFileCache::cacheHpccFileByName(const char * filename)
             const char* format = properties.queryProp("@format");
             file->setFormat(format);
         }
+
+        if (file && ( file->containsNestedColumns() || strncmp(file->getFormat(), "XML", 3)==0))
+            throw MakeStringException(-1,"Nested data files not supported: %s.",filename);
+
     }
-    catch (IException * se)
+    catch (...)
     {
-        StringBuffer s;
-        se->errorMessage(s);
-        DBGLOG("Error fetching HPCC file %s info: %s", filename, s.str());
-        se->Release();
-        return "";
+        if (file)
+            file.clear();
     }
 
     if (file)
