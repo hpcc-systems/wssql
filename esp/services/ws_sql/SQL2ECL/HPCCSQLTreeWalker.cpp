@@ -673,7 +673,7 @@ void HPCCSQLTreeWalker::expandWildCardColumn()
     {
         ISQLExpression * currexp = &selectList.item(selectcolidx);
 
-        if (currexp->needsColumnExpansion())
+        if (currexp && currexp->needsColumnExpansion())
         {
             if (currexp->getExpType()== Fields_ExpressionType && ((SQLFieldsExpression*)currexp)->isAll())
             {
