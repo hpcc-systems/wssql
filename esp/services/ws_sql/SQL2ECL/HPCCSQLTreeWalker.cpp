@@ -673,7 +673,7 @@ void HPCCSQLTreeWalker::expandWildCardColumn()
     {
         ISQLExpression * currexp = &selectList.item(selectcolidx);
 
-        if (currexp->needsColumnExpansion())
+        if (currexp && currexp->needsColumnExpansion())
         {
             if (currexp->getExpType()== Fields_ExpressionType && ((SQLFieldsExpression*)currexp)->isAll())
             {
@@ -689,10 +689,11 @@ void HPCCSQLTreeWalker::expandWildCardColumn()
                         {
                             HPCCColumnMetaData col = cols->item(colidx);
                             Owned<ISQLExpression> fve = new SQLFieldValueExpression(file->getFullname(),col.getColumnName());
-                            if (colidx == 0)
+                            if (tableidx == 0 && colidx == 0)
                             {
                                 selectList.replace(*fve.getLink(), selectcolidx, true);
-                                currexp->Release();
+                                if (currexp)
+                                    currexp->Release();
                             }
                             else
                                 selectList.add(*fve.getLink(),selectcolidx+ colidx );
