@@ -219,6 +219,21 @@ IF ("${COMMONSETUP_DONE}" STREQUAL "")
     add_library(${target} ${ARGN})
   endmacro(HPCC_ADD_LIBRARY target)
 
+  IF (MAKE_DOCS)
+    find_package(XSLTPROC)
+    IF (XSLTPROC_FOUND)
+      add_definitions (-D_USE_XSLTPROC)
+    ELSE()
+      message(FATAL_ERROR "XSLTPROC requested but package not found")
+    ENDIF()
+    find_package(FOP)
+    IF (FOP_FOUND)
+      add_definitions (-D_USE_FOP)
+    ELSE()
+      message(FATAL_ERROR "FOP requested but package not found")
+    ENDIF()
+  ENDIF(MAKE_DOCS)
+
   # This Macro is provided as Public domain from
   # http://www.cmake.org/Wiki/CMakeMacroParseArguments
   MACRO(PARSE_ARGUMENTS prefix arg_names option_names)
