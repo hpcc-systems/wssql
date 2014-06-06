@@ -1414,7 +1414,7 @@ bool Cws_sqlEx::publishWorkunit(IEspContext &context, const char * queryname, co
 
     StringBuffer queryId;
 
-    addQueryToQuerySet(wu, target.str(), queryName.str(), NULL, MAKE_ACTIVATE, queryId, context.queryUserId());
+    addQueryToQuerySet(wu, target.str(), queryName.str(), MAKE_ACTIVATE, queryId, context.queryUserId());
 
     wu->commit();
     wu.clear();
