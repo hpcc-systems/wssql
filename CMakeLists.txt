@@ -62,13 +62,24 @@ INCLUDE(${HPCC_SOURCE_DIR}/version.cmake)
 INCLUDE(${CMAKE_MODULE_PATH}/optionDefaults.cmake)
 INCLUDE(${CMAKE_MODULE_PATH}/commonSetup.cmake)
 
+
 IF ( NOT MAKE_DOCS_ONLY )
+    IF ( "${HPCC_MATURITY}" STREQUAL "release" )
+        set(hpccstagever "${HPCC_SEQUENCE}")
+    ELSE()
+        set(hpccstagever "${HPCC_MATURITY}${HPCC_SEQUENCE}")
+    ENDIF()
+    SET(HPCC_VERSION "${HPCC_MAJOR}.${HPCC_MINOR}.${HPCC_POINT}-${hpccstagever}")
+
     MESSAGE("-- Minimum HPCC Platform version required: ${HPCC_MAJOR_REQ}.${HPCC_MINOR_REQ}")
-    MESSAGE("--- Building against HPCC Platform version: ${HPCC_MAJOR}.${HPCC_MINOR}.${HPCC_POINT}-${HPCC_SEQUENCE}")
+    MESSAGE("--- Building against HPCC Platform version: ${HPCC_MAJOR}.${HPCC_MINOR}.${HPCC_POINT}-${HPCC_MATURITY}${HPCC_SEQUENCE}")
 
     IF (${HPCC_MAJOR_REQ} GREATER ${HPCC_MAJOR} OR ( ${HPCC_MAJOR_REQ} EQUAL ${HPCC_MAJOR} AND ${HPCC_MINOR_REQ} GREATER ${HPCC_MINOR} ))
-     MESSAGE(FATAL_ERROR "Project ${project} requires HPCC Platform version ${HPCC_MAJOR_REQ}.${HPCC_MINOR_REQ} or greater." )
+        MESSAGE(FATAL_ERROR "Project ${project} requires HPCC Platform version ${HPCC_MAJOR_REQ}.${HPCC_MINOR_REQ} or greater." )
     ENDIF()
+
+    SET ( VENDOR_NAME "HPCC SYSTEMS hpccsystems.com")
+    SET ( PROJECT_DESCRIPTION "This package provides a read-only SQL interface into HPCC Systems. Requires build ${HPCC_VERSION} or above")
 
     ## Platform Build Options
     OPTION(USE_EXTERNALS "Use the externals directory" OFF)
