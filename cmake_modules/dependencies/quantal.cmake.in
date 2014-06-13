@@ -1,2 +1,4 @@
+#UBUNTU 12.10
+MESSAGE("---BUILDING UBUNTU 12.10 which is not supported anymore---")
 set ( CPACK_DEBIAN_PACKAGE_DEPENDS "hpccsystems-platform (>= ${HPCC_VERSION})")
 set ( CPACK_RPM_PACKAGE_DESCRIPTION  "${PROJECT_DESCRIPTION}")
