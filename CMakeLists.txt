@@ -69,7 +69,9 @@ IF ( NOT MAKE_DOCS_ONLY )
     ELSE()
         set(hpccstagever "${HPCC_MATURITY}${HPCC_SEQUENCE}")
     ENDIF()
-    SET(HPCC_VERSION "${HPCC_MAJOR}.${HPCC_MINOR}.${HPCC_POINT}-${hpccstagever}")
+    #SET(HPCC_VERSION "${HPCC_MAJOR}.${HPCC_MINOR}.${HPCC_POINT}-${hpccstagever}")
+    #Due to unstandard HPCC versioning, we will only request versions up to the point value.
+    SET(HPCC_VERSION "${HPCC_MAJOR}.${HPCC_MINOR}.${HPCC_POINT}")
 
     MESSAGE("-- Minimum HPCC Platform version required: ${HPCC_MAJOR_REQ}.${HPCC_MINOR_REQ}")
     MESSAGE("--- Building against HPCC Platform version: ${HPCC_MAJOR}.${HPCC_MINOR}.${HPCC_POINT}-${HPCC_MATURITY}${HPCC_SEQUENCE}")
