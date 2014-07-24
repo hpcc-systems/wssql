@@ -630,10 +630,9 @@ HPCCSQLTreeWalker::HPCCSQLTreeWalker(pANTLR3_BASE_TREE ast, IEspContext &context
 
     if (sqlType == SQLTypeSelect)
     {
-        //verifyColAndDisabiguateName();
         assignParameterIndexes();
         expandWildCardColumn();
-        verifyColAndDisabiguateName();
+        verifyColAndDisambiguateName();
     }
     else if (sqlType == SQLTypeCall)
     {
@@ -752,7 +751,7 @@ ISQLExpression * HPCCSQLTreeWalker::getHavingClause()
     return havingClause.get();
 }
 
-void HPCCSQLTreeWalker::verifyAndDisabiguateNameFromList(IArrayOf<ISQLExpression> * explist)
+void HPCCSQLTreeWalker::verifyAndDisambiguateNameFromList(IArrayOf<ISQLExpression> * explist)
 {
     if (explist)
     {
@@ -760,27 +759,31 @@ void HPCCSQLTreeWalker::verifyAndDisabiguateNameFromList(IArrayOf<ISQLExpression
         for (int i = 0; i < bycount; i++)
         {
             bool found = false;
-            ISQLExpression * ordercol =  &explist->item(i);
+            ISQLExpression * coltoverify =  &explist->item(i);
 
             ForEachItemIn(sellistidx, selectList)
             {
                 ISQLExpression * selcolexp = &selectList.item(sellistidx);
                 const char * selcolname = selcolexp->getName();
-                const char * selcolalias = selcolexp->getAlias();
-                if (stricmp (ordercol->getName(), selcolname)==0 ||
-                   (selcolalias != NULL && stricmp (ordercol->getName(), selcolalias)==0))
+                if (selcolname && *selcolname)
                 {
-                    ordercol->setName(selcolname);
-                    if (selcolexp->getAlias() != NULL)
+                    const char * selcolalias = selcolexp->getAlias();
+
+                    if (stricmp (coltoverify->getName(), selcolname)==0 ||
+                       (selcolalias != NULL && stricmp (coltoverify->getName(), selcolalias)==0))
                     {
-                        ordercol->setAlias(selcolalias);
-                        found = true;
-                        break;
+                        coltoverify->setName(selcolname);
+                        if (selcolexp->getAlias() != NULL)
+                        {
+                            coltoverify->setAlias(selcolalias);
+                            found = true;
+                            break;
+                        }
                     }
                 }
             }
             if (!found)
-                throw MakeStringException(-1, "Could not verify field: %s", ordercol->getName());
+                throw MakeStringException(-1, "Could not verify field: %s", coltoverify->getName());
         }
     }
 }
@@ -803,7 +806,7 @@ void HPCCSQLTreeWalker::verifyColumn(SQLFieldValueExpression * col )
                     if (fcol)
                         col->setECLType(fcol->getColumnType());
                     else
-                        throw MakeStringException(-1, "INVALID COLUMN FOUND: %s\n", selcolname );
+                        throw MakeStringException(-1, "INVALID COLUMN FOUND: %s.%s\n", selcolparent, selcolname );
                 }
                 else
                     throw MakeStringException(-1, "Could not verify a column\n");
@@ -818,7 +821,7 @@ void HPCCSQLTreeWalker::verifyColumn(SQLFieldValueExpression * col )
         throw MakeStringException(-1, "Could not verify a column\n");
 }
 
-void HPCCSQLTreeWalker::verifyColAndDisabiguateName()
+void HPCCSQLTreeWalker::verifyColAndDisambiguateName()
 {
     ForEachItemIn(sellistidx, selectList)
     {
@@ -845,14 +848,14 @@ void HPCCSQLTreeWalker::verifyColAndDisabiguateName()
            }
         }
         else
-            throw MakeStringException(-1, "Could not process a entry on the select list");
+            throw MakeStringException(-1, "Could not process an entry on the select list");
     }
 
     if (orderbyList.length())
-        verifyAndDisabiguateNameFromList(&orderbyList);
+        verifyAndDisambiguateNameFromList(&orderbyList);
 
     if (groupbyList.length())
-        verifyAndDisabiguateNameFromList(&groupbyList);
+        verifyAndDisambiguateNameFromList(&groupbyList);
 }
 
 bool HPCCSQLTreeWalker::normalizeSQL()
