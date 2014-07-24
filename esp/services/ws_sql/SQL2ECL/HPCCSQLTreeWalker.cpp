@@ -321,7 +321,7 @@ ISQLExpression * HPCCSQLTreeWalker::expressionTreeWalker(pANTLR3_BASE_TREE exprA
                         tmpfve->setParentTableName(colparent);
                     }
                     else
-                        throw MakeStringException(-1, "AMBIGUOUS SELECT COLUMN FOUND: %s\n", colname);
+                        throw MakeStringException(-1, "AMBIGUOUS COLUMN FOUND: %s\n", colname);
                 }
                 else
                 {
@@ -341,10 +341,10 @@ ISQLExpression * HPCCSQLTreeWalker::expressionTreeWalker(pANTLR3_BASE_TREE exprA
                     {
                         StringBuffer msg;
                         tmpfve->toString(msg, true);
-                        throw MakeStringException(-1, "INVALID SELECT COLUMN FOUND (parent table unknown): %s\n", msg.str() );
+                        throw MakeStringException(-1, "INVALID COLUMN FOUND (parent table unknown): %s\n", msg.str() );
                     }
                 }
-
+/*
                 HPCCFilePtr file = dynamic_cast<HPCCFile *>(tmpHPCCFileCache->getHpccFileByName(tmpfve->getParentTableName()));
 
                 if (file)
@@ -353,9 +353,9 @@ ISQLExpression * HPCCSQLTreeWalker::expressionTreeWalker(pANTLR3_BASE_TREE exprA
                     if (col)
                         tmpfve->setECLType(col->getColumnType());
                     else
-                        throw MakeStringException(-1, "INVALID SELECT COLUMN FOUND: %s\n", colname );
+                        throw MakeStringException(-1, "INVALID COLUMN FOUND: %s\n", colname );
                 }
-
+*/
                 tmpexp.setown(tmpfve.getLink());
                 break;
             }
@@ -630,9 +630,10 @@ HPCCSQLTreeWalker::HPCCSQLTreeWalker(pANTLR3_BASE_TREE ast, IEspContext &context
 
     if (sqlType == SQLTypeSelect)
     {
-        verifyColAndDisabiguateName();
+        //verifyColAndDisabiguateName();
         assignParameterIndexes();
         expandWildCardColumn();
+        verifyColAndDisabiguateName();
     }
     else if (sqlType == SQLTypeCall)
     {
@@ -751,29 +752,107 @@ ISQLExpression * HPCCSQLTreeWalker::getHavingClause()
     return havingClause.get();
 }
 
-void HPCCSQLTreeWalker::verifyColAndDisabiguateName()
+void HPCCSQLTreeWalker::verifyAndDisabiguateNameFromList(IArrayOf<ISQLExpression> * explist)
 {
-    int orderbycount = orderbyList.length();
-    for (int i = 0; i < orderbycount; i++)
+    if (explist)
     {
-        ISQLExpression * ordercol =  &orderbyList.item(i);
-
-        ForEachItemIn(sellistidx, selectList)
+        int bycount = explist->length();
+        for (int i = 0; i < bycount; i++)
         {
-            ISQLExpression * selcolexp = &selectList.item(sellistidx);
-            const char * selcolname = selcolexp->getName();
-            const char * selcolalias = selcolexp->getAlias();
-            if (stricmp (ordercol->getName(), selcolname)==0 ||
-                    (selcolalias != NULL && stricmp (ordercol->getName(), selcolalias)==0))
+            bool found = false;
+            ISQLExpression * ordercol =  &explist->item(i);
+
+            ForEachItemIn(sellistidx, selectList)
             {
-                ordercol->setName(selcolname);
-                if (selcolexp->getAlias() != NULL)
-                    ordercol->setAlias(selcolalias);
-                     // found = true;
-                  break;
+                ISQLExpression * selcolexp = &selectList.item(sellistidx);
+                const char * selcolname = selcolexp->getName();
+                const char * selcolalias = selcolexp->getAlias();
+                if (stricmp (ordercol->getName(), selcolname)==0 ||
+                   (selcolalias != NULL && stricmp (ordercol->getName(), selcolalias)==0))
+                {
+                    ordercol->setName(selcolname);
+                    if (selcolexp->getAlias() != NULL)
+                    {
+                        ordercol->setAlias(selcolalias);
+                        found = true;
+                        break;
+                    }
+                }
             }
+            if (!found)
+                throw MakeStringException(-1, "Could not verify field: %s", ordercol->getName());
         }
     }
+}
+
+void HPCCSQLTreeWalker::verifyColumn(SQLFieldValueExpression * col )
+{
+    if (col)
+    {
+        const char * selcolname = col->getName();
+        const char * selcolparent = col->getParentTableName();
+
+        if (selcolname && *selcolname)
+        {
+            HPCCFilePtr file = dynamic_cast<HPCCFile *>(tmpHPCCFileCache->getHpccFileByName(selcolparent));
+            if (file)
+            {
+                if (selcolname && *selcolname)
+                {
+                    HPCCColumnMetaData * fcol = file->getColumn(selcolname);
+                    if (fcol)
+                        col->setECLType(fcol->getColumnType());
+                    else
+                        throw MakeStringException(-1, "INVALID COLUMN FOUND: %s\n", selcolname );
+                }
+                else
+                    throw MakeStringException(-1, "Could not verify a column\n");
+            }
+            else
+                throw MakeStringException(-1, "INVALID COLUMN PARENT FOUND: %s.%s\n", selcolparent, selcolname );
+        }
+        else
+            throw MakeStringException(-1, "Could not verify a column\n");
+    }
+    else
+        throw MakeStringException(-1, "Could not verify a column\n");
+}
+
+void HPCCSQLTreeWalker::verifyColAndDisabiguateName()
+{
+    ForEachItemIn(sellistidx, selectList)
+    {
+        ISQLExpression * selcolexp = &selectList.item(sellistidx);
+        if (selcolexp && selcolexp->getExpType() == FieldValue_ExpressionType)
+        {
+            SQLFieldValueExpression * currentselectcol = dynamic_cast<SQLFieldValueExpression *>(selcolexp);
+            verifyColumn(currentselectcol);
+        }
+
+        else if (selcolexp && selcolexp->getExpType() == Function_ExpressionType)
+        {
+           SQLFunctionExpression * currentfunccol = dynamic_cast<SQLFunctionExpression *>(selcolexp);
+
+           IArrayOf<ISQLExpression> * funcparams = currentfunccol->getParams();
+           ForEachItemIn(paramidx, *funcparams)
+           {
+               ISQLExpression * param = &(funcparams->item(paramidx));
+               if (param && param->getExpType() == FieldValue_ExpressionType)
+               {
+                   SQLFieldValueExpression * currentselectcol = dynamic_cast<SQLFieldValueExpression *>(param);
+                   verifyColumn(currentselectcol);
+               }
+           }
+        }
+        else
+            throw MakeStringException(-1, "Could not process a entry on the select list");
+    }
+
+    if (orderbyList.length())
+        verifyAndDisabiguateNameFromList(&orderbyList);
+
+    if (groupbyList.length())
+        verifyAndDisabiguateNameFromList(&groupbyList);
 }
 
 bool HPCCSQLTreeWalker::normalizeSQL()

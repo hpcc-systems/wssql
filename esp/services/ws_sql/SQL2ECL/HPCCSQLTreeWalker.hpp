@@ -83,7 +83,9 @@ private:
     void fromTreeWalker(pANTLR3_BASE_TREE fromsqlAST);
     void limitTreeWalker(pANTLR3_BASE_TREE limitAST);
     void processAllColumns(HpccFiles *  availableFiles);
+    void verifyColumn(SQLFieldValueExpression * col );
     void verifyColAndDisabiguateName();
+    void verifyAndDisabiguateNameFromList(IArrayOf<ISQLExpression> * explist);
     void assignParameterIndexes();
     int parameterizedCount;
 
