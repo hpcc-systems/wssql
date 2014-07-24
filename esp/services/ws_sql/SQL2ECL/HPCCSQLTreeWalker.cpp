@@ -344,18 +344,7 @@ ISQLExpression * HPCCSQLTreeWalker::expressionTreeWalker(pANTLR3_BASE_TREE exprA
                         throw MakeStringException(-1, "INVALID COLUMN FOUND (parent table unknown): %s\n", msg.str() );
                     }
                 }
-/*
-                HPCCFilePtr file = dynamic_cast<HPCCFile *>(tmpHPCCFileCache->getHpccFileByName(tmpfve->getParentTableName()));
 
-                if (file)
-                {
-                    HPCCColumnMetaData * col = file->getColumn(colname);
-                    if (col)
-                        tmpfve->setECLType(col->getColumnType());
-                    else
-                        throw MakeStringException(-1, "INVALID COLUMN FOUND: %s\n", colname );
-                }
-*/
                 tmpexp.setown(tmpfve.getLink());
                 break;
             }
@@ -828,13 +817,12 @@ void HPCCSQLTreeWalker::verifyColAndDisambiguateName()
         ISQLExpression * selcolexp = &selectList.item(sellistidx);
         if (selcolexp && selcolexp->getExpType() == FieldValue_ExpressionType)
         {
-            SQLFieldValueExpression * currentselectcol = dynamic_cast<SQLFieldValueExpression *>(selcolexp);
-            verifyColumn(currentselectcol);
+            verifyColumn((SQLFieldValueExpression * )selcolexp);
         }
 
         else if (selcolexp && selcolexp->getExpType() == Function_ExpressionType)
         {
-           SQLFunctionExpression * currentfunccol = dynamic_cast<SQLFunctionExpression *>(selcolexp);
+            SQLFunctionExpression * currentfunccol = (SQLFunctionExpression *)selcolexp;
 
            IArrayOf<ISQLExpression> * funcparams = currentfunccol->getParams();
            ForEachItemIn(paramidx, *funcparams)
@@ -842,8 +830,7 @@ void HPCCSQLTreeWalker::verifyColAndDisambiguateName()
                ISQLExpression * param = &(funcparams->item(paramidx));
                if (param && param->getExpType() == FieldValue_ExpressionType)
                {
-                   SQLFieldValueExpression * currentselectcol = dynamic_cast<SQLFieldValueExpression *>(param);
-                   verifyColumn(currentselectcol);
+                   verifyColumn((SQLFieldValueExpression *)param);
                }
            }
         }
