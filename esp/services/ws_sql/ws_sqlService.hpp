@@ -58,8 +58,6 @@ private:
 
     IPropertyTree *cfg;
     std::map<std::string,std::string> cachedSQLQueries;
-    Owned<IEnvironmentFactory>  m_envFactory;
-    CTpWrapper                  m_TpWrapper;
 
 public:
     IMPLEMENT_IINTERFACE;

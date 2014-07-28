@@ -31,7 +31,6 @@ void Cws_sqlEx::init(IPropertyTree *_cfg, const char *_process, const char *_ser
     }
 
     refreshValidClusters();
-    m_envFactory.setown( getEnvironmentFactory() );
 }
 
 bool Cws_sqlEx::onEcho(IEspContext &context, IEspEchoRequest &req, IEspEchoResponse &resp)
@@ -194,29 +193,26 @@ bool Cws_sqlEx::onGetDBMetaData(IEspContext &context, IEspGetDBMetaDataRequest &
        }
         resp.setQuerySets(pquerysets);
     }
+
     bool includeTargetClusters = req.getIncludeTargetClusters();
     if (includeTargetClusters)
     {
         try
         {
-            //another client (like configenv) may have updated the constant environment so reload it
-            m_envFactory->validateCache();
 
-            IArrayOf<IEspTpCluster> clusters;
-            const char* type = req.getClusterType();
-            if (!type || !*type || (strcmp(eqRootNode,type) == 0) || (strcmp(eqAllClusters,type) == 0))
-            {
-                m_TpWrapper.getClusterProcessList(eqHoleCluster, clusters);
-                m_TpWrapper.getClusterProcessList(eqThorCluster, clusters);
-                m_TpWrapper.getClusterProcessList(eqRoxieCluster,clusters);
-            }
-            else
-            {
-                m_TpWrapper.getClusterProcessList(type,clusters);
-            }
-            double version = context.getClientVersion();
+            CTpWrapper topologyWrapper;
+            IArrayOf<IEspTpLogicalCluster> clusters;
+            topologyWrapper.getTargetClusterList(clusters, req.getClusterType(), NULL);
 
-            resp.setTpClusters(clusters);
+            StringArray dfuclusters;
+
+            ForEachItemIn(k, clusters)
+            {
+                IEspTpLogicalCluster& cluster = clusters.item(k);
+                dfuclusters.append(cluster.getName());
+            }
+
+            resp.setClusterNames(dfuclusters);
         }
         catch(IException* e)
         {
@@ -681,6 +677,7 @@ bool Cws_sqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, I
         if (!context.validateFeatureAccess(WSSQLACCESS, SecAccess_Write, false))
             throw MakeStringException(-1, "Failed to execute SQL. Permission denied.");
 
+
         StringBuffer sqltext;
         StringBuffer ecltext;
         StringBuffer username;
@@ -706,7 +703,8 @@ bool Cws_sqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, I
         Owned<HPCCSQLTreeWalker> parsedSQL;
         parsedSQL.setown(parseSQL(context, sqltext));
 
-        if (parsedSQL->getSqlType() == SQLTypeCall)
+        SQLQueryType querytype = parsedSQL->getSqlType();
+        if (querytype == SQLTypeCall)
         {
             if (strlen(parsedSQL->getQuerySetName())==0)
             {
@@ -728,8 +726,11 @@ bool Cws_sqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, I
         }
         else
         {
-            if (parsedSQL->getSqlType() == SQLTypeCall)
+            if (querytype == SQLTypeCall)
             {
+                if (!isEmpty(cluster))
+                    throw MakeStringException(-1,"Cannot set target Cluster on a query of type CALL.");
+
                 WsEclWuInfo wsinfo("", parsedSQL->getQuerySetName(), parsedSQL->getStoredProcName(), username.str(), passwd);
                 compiledwuid.set(wsinfo.ensureWuid());
 
@@ -787,12 +788,14 @@ bool Cws_sqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, I
         }
         else
         {
-            //const char *cluster = req.getCluster();
-            //if (notEmpty(cluster) && !isValidCluster(cluster))
-            //   throw MakeStringException(ECLWATCH_INVALID_CLUSTER_NAME, "Invalid cluster name: %s", cluster);
 
-            if (parsedSQL->getSqlType() == SQLTypeCall)
+            if (querytype == SQLTypeCall)
                 createXMLParams(xmlparams, parsedSQL, NULL, cw);
+            else if (querytype == SQLTypeSelect)
+            {
+                if (notEmpty(cluster) && !isValidCluster(cluster))
+                    throw MakeStringException(ECLWATCH_INVALID_CLUSTER_NAME, "Invalid cluster name: %s", cluster);
+            }
 
             StringBuffer runningwuid;
 
@@ -1124,7 +1127,7 @@ bool Cws_sqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, I
                 wu->commit();
                 wu.clear();
 
-                WsWuHelpers::submitWsWorkunit(context, wuid.str(), req.getTargetCluster(), NULL, 0, true, false, false, xmlparams.str(), NULL, NULL);
+                WsWuHelpers::submitWsWorkunit(context, wuid.str(), cluster, NULL, 0, true, false, false, xmlparams.str(), NULL, NULL);
                 waitForWorkUnitToCompile(wuid.str(), req.getWait());
             }
 

@@ -181,7 +181,7 @@ ESPresponse [exceptions_inline] GetDBMetaDataResponse
     ESParray<ESPstruct HPCCTable, Table> Tables;
     integer TableCount;
     ESParray<ESPstruct HPCCQuerySet, QuerySet> QuerySets;
-    ESParray<ESPstruct TpCluster> TpClusters;
+    ESParray<string, ClusterName> ClusterNames;
 };
 
 ESPrequest GetResultsRequest
