@@ -104,12 +104,6 @@ void ECLEngine::generateIndexSetupAndFetch(SQLTable * table, int tableindex, HPC
 
             idxsetupstr.clear();
             idxsetupstr.appendf("Idx%d := INDEX(TblDS%d, {", tableindex, tableindex);
-
-            /*idxsetupstr.append("Idx");
-            idxsetupstr.append(tableindex);
-            idxsetupstr.append(" := INDEX(TblDS");
-            idxsetupstr.append(tableindex);
-            idxsetupstr.append(", {");*/
             indexfile->getKeyedFieldsAsDelimitedString(',', "", idxsetupstr);
             idxsetupstr.append("}");
 
@@ -131,29 +125,11 @@ void ECLEngine::generateIndexSetupAndFetch(SQLTable * table, int tableindex, HPC
             {
                 WARNLOG(" as PAYLOAD");
                 idxsetupstr.appendf("IdxDS%d := Idx%d(%s", tableindex, tableindex, keyedAndWild.str());
-                /*idxsetupstr.append("IdxDS")
-                                  .append(tableindex)
-                                  .append(" := Idx")
-                                  .append(tableindex)
-                                  .append("(")
-                                  .append(keyedAndWild.str());
-                                  */
             }
             else
             {
                 WARNLOG(" Not as PAYLOAD");
                 idxsetupstr.appendf("IdxDS%d := FETCH(TblDS%d, Idx%d( %s ), RIGHT.%s", tableindex, tableindex, tableindex, keyedAndWild.str(), indexfile->getIdxFilePosField());
-                /*idxsetupstr.append("IdxDS")
-                                  .append(tableindex)
-                                  .append(" := FETCH(TblDS")
-                                  .append(tableindex)
-                                  .append(", Idx")
-                                  .append(tableindex)
-                                  .append("( ")
-                                  .append(keyedAndWild.str())
-                                  .append("), RIGHT.")
-                                  .append(indexfile->getIdxFilePosField());
-                                  */
             }
             idxsetupstr.append(");\n");
 
@@ -225,21 +201,13 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
             if (!file->isFileKeyed())
             {
                 out.appendf("%s := DATASET(\'~%s\', %s, %s);\n", currntTblDS.str(), file->getFullname(), currntTblRecDef.str(), file->getFormat());
-                /*out.append(currntTblDS);
-                out.append(" := DATASET(\'~");
-                out.append(file->getFullname());
-                out.append("\', ");
-                out.append(currntTblRecDef);
-                out.append(", ");
-                out.append(file->getFormat());
-                out.append(");\n");*/
             }
             else
             {
                 out.appendf("%s := INDEX( {", currntTblDS.str());
-                file->getKeyedFieldsAsDelimitedString(',', "TblDS0RecDef", out);
+                file->getKeyedFieldsAsDelimitedString(',', currntTblRecDef.str(), out);
                 out.append("},{");
-                file->getNonKeyedFieldsAsDelmitedString(',', "TblDS0RecDef", out);
+                file->getNonKeyedFieldsAsDelmitedString(',', currntTblRecDef.str(), out);
                 //Note, currently '~' is not valid char, if it is ever allowed, we'd have verify that the file name does not lead off with ~
                 out.appendf("},\'~%s\');\n",file->getFullname());
             }
@@ -259,11 +227,7 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
                 {
                     //Nth Join, previous DS is JndDS(N-1)
                     out.appendf("JndDS%d",tableidx-1);
-                    //out.append("JndDS");
-                    //out.append(tableidx-1);
                     latestDS.appendf("JndDS%d",tableidx);
-                    //latestDS.set("JndDS");
-                    //latestDS.append(tableidx);
                 }
 
                 StringBuffer translatedAndFilteredOnClause;
@@ -290,12 +254,6 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
                     throw MakeStringException(-1,"Join condition does not contain proper join condition between tables %s, and earlier table", tname);
 
                 out.appendf(", %s, %s, ", currntTblDS.str(), translatedAndFilteredOnClause.length() > 0 ? translatedAndFilteredOnClause.str() : "TRUE");
-                /*out.append(", ");
-                out.append(currntTblDS);
-                out.append(", ");
-                out.append(translatedAndFilteredOnClause.length() > 0 ? translatedAndFilteredOnClause.str() : "TRUE");
-                out.append(", ");
-                 */
                 tablejoin->getECLTypeStr(out);
 
                 if (tablejoin->getOnClause() != NULL && !tablejoin->getOnClause()->containsEqualityCondition(translator, "LEFT", "RIGHT"))
@@ -332,8 +290,6 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
             if (selectsqlobj->hasWhereClause())
             {
                 out.appendf("%sFiltered := %s",latestDS.str(), latestDS.str());
-                //out.append(latestDS).append("Filtered := ");
-                //out.append(latestDS);
                 addFilterClause(selectsqlobj, out);
                 out.append(";\n");
                 latestDS.append("Filtered");
@@ -479,9 +435,6 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
         }
 
         out.appendf(",NAMED(\'%s\'));", SELECTOUTPUTNAME);
-        //out.append(",NAMED(\'");
-        //out.append(SELECTOUTPUTNAME);
-        //out.append("\'));");
     }
 }
 
@@ -497,11 +450,6 @@ void ECLEngine::generateSelectStruct(HPCCSQLTreeWalker * selectsqlobj, IProperti
         if (col->getExpType() == Value_ExpressionType)
         {
             selectStructSB.appendf("%s %s%d := ", col->getECLType(), col->getNameOrAlias(), i);
-            //selectStructSB.append(col->getECLType());
-            //selectStructSB.append(" ");
-            //selectStructSB.append(col->getNameOrAlias());
-            //selectStructSB.append(i);//should only do this if the alias was not set
-            //selectStructSB.append(" := ");
             col->toString(selectStructSB, false);
             selectStructSB.append("; ");
 
@@ -613,14 +561,6 @@ void ECLEngine::generateSelectStruct(HPCCSQLTreeWalker * selectsqlobj, IProperti
         {
             eclEntities->setProp("NONSCALAREXPECTED", "TRUE");
             selectStructSB.appendf("%s %s := %s.%s;", col->getECLType(), col->getNameOrAlias(), datasource, col->getName());
-            //selectStructSB.append(col->getECLType());
-            //selectStructSB.append(" ");
-            //selectStructSB.append(col->getNameOrAlias());
-            //selectStructSB.append(" := ");
-            //selectStructSB.append(datasource);
-            //selectStructSB.append(".");
-            //selectStructSB.append(col->getName());
-            //selectStructSB.append(";");
         }
 
         selectStructSB.append("\n");
@@ -903,11 +843,6 @@ bool ECLEngine::appendTranslatedHavingClause(HPCCSQLTreeWalker * sqlobj, StringB
             if (havingclause.length() > 0)
             {
                 sb.appendf("%sHaving := HAVING( %s, %s );\n", latesDSName, latesDSName, havingclause.str());
-                //sb.append(latesDSName).append("Having").append(" := HAVING( ");
-                //sb.append(latesDSName);
-                //sb.append(", ");
-                //sb.append(havingclause);
-                //sb.append(" );\n");
             }
             success = true;
         }
