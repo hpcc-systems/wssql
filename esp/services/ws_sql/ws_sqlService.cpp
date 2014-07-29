@@ -718,6 +718,7 @@ bool Cws_sqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, I
         StringBuffer xmlparams;
         StringBuffer normalizedSQL = parsedSQL->getNormalizedSQL();
         normalizedSQL.append("--HARDLIMIT").append(resultLimit);
+        normalizedSQL.append("--TC").append(cluster);
 
         if(cachedSQLQueries.find(normalizedSQL.str()) != cachedSQLQueries.end())
         {
@@ -776,6 +777,7 @@ bool Cws_sqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, I
 
         Owned<IWorkUnitFactory> factory = getWorkUnitFactory(context.querySecManager(), context.queryUser());
         Owned<IConstWorkUnit> cw = factory->openWorkUnit(compiledwuid.str(), false);
+
         if (!cw)
             throw MakeStringException(ECLWATCH_CANNOT_UPDATE_WORKUNIT,"Cannot open workunit %s.", compiledwuid.str());
 
@@ -1044,8 +1046,11 @@ bool Cws_sqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, I
             }
         }
 
+        const char  *cluster = req.getTargetCluster();
+
         StringBuffer xmlparams;
         StringBuffer normalizedSQL = parsedSQL->getNormalizedSQL();
+        normalizedSQL.append("--TC").append(cluster);
         SCMStringBuffer wuid;
 
         if(cachedSQLQueries.find(normalizedSQL.str()) != cachedSQLQueries.end())
@@ -1098,8 +1103,6 @@ bool Cws_sqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, I
             }
             else
             {
-
-                const char  *cluster = req.getTargetCluster();
                 if (isEmpty(cluster))
                     throw MakeStringException(1,"Target cluster not set.");
 
