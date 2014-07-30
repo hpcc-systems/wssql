@@ -16,5 +16,5 @@
 ################################################################################
 
 #DOCBOOK_TO_PDF( ${FO_XSL} HDFS_to_HPCC_ConnectorIncluder.xml "HDFS_to_HPCC_Connector" "HDFS_Mods")
-DOCBOOK_TO_PDF( ${FO_XSL} WsSQLUG.xml "WsSQL_User_Guide")
+DOCBOOK_TO_PDF( ${FO_XSL} WsSQL_ESPWebServiceGuide.xml "WsSQL_ESP_Web_Service_Users_Guide")
 
