@@ -1046,6 +1046,7 @@ bool Cws_sqlEx::getCachedQuery(const char * sqlQuery, StringBuffer & wuid)
 
 void Cws_sqlEx::removeQueryFromCache(const char * sqlQuery)
 {
+    CriticalBlock block(critCache);
     cachedSQLQueries.erase(sqlQuery);
 }
 
