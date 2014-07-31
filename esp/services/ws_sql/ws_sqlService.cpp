@@ -719,13 +719,26 @@ bool Cws_sqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, I
         StringBuffer normalizedSQL = parsedSQL->getNormalizedSQL();
         normalizedSQL.append("--HARDLIMIT").append(resultLimit);
         normalizedSQL.append("--TC").append(cluster);
+        normalizedSQL.append("--USER").append(username.str());
+        const char * wuusername = req.getUserName();
+        if (wuusername && *wuusername)
+            normalizedSQL.append("--WUONW").append(wuusername);
 
-        if(cachedSQLQueries.find(normalizedSQL.str()) != cachedSQLQueries.end())
+        Owned<IWorkUnitFactory> factory = getWorkUnitFactory(context.querySecManager(), context.queryUser());
+
+        if(getCachedQuery(normalizedSQL.str(), compiledwuid.s))
         {
-            compiledwuid.s  = cachedSQLQueries.find(normalizedSQL.str())->second.c_str();
-            clonable = true;
+            Owned<IConstWorkUnit> cw = factory->openWorkUnit(compiledwuid.str(), false);
+            if (!cw)//cache hit but unavailable WU
+            {
+                removeQueryFromCache(normalizedSQL.str());
+                compiledwuid.clear();
+            }
+            else
+                clonable = true;
         }
-        else
+
+        if (compiledwuid.length()==0)
         {
             if (querytype == SQLTypeCall)
             {
@@ -763,7 +776,6 @@ bool Cws_sqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, I
                 if (resultLimit)
                     wu->setResultLimit(resultLimit);
 
-                const char * wuusername = req.getUserName();
                 if (wuusername && *wuusername)
                     wu->setUser(wuusername);
 
@@ -775,7 +787,6 @@ bool Cws_sqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, I
             }
         }
 
-        Owned<IWorkUnitFactory> factory = getWorkUnitFactory(context.querySecManager(), context.queryUser());
         Owned<IConstWorkUnit> cw = factory->openWorkUnit(compiledwuid.str(), false);
 
         if (!cw)
@@ -804,14 +815,14 @@ bool Cws_sqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, I
             if (clonable)
             {
                 cloneAndExecuteWU(context, compiledwuid.str(), runningwuid, xmlparams.str(), NULL, NULL, cluster);
-                if (cachedSQLQueries.find(normalizedSQL.str()) != cachedSQLQueries.end() )
-                    cachedSQLQueries.insert(std::pair<std::string,std::string>(normalizedSQL.str(), compiledwuid.str()));
+                if(!isQueryCached(normalizedSQL.str()))
+                    addQueryToCache(normalizedSQL.str(), compiledwuid.str());
             }
             else
             {
                 WsWuHelpers::submitWsWorkunit(context, compiledwuid.str(), cluster, NULL, 0, false, true, true, NULL, NULL, NULL);
                 runningwuid.set(compiledwuid.str());
-                cachedSQLQueries.insert(std::pair<std::string,std::string>(normalizedSQL.str(), runningwuid.str()));
+                addQueryToCache(normalizedSQL.str(), runningwuid.str());
             }
 
             int timeToWait = req.getWait();
@@ -1016,6 +1027,48 @@ bool Cws_sqlEx::onExecutePreparedSQL(IEspContext &context, IEspExecutePreparedSQ
    return true;
 }
 
+bool Cws_sqlEx::isQueryCached(const char * sqlQuery)
+{
+    CriticalBlock block(critCache);
+    return (sqlQuery && cachedSQLQueries.find(sqlQuery) != cachedSQLQueries.end());
+}
+
+bool Cws_sqlEx::getCachedQuery(const char * sqlQuery, StringBuffer & wuid)
+{
+    CriticalBlock block(critCache);
+    if(sqlQuery && cachedSQLQueries.find(sqlQuery) != cachedSQLQueries.end())
+    {
+        wuid.set(cachedSQLQueries.find(sqlQuery)->second.c_str());
+        return true;
+    }
+    return false;
+}
+
+void Cws_sqlEx::removeQueryFromCache(const char * sqlQuery)
+{
+
+}
+
+bool Cws_sqlEx::addQueryToCache(const char * sqlQuery, const char * wuid)
+{
+    if (sqlQuery && *sqlQuery && wuid && *wuid)
+    {
+        CriticalBlock block(critCache);
+        if (isCacheExpired())
+        {
+            ESPLOG(LogNormal, "WsSQL: Query Cache has expired and is being flushed.");
+            //Flushing cache logic could have been in dedicated function, but
+            //putting it here makes this action more atomic, less synchronization concerns
+            cachedSQLQueries.clear();
+            setNewCacheFlushTime();
+        }
+
+        cachedSQLQueries.insert(std::pair<std::string,std::string>(sqlQuery, wuid));
+    }
+    return false;
+}
+
+
 bool Cws_sqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, IEspPrepareSQLResponse &resp)
 {
     bool success = false;
@@ -1026,6 +1079,10 @@ bool Cws_sqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, I
     {
         if (!context.validateFeatureAccess(WSSQLACCESS, SecAccess_Write, false))
             throw MakeStringException(-1, "Failed to Prepare SQL. Permission denied.");
+
+        StringBuffer username;
+        context.getUserID(username);
+        const char* passwd = context.queryPassword();
 
         sqltext.set(req.getSqlText());
 
@@ -1051,19 +1108,25 @@ bool Cws_sqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, I
         StringBuffer xmlparams;
         StringBuffer normalizedSQL = parsedSQL->getNormalizedSQL();
         normalizedSQL.append("--TC").append(cluster);
-        SCMStringBuffer wuid;
+        normalizedSQL.append("--USER").append(username.str());
 
-        if(cachedSQLQueries.find(normalizedSQL.str()) != cachedSQLQueries.end())
+        Owned<IWorkUnitFactory> factory = getWorkUnitFactory(context.querySecManager(), context.queryUser());
+
+        SCMStringBuffer wuid;
+        if(getCachedQuery(normalizedSQL.str(), wuid.s))
         {
-            wuid.s  = cachedSQLQueries.find(normalizedSQL.str())->second.c_str();
+            Owned<IConstWorkUnit> cw = factory->openWorkUnit(wuid.str(), false);
+            if (!cw)//cache hit but unavailable WU
+            {
+                removeQueryFromCache(normalizedSQL.str());
+                wuid.clear();
+            }
         }
-        else
+
+        if(wuid.length()==0)
         {
             if (parsedSQL->getSqlType() == SQLTypeCall)
             {
-                StringBuffer username;
-                context.getUserID(username);
-                const char* passwd = context.queryPassword();
                 WsEclWuInfo wsinfo("", parsedSQL->getQuerySetName(), parsedSQL->getStoredProcName(), username.str(), passwd);
                 wuid.set(wsinfo.ensureWuid());
 
@@ -1131,17 +1194,17 @@ bool Cws_sqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, I
                 wu.clear();
 
                 WsWuHelpers::submitWsWorkunit(context, wuid.str(), cluster, NULL, 0, true, false, false, xmlparams.str(), NULL, NULL);
-                waitForWorkUnitToCompile(wuid.str(), req.getWait());
+                success = waitForWorkUnitToCompile(wuid.str(), req.getWait());
             }
 
-            cachedSQLQueries.insert(std::pair<std::string,std::string>(normalizedSQL.str(), wuid.s.str()));
+           if (success)
+               addQueryToCache(normalizedSQL.str(), wuid.s.str());
         }
+
         WsWuInfo winfo(context, wuid.str());
 
         winfo.getCommon(resp.updateWorkunit(), WUINFO_All);
         winfo.getExceptions(resp.updateWorkunit(), WUINFO_All);
-
-        //publishWorkunit(context, "myfirstpublished", wuid.str(), "thor");
 
         AuditSystemAccess(context.queryUserId(), true, "Updated %s", wuid.str());
     }
