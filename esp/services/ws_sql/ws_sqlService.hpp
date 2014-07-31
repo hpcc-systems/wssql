@@ -59,6 +59,28 @@ private:
     IPropertyTree *cfg;
     std::map<std::string,std::string> cachedSQLQueries;
 
+    //static const unsigned int ExpireSeconds = 60 * 60;
+    static const unsigned int ExpireSeconds = 30;
+
+    CriticalSection critCache;
+    bool isQueryCached(const char * sqlQuery);
+    bool getCachedQuery(const char * sqlQuery, StringBuffer & wuid);
+    bool addQueryToCache(const char * sqlQuery, const char * wuid);
+    void removeQueryFromCache(const char * sqlQuery);
+    time_t cacheFlushTime;
+
+    bool isCacheExpired()
+    {
+        time_t timeNow;
+        time(&timeNow);
+        return difftime(timeNow, cacheFlushTime) > ExpireSeconds;
+    }
+
+    void setNewCacheFlushTime()
+    {
+        time(&cacheFlushTime);
+    }
+
 public:
     IMPLEMENT_IINTERFACE;
 
@@ -88,6 +110,7 @@ public:
     bool publishWorkunit(IEspContext &context, const char * queryname, const char * wuid, const char * targetcluster);
 
     void createXMLParams(StringBuffer & xmlparams, HPCCSQLTreeWalker* parsedSQL, IArrayOf<IConstNamedValue> *variables, IConstWorkUnit * cw);
+
 };
 
 #endif //_ESPWIZ_WS_SQL_HPP__
