@@ -722,7 +722,7 @@ bool Cws_sqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, I
         normalizedSQL.append("--USER").append(username.str());
         const char * wuusername = req.getUserName();
         if (wuusername && *wuusername)
-            normalizedSQL.append("--WUONW").append(wuusername);
+            normalizedSQL.append("--WUOWN").append(wuusername);
 
         Owned<IWorkUnitFactory> factory = getWorkUnitFactory(context.querySecManager(), context.queryUser());
 
@@ -1046,7 +1046,8 @@ bool Cws_sqlEx::getCachedQuery(const char * sqlQuery, StringBuffer & wuid)
 
 void Cws_sqlEx::removeQueryFromCache(const char * sqlQuery)
 {
-
+    CriticalBlock block(critCache);
+    cachedSQLQueries.erase(sqlQuery);
 }
 
 bool Cws_sqlEx::addQueryToCache(const char * sqlQuery, const char * wuid)
@@ -1067,7 +1068,6 @@ bool Cws_sqlEx::addQueryToCache(const char * sqlQuery, const char * wuid)
     }
     return false;
 }
-
 
 bool Cws_sqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, IEspPrepareSQLResponse &resp)
 {

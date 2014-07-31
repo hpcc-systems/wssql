@@ -59,8 +59,7 @@ private:
     IPropertyTree *cfg;
     std::map<std::string,std::string> cachedSQLQueries;
 
-    //static const unsigned int ExpireSeconds = 60 * 60;
-    static const unsigned int ExpireSeconds = 30;
+    static const unsigned int ExpireSeconds = 60 * 60;
 
     CriticalSection critCache;
     bool isQueryCached(const char * sqlQuery);
