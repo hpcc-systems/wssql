@@ -18,7 +18,7 @@ limitations under the License.
 #include "ws_sqlService.hpp"
 #include "exception_util.hpp"
 
-void Cws_sqlEx::init(IPropertyTree *_cfg, const char *_process, const char *_service)
+void CwssqlEx::init(IPropertyTree *_cfg, const char *_process, const char *_service)
 {
     cfg = _cfg;
     try
@@ -33,13 +33,13 @@ void Cws_sqlEx::init(IPropertyTree *_cfg, const char *_process, const char *_ser
     refreshValidClusters();
 }
 
-bool Cws_sqlEx::onEcho(IEspContext &context, IEspEchoRequest &req, IEspEchoResponse &resp)
+bool CwssqlEx::onEcho(IEspContext &context, IEspEchoRequest &req, IEspEchoResponse &resp)
 {
     resp.setResponse(req.getRequest());
     return true;
 }
 
-bool Cws_sqlEx::onGetDBMetaData(IEspContext &context, IEspGetDBMetaDataRequest &req, IEspGetDBMetaDataResponse &resp)
+bool CwssqlEx::onGetDBMetaData(IEspContext &context, IEspGetDBMetaDataRequest &req, IEspGetDBMetaDataResponse &resp)
 {
     if (!context.validateFeatureAccess(WSSQLACCESS, SecAccess_Read, false))
         throw MakeStringException(-1, "Failed to fetch HPCC information. Permission denied.");
@@ -223,7 +223,7 @@ bool Cws_sqlEx::onGetDBMetaData(IEspContext &context, IEspGetDBMetaDataRequest &
     return success;
 }
 
-bool Cws_sqlEx::onGetDBSystemInfo(IEspContext &context, IEspGetDBSystemInfoRequest &req, IEspGetDBSystemInfoResponse &resp)
+bool CwssqlEx::onGetDBSystemInfo(IEspContext &context, IEspGetDBSystemInfoRequest &req, IEspGetDBSystemInfoResponse &resp)
 {
     bool success = false;
     resp.setName("HPCC Systems");
@@ -529,7 +529,7 @@ void myDisplayRecognitionError (pANTLR3_BASE_RECOGNIZER recognizer,pANTLR3_UINT8
     throw MakeStringException(-1, "%s", errorMessage.str());
 }
 
-HPCCSQLTreeWalker * Cws_sqlEx::parseSQL(IEspContext &context, StringBuffer & sqltext)
+HPCCSQLTreeWalker * CwssqlEx::parseSQL(IEspContext &context, StringBuffer & sqltext)
 {
     int limit = -1;
    pHPCCSQLLexer hpccSqlLexer = NULL;
@@ -635,7 +635,7 @@ printTree(sqlAST, 0);
    return hpccSqlTreeWalker.getLink();
 }
 
-bool Cws_sqlEx::getWUResult(IEspContext &context, const char * wuid, StringBuffer &result, unsigned start, unsigned count, int sequence, const char * schemaname)
+bool CwssqlEx::getWUResult(IEspContext &context, const char * wuid, StringBuffer &result, unsigned start, unsigned count, int sequence, const char * schemaname)
 {
     if (wuid && *wuid)
     {
@@ -670,7 +670,7 @@ bool Cws_sqlEx::getWUResult(IEspContext &context, const char * wuid, StringBuffe
     return false;
 }
 
-bool Cws_sqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IEspExecuteSQLResponse &resp)
+bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IEspExecuteSQLResponse &resp)
 {
     try
     {
@@ -863,7 +863,7 @@ bool Cws_sqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, I
 }
 
 //Integrates all "variables" into "param" based xml
-void Cws_sqlEx::createXMLParams(StringBuffer & xmlparams, HPCCSQLTreeWalker* parsedSQL, IArrayOf<IConstNamedValue> *variables, IConstWorkUnit * cw)
+void CwssqlEx::createXMLParams(StringBuffer & xmlparams, HPCCSQLTreeWalker* parsedSQL, IArrayOf<IConstNamedValue> *variables, IConstWorkUnit * cw)
 {
     IArrayOf<IConstWUResult> expectedparams;
 
@@ -952,7 +952,7 @@ void Cws_sqlEx::createXMLParams(StringBuffer & xmlparams, HPCCSQLTreeWalker* par
     }
 }
 
-bool Cws_sqlEx::onExecutePreparedSQL(IEspContext &context, IEspExecutePreparedSQLRequest &req, IEspExecutePreparedSQLResponse &resp)
+bool CwssqlEx::onExecutePreparedSQL(IEspContext &context, IEspExecutePreparedSQLRequest &req, IEspExecutePreparedSQLResponse &resp)
 {
    try
    {
@@ -1027,13 +1027,13 @@ bool Cws_sqlEx::onExecutePreparedSQL(IEspContext &context, IEspExecutePreparedSQ
    return true;
 }
 
-bool Cws_sqlEx::isQueryCached(const char * sqlQuery)
+bool CwssqlEx::isQueryCached(const char * sqlQuery)
 {
     CriticalBlock block(critCache);
     return (sqlQuery && cachedSQLQueries.find(sqlQuery) != cachedSQLQueries.end());
 }
 
-bool Cws_sqlEx::getCachedQuery(const char * sqlQuery, StringBuffer & wuid)
+bool CwssqlEx::getCachedQuery(const char * sqlQuery, StringBuffer & wuid)
 {
     CriticalBlock block(critCache);
     if(sqlQuery && cachedSQLQueries.find(sqlQuery) != cachedSQLQueries.end())
@@ -1044,13 +1044,13 @@ bool Cws_sqlEx::getCachedQuery(const char * sqlQuery, StringBuffer & wuid)
     return false;
 }
 
-void Cws_sqlEx::removeQueryFromCache(const char * sqlQuery)
+void CwssqlEx::removeQueryFromCache(const char * sqlQuery)
 {
     CriticalBlock block(critCache);
     cachedSQLQueries.erase(sqlQuery);
 }
 
-bool Cws_sqlEx::addQueryToCache(const char * sqlQuery, const char * wuid)
+bool CwssqlEx::addQueryToCache(const char * sqlQuery, const char * wuid)
 {
     if (sqlQuery && *sqlQuery && wuid && *wuid)
     {
@@ -1069,7 +1069,7 @@ bool Cws_sqlEx::addQueryToCache(const char * sqlQuery, const char * wuid)
     return false;
 }
 
-bool Cws_sqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, IEspPrepareSQLResponse &resp)
+bool CwssqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, IEspPrepareSQLResponse &resp)
 {
     bool success = false;
     StringBuffer sqltext;
@@ -1216,7 +1216,7 @@ bool Cws_sqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, I
     return true;
 }
 
-bool Cws_sqlEx::executePublishedQueryByName(IEspContext &context, const char * queryset, const char * queryname, StringBuffer &clonedwuid, const char *paramXml, IArrayOf<IConstNamedValue> *variables, const char * targetcluster, int start, int count)
+bool CwssqlEx::executePublishedQueryByName(IEspContext &context, const char * queryset, const char * queryname, StringBuffer &clonedwuid, const char *paramXml, IArrayOf<IConstNamedValue> *variables, const char * targetcluster, int start, int count)
 {
     bool success = true;
 
@@ -1239,7 +1239,7 @@ bool Cws_sqlEx::executePublishedQueryByName(IEspContext &context, const char * q
     return success;
 }
 
-bool Cws_sqlEx::executePublishedQueryByWuId(IEspContext &context, const char * targetwuid, StringBuffer &clonedwuid, const char *paramXml, IArrayOf<IConstNamedValue> *variables, const char * targetcluster, int start, int count)
+bool CwssqlEx::executePublishedQueryByWuId(IEspContext &context, const char * targetwuid, StringBuffer &clonedwuid, const char *paramXml, IArrayOf<IConstNamedValue> *variables, const char * targetcluster, int start, int count)
 {
     bool success = true;
 
@@ -1265,7 +1265,7 @@ bool Cws_sqlEx::executePublishedQueryByWuId(IEspContext &context, const char * t
     return success;
 }
 
-bool Cws_sqlEx::executePublishedQuery(IEspContext &context, const char * queryset, const char * queryname, StringBuffer &resp, int start, int count, int waittime)
+bool CwssqlEx::executePublishedQuery(IEspContext &context, const char * queryset, const char * queryname, StringBuffer &resp, int start, int count, int waittime)
 {
     bool success = true;
 
@@ -1298,7 +1298,7 @@ bool Cws_sqlEx::executePublishedQuery(IEspContext &context, const char * queryse
     return success;
 }
 
-bool Cws_sqlEx::executePublishedQuery(IEspContext &context, const char * wuid, StringBuffer &resp, int start, int count, int waittime)
+bool CwssqlEx::executePublishedQuery(IEspContext &context, const char * wuid, StringBuffer &resp, int start, int count, int waittime)
 {
     bool success = true;
 
@@ -1331,7 +1331,7 @@ bool Cws_sqlEx::executePublishedQuery(IEspContext &context, const char * wuid, S
     return success;
 }
 
-bool Cws_sqlEx::cloneAndExecuteWU(IEspContext &context, const char * originalwuid, StringBuffer &clonedwuid, const char *paramXml, IArrayOf<IConstNamedValue> *variables, IArrayOf<IConstNamedValue> *debugs, const char * targetcluster)
+bool CwssqlEx::cloneAndExecuteWU(IEspContext &context, const char * originalwuid, StringBuffer &clonedwuid, const char *paramXml, IArrayOf<IConstNamedValue> *variables, IArrayOf<IConstNamedValue> *debugs, const char * targetcluster)
 {
     bool success = true;
     try
@@ -1377,7 +1377,7 @@ bool Cws_sqlEx::cloneAndExecuteWU(IEspContext &context, const char * originalwui
     return success;
 }
 
-bool Cws_sqlEx::onGetResults(IEspContext &context, IEspGetResultsRequest &req, IEspGetResultsResponse &resp)
+bool CwssqlEx::onGetResults(IEspContext &context, IEspGetResultsRequest &req, IEspGetResultsResponse &resp)
 {
     if (!context.validateFeatureAccess(WSSQLACCESS, SecAccess_Read, false))
         throw MakeStringException(-1, "Failed to fetch results (open workunit). Permission denied.");
@@ -1421,7 +1421,7 @@ bool Cws_sqlEx::onGetResults(IEspContext &context, IEspGetResultsRequest &req, I
     return success;
 }
 
-void Cws_sqlEx::refreshValidClusters()
+void CwssqlEx::refreshValidClusters()
 {
     validClusters.kill();
     Owned<IStringIterator> it = getTargetClusters(NULL, NULL);
@@ -1434,7 +1434,7 @@ void Cws_sqlEx::refreshValidClusters()
     }
 }
 
-bool Cws_sqlEx::isValidCluster(const char *cluster)
+bool CwssqlEx::isValidCluster(const char *cluster)
 {
     if (!cluster || !*cluster)
         return false;
@@ -1449,7 +1449,7 @@ bool Cws_sqlEx::isValidCluster(const char *cluster)
     return false;
 }
 
-bool Cws_sqlEx::publishWorkunit(IEspContext &context, const char * queryname, const char * wuid, const char * targetcluster)
+bool CwssqlEx::publishWorkunit(IEspContext &context, const char * queryname, const char * wuid, const char * targetcluster)
 {
     Owned<IWorkUnitFactory> factory = getWorkUnitFactory(context.querySecManager(), context.queryUser());
     Owned<IConstWorkUnit> cw = factory->openWorkUnit(wuid, false);

@@ -33,7 +33,7 @@ ESP_FACTORY IEspService * esp_service_factory(const char *name, const char* type
 {
     if (strcmp(type, "ws_sql")==0)
     {
-        Cws_sqlEx* service = new Cws_sqlEx;
+        CwssqlEx* service = new CwssqlEx;
         service->init(cfg, process, name);
 
         return service;
@@ -45,7 +45,7 @@ ESP_FACTORY IEspRpcBinding * esp_binding_factory(const char *name, const char* t
 {
     if (strcmp(type, "ws_sqlSoapBinding")==0)
     {
-        Cws_sqlSoapBinding* binding = new Cws_sqlSoapBindingEx(cfg, name, process);
+        CwssqlSoapBinding* binding = new CwssqlSoapBindingEx(cfg, name, process);
         return binding;
     }
     return NULL;

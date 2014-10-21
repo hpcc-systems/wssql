@@ -210,7 +210,7 @@ ESPresponse EchoResponse
     string Response;
 };
 
-ESPservice [version("1.0"), default_client_version("1.0"), exceptions_inline("./smc_xslt/exceptions.xslt")] ws_sql
+ESPservice [version("2.0"), default_client_version("2.0"), exceptions_inline("./smc_xslt/exceptions.xslt")] wssql
 {
     ESPmethod [] PrepareSQL(PrepareSQLRequest, PrepareSQLResponse);
     ESPmethod [] ExecuteSQL(ExecuteSQLRequest, ExecuteSQLResponse);
@@ -221,6 +221,6 @@ ESPservice [version("1.0"), default_client_version("1.0"), exceptions_inline("./
     ESPmethod Echo(EchoRequest, EchoResponse);
 };
 
-SCMexportdef(ws_sql);
+SCMexportdef(wssql);
 
-SCMapi(ws_sql) IClientws_sql *createws_sqlClient();
+SCMapi(wssql) IClientwssql *createwssqlClient();

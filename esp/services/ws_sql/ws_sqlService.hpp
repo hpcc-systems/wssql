@@ -42,15 +42,15 @@ static const char* WSSQLACCESS = "WsSqlAccess";
 static const char* WSSQLRESULT = "WsSQLResult";
 static const char* WSSQLRESULTSCHEMA = "WsSQLResultSchema";
 
-class Cws_sqlSoapBindingEx : public Cws_sqlSoapBinding
+class CwssqlSoapBindingEx : public CwssqlSoapBinding
 {
 public:
-    Cws_sqlSoapBindingEx(IPropertyTree *cfg, const char *name, const char *process, http_soap_log_level llevel=hsl_none) : Cws_sqlSoapBinding(cfg, name, process, llevel)
+    CwssqlSoapBindingEx(IPropertyTree *cfg, const char *name, const char *process, http_soap_log_level llevel=hsl_none) : CwssqlSoapBinding(cfg, name, process, llevel)
     {
     }
 };
 
-class Cws_sqlEx : public Cws_sql
+class CwssqlEx : public Cwssql
 {
 private:
     BoolHash validClusters;
