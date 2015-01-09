@@ -182,7 +182,7 @@ bool HPCCFile::setFileColumns(const char * eclString)
     if (errs.errCount())
     {
        StringBuffer errtext;
-       IECLError *first = errs.firstError();
+       IError *first = errs.firstError();
        first->toString(errtext);
        ESPLOG(LogNormal, "Could not set HPCC file columns: %s", errtext.str());
        return false;
