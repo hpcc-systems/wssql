@@ -46,6 +46,7 @@ bool HPCCFileCache::populateTablesResponse(IEspGetDBMetaDataResponse & tablesres
                continue;
            else
            {
+               pTable->setDescription(file->getDescription());
                pTable->setIsKeyed(file->isFileKeyed());
                pTable->setIsSuper(file->isFileSuper());
 
@@ -150,6 +151,8 @@ const char * HPCCFileCache::cacheHpccFileByName(const char * filename, bool name
         }
         else
             throw MakeStringException(-1,"Cannot find file %s.",filename);
+
+        file->setDescription(df->queryAttributes().queryProp("@description"));
 
         //Do we care about the clusters??
         //StringArray clusters;
