@@ -130,7 +130,6 @@ ESPrequest ExecutePreparedSQLRequest
     string WuId;
     string UserName;
     string TargetCluster; //where should this execute
-    string TargetQuerySet; //pertaining to Stored Proc calls
     boolean SuppressResults(false);
     boolean SuppressXmlSchema(true);
     int Wait(-1);
