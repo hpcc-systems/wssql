@@ -133,7 +133,7 @@ ESPrequest ExecutePreparedSQLRequest
     boolean SuppressResults(false);
     boolean SuppressXmlSchema(true);
     int Wait(-1);
-    int resultLimit(0);
+    //int resultLimit(0); underlying WU code doesn't allow setting result limits on cloned wu
     int ResultWindowStart(0);
     int ResultWindowCount(0);
     ESParray<ESPstruct NamedValue> Variables;
@@ -143,7 +143,7 @@ ESPresponse [exceptions_inline] ExecutePreparedSQLResponse
 {
     string ParentWuId;
     string Result;
-    int resultLimit;
+    //int resultLimit;
     unsigned ResultWindowStart;
     unsigned ResultWindowCount;
     ESPstruct ECLWorkunit Workunit;
@@ -209,7 +209,7 @@ ESPresponse EchoResponse
     string Response;
 };
 
-ESPservice [version("2.0"), default_client_version("2.0"), exceptions_inline("./smc_xslt/exceptions.xslt")] wssql
+ESPservice [version("3.0"), default_client_version("3.0"), exceptions_inline("./smc_xslt/exceptions.xslt")] wssql
 {
     ESPmethod [] PrepareSQL(PrepareSQLRequest, PrepareSQLResponse);
     ESPmethod [] ExecuteSQL(ExecuteSQLRequest, ExecuteSQLResponse);
