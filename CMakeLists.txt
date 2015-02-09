@@ -116,9 +116,13 @@ IF ( NOT MAKE_DOCS_ONLY )
 
     SET(CPACK_PACKAGE_VERSION_MAJOR ${majorver})
     SET(CPACK_PACKAGE_VERSION_MINOR ${minorver})
-    SET(CPACK_PACKAGE_VERSION_PATCH ${point}${stagever})
+    SET(CPACK_PACKAGE_VERSION_PATCH ${point}-${stagever})
 
-    SET( CPACK_RPM_PACKAGE_VERSION ${majorver}.${minorver}.${point}${stagever})
+    SET(CPACK_RPM_PACKAGE_VERSION "${version}")
+    SET(CPACK_RPM_PACKAGE_RELEASE "${stagever}")
+
+    SET(CPACK_RPM_PACKAGE_VENDOR "HPCC Systems")
+    SET(CPACK_PACKAGE_VENDOR "HPCC Systems")
     SET( CPACK_PACKAGE_CONTACT "HPCCSystems <ossdevelopment@lexisnexis.com>" )
     SET( CPACK_SOURCE_GENERATOR TGZ )
 
