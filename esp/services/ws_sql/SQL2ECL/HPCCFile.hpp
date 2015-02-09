@@ -225,10 +225,7 @@ private:
         for (int i = columns.length() - 1;i >= 0;i--)
         {
             if (!columns.item(i).isKeyedField())
-            {
-                const char* type = columns.item(i).getColumnType();
                 return columns.item(i).getColumnName();
-            }
         }
 
         return NULL;
