@@ -189,6 +189,17 @@ public:
     static HPCCFile * createHPCCFile();
 
     bool containsField(SQLColumn * field, bool verifyEclType) const;
+
+    const char * getDescription() const
+    {
+        return description.str();
+    }
+
+    void setDescription(const char * description)
+    {
+        this->description.set(description);
+    }
+
     void setIdxFilePosField(const char* idxfileposfieldname)
     {
         idxFilePosField.set(idxfileposfieldname);
@@ -208,16 +219,13 @@ private:
     void getFieldsAsDelmitedString(char delim, const char* prefix, StringBuffer& out, bool onlykeyed);
     bool setFileColumns(const char* eclString);
     void setKeyCounts();
+
     const char* getLastNonKeyedNumericField()
     {
-        // TODO get numeric field
-        for (int i = columns.length() - 1; i >= 0; i--)
+        for (int i = columns.length() - 1;i >= 0;i--)
         {
-           if (!columns.item(i).isKeyedField())
-           {
-               const char * type = columns.item(i).getColumnType();
-               return columns.item(i).getColumnName();
-           }
+            if (!columns.item(i).isKeyedField())
+                return columns.item(i).getColumnName();
         }
 
         return NULL;
@@ -236,6 +244,8 @@ private:
     int keyedCount;
     int nonKeyedCount;
     bool hasNestedColumns;
-};
+    StringBuffer description;
+}
+;
 
 #endif /* HPCCFILE_HPP_ */
