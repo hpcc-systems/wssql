@@ -677,7 +677,6 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
         if (!context.validateFeatureAccess(WSSQLACCESS, SecAccess_Write, false))
             throw MakeStringException(-1, "Failed to execute SQL. Permission denied.");
 
-
         StringBuffer sqltext;
         StringBuffer ecltext;
         StringBuffer username;
