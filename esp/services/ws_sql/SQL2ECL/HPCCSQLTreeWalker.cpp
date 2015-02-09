@@ -345,6 +345,9 @@ ISQLExpression * HPCCSQLTreeWalker::expressionTreeWalker(pANTLR3_BASE_TREE exprA
                     }
                 }
 
+                //Sets the ecltype of the field.
+                verifyColumn(tmpfve);
+
                 tmpexp.setown(tmpfve.getLink());
                 break;
             }
@@ -777,7 +780,7 @@ void HPCCSQLTreeWalker::verifyAndDisambiguateNameFromList(IArrayOf<ISQLExpressio
     }
 }
 
-void HPCCSQLTreeWalker::verifyColumn(SQLFieldValueExpression * col )
+void HPCCSQLTreeWalker::verifyColumn(SQLFieldValueExpression * col)
 {
     if (col)
     {
