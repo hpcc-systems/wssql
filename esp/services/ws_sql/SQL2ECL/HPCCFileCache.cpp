@@ -49,6 +49,7 @@ bool HPCCFileCache::populateTablesResponse(IEspGetDBMetaDataResponse & tablesres
                pTable->setDescription(file->getDescription());
                pTable->setIsKeyed(file->isFileKeyed());
                pTable->setIsSuper(file->isFileSuper());
+               pTable->setOwner(file->getOwner());
 
                IArrayOf<IEspHPCCColumn> pColumns;
 
@@ -141,7 +142,6 @@ const char * HPCCFileCache::cacheHpccFileByName(const char * filename, bool name
         const char* lname=df->queryLogicalName();
         if (lname && *lname)
         {
-
             const char* fname=strrchr(lname,':');
             if (!namevalidated && !HPCCFile::validateFileName(lname))
                 throw MakeStringException(-1,"Invalid SQL file name detected %s.", fname);
@@ -175,6 +175,8 @@ const char * HPCCFileCache::cacheHpccFileByName(const char * filename, bool name
             file->setEcl(properties.queryProp("ECL"));
         else
             throw MakeStringException(-1,"File %s does not contain required ECL record layout.",filename);
+
+        file->setOwner(properties.queryProp("@owner"));
 
         //unfortunately @format sometimes holds the file format, sometimes @kind does
         const char * kind = properties.queryProp("@kind");
