@@ -190,12 +190,22 @@ public:
 
     bool containsField(SQLColumn * field, bool verifyEclType) const;
 
-    const char * getDescription() const
+    const char * getOwner() const
+    {
+        return owner.str();
+    }
+
+    void setOwner(const char * owner)
+    {
+        this->owner.set(owner);
+    }
+
+    const char* getDescription() const
     {
         return description.str();
     }
 
-    void setDescription(const char * description)
+    void setDescription(const char* description)
     {
         this->description.set(description);
     }
@@ -227,7 +237,6 @@ private:
             if (!columns.item(i).isKeyedField())
                 return columns.item(i).getColumnName();
         }
-
         return NULL;
     }
 
@@ -245,6 +254,7 @@ private:
     int nonKeyedCount;
     bool hasNestedColumns;
     StringBuffer description;
+    StringBuffer owner;
 }
 ;
 
