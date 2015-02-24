@@ -337,9 +337,9 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
 
         <para><orderedlist>
             <listitem>
-              <para>Stop the ESP Server</para>
+              <para>Stop the HPCC platform.</para>
 
-              <programlisting>sudo /sbin/service hpcc-init -c esp stop</programlisting>
+              <programlisting>sudo /sbin/service hpcc-init stop</programlisting>
             </listitem>
 
             <listitem>
@@ -369,9 +369,9 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
             </listitem>
 
             <listitem>
-              <para>Restart the ESP </para>
+              <para>Restart the HPCC platform.</para>
 
-              <para><programlisting>sudo /sbin/service hpcc-init -c esp start</programlisting></para>
+              <para><programlisting>sudo /sbin/service hpcc-init start</programlisting></para>
             </listitem>
           </orderedlist></para>
       </sect2>
