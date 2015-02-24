@@ -329,6 +329,52 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
             </listitem>
           </orderedlist></para>
       </sect2>
+
+      <sect2 role="brk">
+        <title>Upgrading</title>
+
+        <para>To upgrade to a newer version of WsSQL:</para>
+
+        <para><orderedlist>
+            <listitem>
+              <para>Stop the HPCC platform.</para>
+
+              <programlisting>sudo /sbin/service hpcc-init stop</programlisting>
+            </listitem>
+
+            <listitem>
+              <para>Uninstall the installed WsSQL package:</para>
+
+              <para>On CentOS/Red Hat:</para>
+
+              <para><programlisting>sudo rpm -e hpccsystems-wssql
+</programlisting>On Ubuntu/Debian:</para>
+
+              <programlisting>sudo dpkg -r hpccsystems-wssql</programlisting>
+            </listitem>
+
+            <listitem>
+              <para>Install the newer WsSQL package.</para>
+
+              <para>Download the installation package from <ulink
+              url="http://hpccsystems.com/permlink/wssql">http://hpccsystems.com/permlink/wssql</ulink>
+              and install.</para>
+
+              <para>On CentOS/Red Hat:</para>
+
+              <para><programlisting> sudo rpm -Uvh &lt;rpm file name&gt; --nodeps</programlisting>On
+              Ubuntu/Debian:</para>
+
+              <programlisting>sudo dpkg -i &lt;deb filename&gt;</programlisting>
+            </listitem>
+
+            <listitem>
+              <para>Restart the HPCC platform.</para>
+
+              <para><programlisting>sudo /sbin/service hpcc-init start</programlisting></para>
+            </listitem>
+          </orderedlist></para>
+      </sect2>
     </sect1>
   </chapter>
 
@@ -1848,6 +1894,9 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
       override the one specified when you submitted the PrepareSQL request;
       however, it must be a cluster of the same type.</para>
 
+      <para>If you want to limit the number of results, you must use a LIMIT
+      clause in you SQL query.</para>
+
       <para>For result set paging, you can limit the total query results and
       the initial page returned (<emphasis
       role="bold">ResultWindowStart</emphasis>, <emphasis
@@ -1868,7 +1917,6 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
    &lt;SuppressResults&gt;<emphasis role="bluebold">0</emphasis>&lt;/SuppressResults&gt;
    &lt;SuppressXmlSchema&gt;<emphasis role="bluebold">1</emphasis>&lt;/SuppressXmlSchema&gt;
    &lt;Wait&gt;<emphasis role="bluebold">-1</emphasis>&lt;/Wait&gt;
-   &lt;resultLimit&gt;<emphasis role="bluebold">100</emphasis>&lt;/resultLimit&gt;
 <emphasis role="greenbold">&lt;!-- For page loading --&gt;</emphasis>
    &lt;ResultWindowStart&gt;<emphasis role="bluebold">0</emphasis>&lt;/ResultWindowStart&gt;
    &lt;ResultWindowCount&gt;<emphasis role="bluebold">50</emphasis>&lt;/ResultWindowCount&gt;
@@ -1946,14 +1994,6 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> TargetQuerySet</para></entry>
-
-                  <entry>N</entry>
-
-                  <entry>N/A</entry>
-                </row>
-
-                <row>
                   <entry><para role="wsig"> SuppressResults</para></entry>
 
                   <entry>N</entry>
@@ -1978,15 +2018,6 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
 
                   <entry>Timeout value in milliseconds. Use -1 for no
                   timeout.</entry>
-                </row>
-
-                <row>
-                  <entry><para role="wsig"> resultLimit</para></entry>
-
-                  <entry>N</entry>
-
-                  <entry>If set, the results can contain as many records as
-                  this limit</entry>
                 </row>
 
                 <row>
