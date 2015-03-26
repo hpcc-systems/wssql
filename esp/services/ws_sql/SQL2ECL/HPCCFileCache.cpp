@@ -20,6 +20,7 @@ limitations under the License.
 
 HPCCFileCache * HPCCFileCache::createFileCache(const char * username, const char * passwd)
 {
+    ESPLOG(LogMax, "WsSQL: Creating new HPCC FILE CACHE");
     return new HPCCFileCache(username,passwd);
 }
 

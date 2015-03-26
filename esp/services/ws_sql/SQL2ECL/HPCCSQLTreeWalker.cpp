@@ -208,6 +208,24 @@ ISQLExpression * HPCCSQLTreeWalker::expressionTreeWalker(pANTLR3_BASE_TREE exprA
                     {
                         tmpexp2->setDistinct(true);
                     }
+                    else if (columnattributetype == ASTERISK)
+                    {
+                        ForEachItemIn(tableidx, tableList)
+                        {
+                            const char * tablename = tableList.item(tableidx).getName();
+                            HPCCFilePtr file = dynamic_cast<HPCCFile *>(tmpHPCCFileCache->getHpccFileByName(tablename));
+                            if (file)
+                            {
+                                IArrayOf<HPCCColumnMetaData> * cols = file->getColumns();
+                                ForEachItemIn(colidx, *cols)
+                                {
+                                    HPCCColumnMetaData col = cols->item(colidx);
+                                    Owned<ISQLExpression> fve = new SQLFieldValueExpression(file->getFullname(),col.getColumnName());
+                                    tmpexp2->addParams(fve.getLink());
+                                }
+                            }
+                        }
+                    }
                     else
                     {
                         tmpexp2->addParams(expressionTreeWalker(ithcolumnattributenode, exprAST));
@@ -277,7 +295,37 @@ ISQLExpression * HPCCSQLTreeWalker::expressionTreeWalker(pANTLR3_BASE_TREE exprA
                 break;
             case TOKEN_COLUMNWILDCARD:
             {
-                tmpexp.setown(new SQLFieldsExpression(true));
+                if (exprAST->getChildCount(exprAST) > 0)
+                {
+                    pANTLR3_BASE_TREE table = (pANTLR3_BASE_TREE)(exprAST->getChild(exprAST, 0));
+                    const char * tablename = (char *)table->toString(table)->chars;
+                    if (tablename == NULL)
+                    {
+                        tmpexp.setown(new SQLFieldsExpression(true));
+                    }
+                    else
+                    {
+                        //SEARCH FOR possible table name (this could be an aliased parent)
+                        bool found = false;
+                        ForEachItemIn(tableidx, tableList)
+                        {
+                            const char * translated = tableList.item(tableidx).translateIfAlias(tablename);
+                            if (translated && *translated)
+                            {
+                                tmpexp.setown(new SQLFieldsExpression(translated));
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        if (found == false)
+                        {
+                            throw MakeStringException(-1, "INVALID TABLE NAME FOUND: %s\n", tablename );
+                        }
+                    }
+                }
+                else
+                    tmpexp.setown(new SQLFieldsExpression(true));
                 break;
             }
             case TOKEN_COLUMN:
@@ -697,7 +745,7 @@ void HPCCSQLTreeWalker::expandWildCardColumn()
             }
             else
             {
-                const char * tablename = ((SQLFieldsExpression)currexp).getTable();
+                const char * tablename = ((SQLFieldsExpression * )currexp)->getTable();
                 HPCCFilePtr file =  dynamic_cast<HPCCFile *>(tmpHPCCFileCache->getHpccFileByName(tablename));
                 if (file)
                 {
@@ -709,7 +757,8 @@ void HPCCSQLTreeWalker::expandWildCardColumn()
                         if (colidx == 0)
                         {
                             selectList.replace(*fve.getLink(), selectcolidx, true);
-                            currexp->Release();
+                            if (currexp)
+                                        currexp->Release();
                         }
                         else
                             selectList.add(*fve.getLink(),selectcolidx+ colidx );
@@ -822,20 +871,17 @@ void HPCCSQLTreeWalker::verifyColAndDisambiguateName()
         {
             verifyColumn((SQLFieldValueExpression * )selcolexp);
         }
-
         else if (selcolexp && selcolexp->getExpType() == Function_ExpressionType)
         {
             SQLFunctionExpression * currentfunccol = (SQLFunctionExpression *)selcolexp;
 
-           IArrayOf<ISQLExpression> * funcparams = currentfunccol->getParams();
-           ForEachItemIn(paramidx, *funcparams)
-           {
-               ISQLExpression * param = &(funcparams->item(paramidx));
-               if (param && param->getExpType() == FieldValue_ExpressionType)
-               {
+            IArrayOf<ISQLExpression> * funcparams = currentfunccol->getParams();
+            ForEachItemIn(paramidx, *funcparams)
+            {
+                ISQLExpression * param = &(funcparams->item(paramidx));
+                if (param && param->getExpType() == FieldValue_ExpressionType)
                    verifyColumn((SQLFieldValueExpression *)param);
-               }
-           }
+            }
         }
         else
             throw MakeStringException(-1, "Could not process an entry on the select list");
