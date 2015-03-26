@@ -358,6 +358,7 @@ index_name          : ID ;
 user_name           : ID ;
 function_name       : ID ;
 procedure_name      : ID ;
+
 alias
 :
   ( AS_SYM )? ID -> ^( TOKEN_ALIAS ID)
@@ -489,6 +490,7 @@ functionParam
       literal_value
       | column_spec
       | parameterPlaceHolder
+      | ASTERISK
     )
 ;
 
@@ -673,7 +675,7 @@ table_spec
 
 column_wildcard
 :
-    ASTERISK -> TOKEN_COLUMNWILDCARD
+    (ID DOT)? ASTERISK -> ^(TOKEN_COLUMNWILDCARD ID?)
 ;
 
 callParam

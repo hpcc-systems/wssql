@@ -700,7 +700,9 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
         bool clonable = false;
 
         Owned<HPCCSQLTreeWalker> parsedSQL;
+        ESPLOG(LogNormal, "WsSQL: Parsing sql query...");
         parsedSQL.setown(parseSQL(context, sqltext));
+        ESPLOG(LogNormal, "WsSQL: Finished parsing sql query...");
 
         SQLQueryType querytype = parsedSQL->getSqlType();
         if (querytype == SQLTypeCall)
@@ -723,13 +725,17 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
         if (wuusername && *wuusername)
             normalizedSQL.append("--WUOWN").append(wuusername);
 
+        ESPLOG(LogMax, "WsSQL: getWorkUnitFactory...");
         Owned<IWorkUnitFactory> factory = getWorkUnitFactory(context.querySecManager(), context.queryUser());
 
+        ESPLOG(LogMax, "WsSQL: checking query cache...");
         if(getCachedQuery(normalizedSQL.str(), compiledwuid.s))
         {
+            ESPLOG(LogMax, "WsSQL: cache hit opening wuid %s...", compiledwuid.str());
             Owned<IConstWorkUnit> cw = factory->openWorkUnit(compiledwuid.str(), false);
             if (!cw)//cache hit but unavailable WU
             {
+                ESPLOG(LogMax, "WsSQL: cache hit but unavailable WU...");
                 removeQueryFromCache(normalizedSQL.str());
                 compiledwuid.clear();
             }
@@ -741,6 +747,7 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
         {
             if (querytype == SQLTypeCall)
             {
+                ESPLOG(LogMax, "WsSQL: Processing call query...");
                 if (!isEmpty(cluster))
                     throw MakeStringException(-1,"Cannot set target Cluster on a query of type CALL.");
 
@@ -757,13 +764,16 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
                 if (!isValidCluster(cluster))
                     throw MakeStringException(-1, "Invalid cluster name: %s", cluster);
 
+                ESPLOG(LogNormal, "WsSQL: generating ECL...");
                 ECLEngine::generateECL(parsedSQL,ecltext.clear());
+                ESPLOG(LogNormal, "WsSQL: Finished generating ECL...");
 #if defined _DEBUG
                 fprintf(stderr, "GENERATED ECL:\n%s\n", ecltext.toCharArray());
 #endif
                 if (isEmpty(ecltext))
                    throw MakeStringException(1,"Could not generate ECL from SQL.");
 
+                ESPLOG(LogMax, "WsSQL: creating new WU...");
                 NewWsWorkunit wu(context);
                 wu->getWuid(compiledwuid);
 
@@ -781,11 +791,14 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
                 wu->commit();
                 wu.clear();
 
+                ESPLOG(LogMax, "WsSQL: compiling WU...");
                 WsWuHelpers::submitWsWorkunit(context, compiledwuid.str(), cluster, NULL, 0, true, false, false, NULL, NULL, NULL);
                 waitForWorkUnitToCompile(compiledwuid.str(), req.getWait());
+                ESPLOG(LogMax, "WsSQL: finish compiling WU...");
             }
         }
 
+        ESPLOG(LogMax, "WsSQL: opening WU...");
         Owned<IConstWorkUnit> cw = factory->openWorkUnit(compiledwuid.str(), false);
 
         if (!cw)
@@ -813,12 +826,14 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
 
             if (clonable)
             {
+                ESPLOG(LogMax, "WsSQL: cloning and executing WU...");
                 cloneAndExecuteWU(context, compiledwuid.str(), runningwuid, xmlparams.str(), NULL, NULL, cluster);
                 if(!isQueryCached(normalizedSQL.str()))
                     addQueryToCache(normalizedSQL.str(), compiledwuid.str());
             }
             else
             {
+                ESPLOG(LogMax, "WsSQL: executing WU(%s)...", compiledwuid.str());
                 WsWuHelpers::submitWsWorkunit(context, compiledwuid.str(), cluster, NULL, 0, false, true, true, NULL, NULL, NULL);
                 runningwuid.set(compiledwuid.str());
                 addQueryToCache(normalizedSQL.str(), runningwuid.str());
@@ -826,7 +841,11 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
 
             int timeToWait = req.getWait();
             if (timeToWait != 0)
-               waitForWorkUnitToComplete(runningwuid.str(), timeToWait);
+            {
+                ESPLOG(LogMax, "WsSQL: waiting on WU(%s)...", runningwuid.str());
+                waitForWorkUnitToComplete(runningwuid.str(), timeToWait);
+                ESPLOG(LogMax, "WsSQL: finished waiting on WU(%s)...", runningwuid.str());
+            }
 
             if (strcmp(runningwuid.str(), compiledwuid.str())!=0)
                 resp.setParentWuId(compiledwuid.str());
