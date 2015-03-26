@@ -213,7 +213,7 @@ ISQLExpression * HPCCSQLTreeWalker::expressionTreeWalker(pANTLR3_BASE_TREE exprA
                         ForEachItemIn(tableidx, tableList)
                         {
                             const char * tablename = tableList.item(tableidx).getName();
-                            HPCCFilePtr file = dynamic_cast<HPCCFile *>(tmpHPCCFileCache->getHpccFileByName(tablename));
+                            HPCCFilePtr file = dynamic_cast<HPCCFilePtr>(tmpHPCCFileCache->getHpccFileByName(tablename));
                             if (file)
                             {
                                 IArrayOf<HPCCColumnMetaData> * cols = file->getColumns();
@@ -721,7 +721,7 @@ void HPCCSQLTreeWalker::expandWildCardColumn()
                 {
                     SQLTable tab = (SQLTable)tableList.item(tableidx);
 
-                    HPCCFilePtr file = dynamic_cast<HPCCFile *>(tmpHPCCFileCache->getHpccFileByName(tab.getName()));
+                    HPCCFilePtr file = dynamic_cast<HPCCFilePtr>(tmpHPCCFileCache->getHpccFileByName(tab.getName()));
                     if (file)
                     {
                         IArrayOf<HPCCColumnMetaData> * cols = file->getColumns();
@@ -746,7 +746,7 @@ void HPCCSQLTreeWalker::expandWildCardColumn()
             else
             {
                 const char * tablename = ((SQLFieldsExpression * )currexp)->getTable();
-                HPCCFilePtr file =  dynamic_cast<HPCCFile *>(tmpHPCCFileCache->getHpccFileByName(tablename));
+                HPCCFilePtr file =  dynamic_cast<HPCCFilePtr>(tmpHPCCFileCache->getHpccFileByName(tablename));
                 if (file)
                 {
                     IArrayOf<HPCCColumnMetaData> * cols = file->getColumns();
@@ -838,7 +838,7 @@ void HPCCSQLTreeWalker::verifyColumn(SQLFieldValueExpression * col)
 
         if (selcolname && *selcolname)
         {
-            HPCCFilePtr file = dynamic_cast<HPCCFile *>(tmpHPCCFileCache->getHpccFileByName(selcolparent));
+            HPCCFilePtr file = dynamic_cast<HPCCFilePtr>(tmpHPCCFileCache->getHpccFileByName(selcolparent));
             if (file)
             {
                 if (selcolname && *selcolname)

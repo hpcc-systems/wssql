@@ -833,7 +833,7 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
             }
             else
             {
-                ESPLOG(LogMax, "WsSQL: executing WU...");
+                ESPLOG(LogMax, "WsSQL: executing WU(%s)...", compiledwuid.str());
                 WsWuHelpers::submitWsWorkunit(context, compiledwuid.str(), cluster, NULL, 0, false, true, true, NULL, NULL, NULL);
                 runningwuid.set(compiledwuid.str());
                 addQueryToCache(normalizedSQL.str(), runningwuid.str());
@@ -842,9 +842,9 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
             int timeToWait = req.getWait();
             if (timeToWait != 0)
             {
-                ESPLOG(LogMax, "WsSQL: waiting on  WU...");
+                ESPLOG(LogMax, "WsSQL: waiting on WU(%s)...", runningwuid.str());
                 waitForWorkUnitToComplete(runningwuid.str(), timeToWait);
-                ESPLOG(LogMax, "WsSQL: finished waiting on  WU...");
+                ESPLOG(LogMax, "WsSQL: finished waiting on WU(%s)...", runningwuid.str());
             }
 
             if (strcmp(runningwuid.str(), compiledwuid.str())!=0)
