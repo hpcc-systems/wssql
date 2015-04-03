@@ -712,6 +712,7 @@ void HPCCSQLTreeWalker::expandWildCardColumn()
     ForEachItemIn(selectcolidx, selectList)
     {
         ISQLExpression * currexp = &selectList.item(selectcolidx);
+        bool replaced = false;
 
         if (currexp && currexp->needsColumnExpansion())
         {
@@ -732,8 +733,7 @@ void HPCCSQLTreeWalker::expandWildCardColumn()
                             if (tableidx == 0 && colidx == 0)
                             {
                                 selectList.replace(*fve.getLink(), selectcolidx, true);
-                                if (currexp)
-                                    currexp->Release();
+                                replaced = true;
                             }
                             else
                                 selectList.add(*fve.getLink(),selectcolidx+ colidx );
@@ -757,8 +757,7 @@ void HPCCSQLTreeWalker::expandWildCardColumn()
                         if (colidx == 0)
                         {
                             selectList.replace(*fve.getLink(), selectcolidx, true);
-                            if (currexp)
-                                        currexp->Release();
+                            replaced = true;
                         }
                         else
                             selectList.add(*fve.getLink(),selectcolidx+ colidx );
@@ -768,6 +767,8 @@ void HPCCSQLTreeWalker::expandWildCardColumn()
             }
             break; //only one select all ??
         }
+        if (replaced && currexp)
+            currexp->Release();
     }
 }
 
