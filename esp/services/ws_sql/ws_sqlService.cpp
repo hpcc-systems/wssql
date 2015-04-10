@@ -749,7 +749,7 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
             {
                 ESPLOG(LogMax, "WsSQL: Processing call query...");
                 if (!isEmpty(cluster))
-                    throw MakeStringException(-1,"Cannot set target Cluster on a query of type CALL.");
+                    ESPLOG(LogMax, "WsSQL: Target Cluster was provided on a query of type CALL but will be ignored.");
 
                 WsEclWuInfo wsinfo("", parsedSQL->getQuerySetName(), parsedSQL->getStoredProcName(), username.str(), passwd);
                 compiledwuid.set(wsinfo.ensureWuid());
