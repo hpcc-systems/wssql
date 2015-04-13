@@ -362,6 +362,7 @@ procedure_name      : ID ;
 alias
 :
   ( AS_SYM )? ID -> ^( TOKEN_ALIAS ID)
+  | ( AS_SYM )? quoted_id -> ^( TOKEN_ALIAS quoted_id)
 ;
 
 column_spec
