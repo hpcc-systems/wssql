@@ -1277,7 +1277,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
       <para>If you are executing SQL that uses a CALL to a stored procedure,
       you must either fully qualify the procedure name (For example:
       Roxie.FindPeopleByZip) or specify the <emphasis
-      role="bold">TargetCluster</emphasis> here.</para>
+      role="bold">TargetQuerySet</emphasis> here.</para>
 
       <para>To exclude the result schema in the result, set the <emphasis
       role="bold">SuppressXmlSchema</emphasis> option to 1 or true.</para>
@@ -1659,7 +1659,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
       <para>If you using a CALL to a stored procedure, you must either fully
       qualify the procedure name in the SQL (For example:
       Roxie.FindPeopleByZip) or specify the <emphasis
-      role="bold">TargetCluster</emphasis> here.</para>
+      role="bold">TargetQuerySet</emphasis> here.</para>
 
       <para>Create parameters using a ? as a placeholder.</para>
 
