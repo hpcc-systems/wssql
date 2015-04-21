@@ -27,6 +27,7 @@ tokens
     TOKEN_FUNCEXP;
     TOKEN_PARAMPLACEHOLDER;
     TOKEN_COLUMNWILDCARD;
+    TOKEN_TABLE_SCHEMA;
 }
 
 @header
@@ -563,7 +564,7 @@ join_condition
 index_hint
 :
   USE_SYM INDEX_SYM LPAREN ( index_name | v= 'NONE' ) RPAREN -> {$v != NULL}? ^(TOKEN_AVOID_INDEX index_name)
-                                                         -> ^(TOKEN_INDEX_HINT index_name)
+                                                             -> ^(TOKEN_INDEX_HINT index_name)
 ;
 
 root_statement
@@ -670,8 +671,12 @@ subquery
 
 table_spec
 :
-  table_name
-  | quoted_table_name
+  schema_spec ? (table_name | quoted_table_name)^
+;
+
+schema_spec
+:
+    (ID|quoted_id) DOT -> ^(TOKEN_TABLE_SCHEMA ID? quoted_id?) 
 ;
 
 column_wildcard
