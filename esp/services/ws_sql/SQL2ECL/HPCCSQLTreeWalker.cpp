@@ -73,14 +73,12 @@ void HPCCSQLTreeWalker::fromTreeWalker(pANTLR3_BASE_TREE fromsqlAST)
             pANTLR3_BASE_TREE onclausenode = NULL;
 
             SQLJoinType jointype = SQLJoinTypeUnknown;
-            if (tokenType != ABSOLUTE_FILE_ID && tokenType != ID && tokenType != TOKEN_INDEX_HINT && tokenType != TOKEN_AVOID_INDEX)
+            if (tokenType == TOKEN_OUTTER_JOIN || tokenType == TOKEN_INNER_JOIN)
             {
                 if (tokenType == TOKEN_OUTTER_JOIN)
                     jointype = SQLJoinTypeOuter;
                 else if (tokenType == TOKEN_INNER_JOIN)
                     jointype = SQLJoinTypeInner;
-                else
-                    throw MakeStringException(-1,"Possible error found in from list.");
 
                 int joinNodeChildcount = ithchild->getChildCount(ithchild);
                 if (joinNodeChildcount < 2 )
