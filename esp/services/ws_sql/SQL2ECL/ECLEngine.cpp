@@ -276,74 +276,65 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
 
     if (!eclEntities->hasProp("IndexDef"))
     {
-        if (eclEntities->hasProp("SCALAROUTNAME"))
+        //Create filtered DS if there's a where clause, and no join clause,
+        //because filtering is applied while performing join.
+        //if (sqlParser.getWhereClause() != null && !eclEntities.containsKey("JoinQuery"))
+        if (selectsqlobj->hasWhereClause())
         {
-            out.append("OUTPUT(ScalarOut ,NAMED(\'");
-            eclEntities->getProp("SCALAROUTNAME", out);
-            out.append("\'));");
+            out.appendf("%sFiltered := %s",latestDS.str(), latestDS.str());
+            addFilterClause(selectsqlobj, out);
+            out.append(";\n");
+            latestDS.append("Filtered");
+        }
+
+        generateSelectStruct(selectsqlobj, eclEntities.getLink(), *selectsqlobj->getSelectList(),latestDS.str());
+        out.append(eclEntities->queryProp("SELECTSTRUCT"));
+
+        if (tables->length() > 0)
+        {
+            out.append(latestDS).append("Table").append(" := TABLE( ");
+            out.append(latestDS);
+
+            out.append(", SelectStruct ");
+
+            if (selectsqlobj->hasGroupByColumns() && !selectsqlobj->hasHavingClause())
+            {
+                out.append(", ");
+                selectsqlobj->getGroupByString(out);
+            }
+
+            out.append(");\n");
+
+            latestDS.append("Table");
         }
         else
         {
-            //Create filtered DS if there's a where clause, and no join clause,
-            //because filtering is applied while performing join.
-            //if (sqlParser.getWhereClause() != null && !eclEntities.containsKey("JoinQuery"))
-            if (selectsqlobj->hasWhereClause())
-            {
-                out.appendf("%sFiltered := %s",latestDS.str(), latestDS.str());
-                addFilterClause(selectsqlobj, out);
-                out.append(";\n");
-                latestDS.append("Filtered");
-            }
+            generateConstSelectDataset(selectsqlobj, eclEntities.getLink(), *selectsqlobj->getSelectList(),latestDS.str());
+            out.append(latestDS).append(" := ").append(eclEntities->queryProp("CONSTDATASETSTRUCT")).append(";\n");
+        }
 
-            generateSelectStruct(selectsqlobj, eclEntities.getLink(), *selectsqlobj->getSelectList(),latestDS.str());
-            out.append(eclEntities->queryProp("SELECTSTRUCT"));
+        if (selectsqlobj->isSelectDistinct())
+        {
+            out.append(latestDS)
+            .append("Deduped := Dedup( ")
+            .append(latestDS)
+            .append(", HASH);\n");
+            latestDS.append("Deduped");
+        }
 
-            if (tables->length() > 0)
-            {
-                out.append(latestDS).append("Table").append(" := TABLE( ");
-                out.append(latestDS);
+        out.append("OUTPUT(");
+        if (limit>0 || (!eclEntities->hasProp("NONSCALAREXPECTED") && !selectsqlobj->hasGroupByColumns()))
+            out.append("CHOOSEN(");
 
-                out.append(", SelectStruct ");
+        if (selectsqlobj->hasOrderByColumns())
+            out.append("SORT(");
 
-                if (selectsqlobj->hasGroupByColumns() && !selectsqlobj->hasHavingClause())
-                {
-                    out.append(", ");
-                    selectsqlobj->getGroupByString(out);
-                }
-
-                out.append(");\n");
-
-                latestDS.append("Table");
-            }
-            else
-            {
-                generateConstSelectDataset(selectsqlobj, eclEntities.getLink(), *selectsqlobj->getSelectList(),latestDS.str());
-                out.append(latestDS).append(" := ").append(eclEntities->queryProp("CONSTDATASETSTRUCT")).append(";\n");
-            }
-
-            if (selectsqlobj->isSelectDistinct())
-            {
-                out.append(latestDS)
-                .append("Deduped := Dedup( ")
-                .append(latestDS)
-                .append(", HASH);\n");
-                latestDS.append("Deduped");
-            }
-
-            out.append("OUTPUT(");
-            if (limit>0 || (!eclEntities->hasProp("NONSCALAREXPECTED") && !selectsqlobj->hasGroupByColumns()))
-                out.append("CHOOSEN(");
-
-            if (selectsqlobj->hasOrderByColumns())
-                out.append("SORT(");
-
-            out.append(latestDS);
-            if (selectsqlobj->hasOrderByColumns())
-            {
-                out.append(",");
-                selectsqlobj->getOrderByString(out);
-                out.append(")");
-            }
+        out.append(latestDS);
+        if (selectsqlobj->hasOrderByColumns())
+        {
+            out.append(",");
+            selectsqlobj->getOrderByString(out);
+            out.append(")");
         }
     }
     else //PROCESSING FOR INDEX BASED FETCH
@@ -422,26 +413,23 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
         }
     }
 
-    if (!eclEntities->hasProp("SCALAROUTNAME"))
+    if (!eclEntities->hasProp("NONSCALAREXPECTED") && !selectsqlobj->hasGroupByColumns())
     {
-        if (!eclEntities->hasProp("NONSCALAREXPECTED") && !selectsqlobj->hasGroupByColumns())
-        {
-            out.append(", 1)");
-        }
-        else if (limit>0)
+        out.append(", 1)");
+    }
+    else if (limit>0)
+    {
+        out.append(",");
+        out.append(limit);
+        if (offset>0)
         {
             out.append(",");
-            out.append(limit);
-            if (offset>0)
-            {
-                out.append(",");
-                out.append(offset);
-            }
-            out.append(")");
+            out.append(offset);
         }
-
-        out.appendf(",NAMED(\'%s\'));", SELECTOUTPUTNAME);
+        out.append(")");
     }
+
+    out.appendf(",NAMED(\'%s\'));", SELECTOUTPUTNAME);
 }
 
 void ECLEngine::generateConstSelectDataset(HPCCSQLTreeWalker * selectsqlobj, IProperties* eclEntities,  const IArrayOf<ISQLExpression> & expectedcolumns, const char * datasource)
