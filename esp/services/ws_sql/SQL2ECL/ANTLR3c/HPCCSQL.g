@@ -588,7 +588,7 @@ select_statement
           ( where_clause )?
           ( groupby_clause )?
           ( having_clause )?
-        )
+        )?
 
         ( orderby_clause )?
         ( limit_clause )?

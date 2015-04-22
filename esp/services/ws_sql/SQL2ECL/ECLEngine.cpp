@@ -276,30 +276,22 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
 
     if (!eclEntities->hasProp("IndexDef"))
     {
-        if (eclEntities->hasProp("SCALAROUTNAME"))
+        //Create filtered DS if there's a where clause, and no join clause,
+        //because filtering is applied while performing join.
+        //if (sqlParser.getWhereClause() != null && !eclEntities.containsKey("JoinQuery"))
+        if (selectsqlobj->hasWhereClause())
         {
-            out.append("OUTPUT(ScalarOut ,NAMED(\'");
-            eclEntities->getProp("SCALAROUTNAME", out);
-            out.append("\'));");
+            out.appendf("%sFiltered := %s",latestDS.str(), latestDS.str());
+            addFilterClause(selectsqlobj, out);
+            out.append(";\n");
+            latestDS.append("Filtered");
         }
-        else
+
+        generateSelectStruct(selectsqlobj, eclEntities.getLink(), *selectsqlobj->getSelectList(),latestDS.str());
+        out.append(eclEntities->queryProp("SELECTSTRUCT"));
+
+        if (tables->length() > 0)
         {
-            //Create filtered DS if there's a where clause, and no join clause,
-            //because filtering is applied while performing join.
-            //if (sqlParser.getWhereClause() != null && !eclEntities.containsKey("JoinQuery"))
-            if (selectsqlobj->hasWhereClause())
-            {
-                out.appendf("%sFiltered := %s",latestDS.str(), latestDS.str());
-                addFilterClause(selectsqlobj, out);
-                out.append(";\n");
-                latestDS.append("Filtered");
-            }
-
-            generateSelectStruct(selectsqlobj, eclEntities.getLink(), *selectsqlobj->getSelectList(),latestDS.str());
-
-            const char *selectstr = eclEntities->queryProp("SELECTSTRUCT");
-            out.append(selectstr);
-
             out.append(latestDS).append("Table").append(" := TABLE( ");
             out.append(latestDS);
 
@@ -314,30 +306,35 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
             out.append(");\n");
 
             latestDS.append("Table");
+        }
+        else
+        {
+            generateConstSelectDataset(selectsqlobj, eclEntities.getLink(), *selectsqlobj->getSelectList(),latestDS.str());
+            out.append(latestDS).append(" := ").append(eclEntities->queryProp("CONSTDATASETSTRUCT")).append(";\n");
+        }
 
-            if (selectsqlobj->isSelectDistinct())
-            {
-                out.append(latestDS)
-                .append("Deduped := Dedup( ")
-                .append(latestDS)
-                .append(", HASH);\n");
-                latestDS.append("Deduped");
-            }
+        if (selectsqlobj->isSelectDistinct())
+        {
+            out.append(latestDS)
+            .append("Deduped := Dedup( ")
+            .append(latestDS)
+            .append(", HASH);\n");
+            latestDS.append("Deduped");
+        }
 
-            out.append("OUTPUT(");
-            if (limit>0 || (!eclEntities->hasProp("NONSCALAREXPECTED") && !selectsqlobj->hasGroupByColumns()))
-                out.append("CHOOSEN(");
+        out.append("OUTPUT(");
+        if (limit>0 || (!eclEntities->hasProp("NONSCALAREXPECTED") && !selectsqlobj->hasGroupByColumns()))
+            out.append("CHOOSEN(");
 
-            if (selectsqlobj->hasOrderByColumns())
-                out.append("SORT(");
+        if (selectsqlobj->hasOrderByColumns())
+            out.append("SORT(");
 
-            out.append(latestDS);
-            if (selectsqlobj->hasOrderByColumns())
-            {
-                out.append(",");
-                selectsqlobj->getOrderByString(out);
-                out.append(")");
-            }
+        out.append(latestDS);
+        if (selectsqlobj->hasOrderByColumns())
+        {
+            out.append(",");
+            selectsqlobj->getOrderByString(out);
+            out.append(")");
         }
     }
     else //PROCESSING FOR INDEX BASED FETCH
@@ -416,26 +413,40 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
         }
     }
 
-    if (!eclEntities->hasProp("SCALAROUTNAME"))
+    if (!eclEntities->hasProp("NONSCALAREXPECTED") && !selectsqlobj->hasGroupByColumns())
     {
-        if (!eclEntities->hasProp("NONSCALAREXPECTED") && !selectsqlobj->hasGroupByColumns())
-        {
-            out.append(", 1)");
-        }
-        else if (limit>0)
+        out.append(", 1)");
+    }
+    else if (limit>0)
+    {
+        out.append(",");
+        out.append(limit);
+        if (offset>0)
         {
             out.append(",");
-            out.append(limit);
-            if (offset>0)
-            {
-                out.append(",");
-                out.append(offset);
-            }
-            out.append(")");
+            out.append(offset);
         }
-
-        out.appendf(",NAMED(\'%s\'));", SELECTOUTPUTNAME);
+        out.append(")");
     }
+
+    out.appendf(",NAMED(\'%s\'));", SELECTOUTPUTNAME);
+}
+
+void ECLEngine::generateConstSelectDataset(HPCCSQLTreeWalker * selectsqlobj, IProperties* eclEntities,  const IArrayOf<ISQLExpression> & expectedcolumns, const char * datasource)
+{
+    StringBuffer datasetStructSB = "DATASET([{ ";
+
+    ForEachItemIn(i, expectedcolumns)
+    {
+        ISQLExpression * col = &expectedcolumns.item(i);
+        col->toString(datasetStructSB, true);
+        if (i < expectedcolumns.length()-1)
+            datasetStructSB.append(", ");
+    }
+
+    datasetStructSB.append("}],SelectStruct)");
+
+    eclEntities->setProp("CONSTDATASETSTRUCT", datasetStructSB.toCharArray());
 }
 
 void ECLEngine::generateSelectStruct(HPCCSQLTreeWalker * selectsqlobj, IProperties* eclEntities,  const IArrayOf<ISQLExpression> & expectedcolumns, const char * datasource)
@@ -449,7 +460,11 @@ void ECLEngine::generateSelectStruct(HPCCSQLTreeWalker * selectsqlobj, IProperti
 
         if (col->getExpType() == Value_ExpressionType)
         {
-            selectStructSB.appendf("%s %s%d := ", col->getECLType(), col->getNameOrAlias(), i);
+            const char * alias = col->getAlias();
+            if (alias && *alias)
+                selectStructSB.appendf("%s %s := ", col->getECLType(), alias);
+            else
+                selectStructSB.appendf("%s %s%d := ", col->getECLType(), col->getName(), i);
             col->toString(selectStructSB, false);
             selectStructSB.append("; ");
 
@@ -470,10 +485,11 @@ void ECLEngine::generateSelectStruct(HPCCSQLTreeWalker * selectsqlobj, IProperti
                     ISQLExpression * param = &funccols->item(0);
                     int paramtype = param->getExpType();
 
-                    if (strlen(col->getAlias())>0)
-                        selectStructSB.append(col->getAlias());
+                    const char * alias = col->getAlias();
+                    if (alias && *alias)
+                        selectStructSB.append(alias);
                     else
-                        selectStructSB.append(param->getNameOrAlias());
+                        selectStructSB.append(param->getName());
                     selectStructSB.append(" := ");
                     selectStructSB.append(func.eclFunctionName).append("( ");
                     if (paramtype == FieldValue_ExpressionType)
@@ -490,8 +506,9 @@ void ECLEngine::generateSelectStruct(HPCCSQLTreeWalker * selectsqlobj, IProperti
             }
             else
             {
-                if (strlen(col->getAlias())>0)
-                    selectStructSB.append(col->getAlias());
+                const char * alias = col->getAlias();
+                if (alias && *alias)
+                    selectStructSB.append(alias);
                 else
                 {
                     selectStructSB.append(col->getName());
