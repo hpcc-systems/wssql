@@ -296,24 +296,30 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
             }
 
             generateSelectStruct(selectsqlobj, eclEntities.getLink(), *selectsqlobj->getSelectList(),latestDS.str());
+            out.append(eclEntities->queryProp("SELECTSTRUCT"));
 
-            const char *selectstr = eclEntities->queryProp("SELECTSTRUCT");
-            out.append(selectstr);
-
-            out.append(latestDS).append("Table").append(" := TABLE( ");
-            out.append(latestDS);
-
-            out.append(", SelectStruct ");
-
-            if (selectsqlobj->hasGroupByColumns() && !selectsqlobj->hasHavingClause())
+            if (tables->length() > 0)
             {
-                out.append(", ");
-                selectsqlobj->getGroupByString(out);
+                out.append(latestDS).append("Table").append(" := TABLE( ");
+                out.append(latestDS);
+
+                out.append(", SelectStruct ");
+
+                if (selectsqlobj->hasGroupByColumns() && !selectsqlobj->hasHavingClause())
+                {
+                    out.append(", ");
+                    selectsqlobj->getGroupByString(out);
+                }
+
+                out.append(");\n");
+
+                latestDS.append("Table");
             }
-
-            out.append(");\n");
-
-            latestDS.append("Table");
+            else
+            {
+                generateConstSelectDataset(selectsqlobj, eclEntities.getLink(), *selectsqlobj->getSelectList(),latestDS.str());
+                out.append(latestDS).append(" := ").append(eclEntities->queryProp("CONSTDATASETSTRUCT")).append(";\n");
+            }
 
             if (selectsqlobj->isSelectDistinct())
             {
@@ -438,6 +444,23 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
     }
 }
 
+void ECLEngine::generateConstSelectDataset(HPCCSQLTreeWalker * selectsqlobj, IProperties* eclEntities,  const IArrayOf<ISQLExpression> & expectedcolumns, const char * datasource)
+{
+    StringBuffer datasetStructSB = "DATASET([{ ";
+
+    ForEachItemIn(i, expectedcolumns)
+    {
+        ISQLExpression * col = &expectedcolumns.item(i);
+        col->toString(datasetStructSB, true);
+        if (i < expectedcolumns.length()-1)
+            datasetStructSB.append(", ");
+    }
+
+    datasetStructSB.append("}],SelectStruct)");
+
+    eclEntities->setProp("CONSTDATASETSTRUCT", datasetStructSB.toCharArray());
+}
+
 void ECLEngine::generateSelectStruct(HPCCSQLTreeWalker * selectsqlobj, IProperties* eclEntities,  const IArrayOf<ISQLExpression> & expectedcolumns, const char * datasource)
 {
     StringBuffer selectStructSB = "SelectStruct := RECORD\n";
@@ -449,7 +472,11 @@ void ECLEngine::generateSelectStruct(HPCCSQLTreeWalker * selectsqlobj, IProperti
 
         if (col->getExpType() == Value_ExpressionType)
         {
-            selectStructSB.appendf("%s %s%d := ", col->getECLType(), col->getNameOrAlias(), i);
+            const char * alias = col->getAlias();
+            if (alias && *alias)
+                selectStructSB.appendf("%s %s := ", col->getECLType(), alias);
+            else
+                selectStructSB.appendf("%s %s%d := ", col->getECLType(), col->getName(), i);
             col->toString(selectStructSB, false);
             selectStructSB.append("; ");
 
@@ -470,10 +497,11 @@ void ECLEngine::generateSelectStruct(HPCCSQLTreeWalker * selectsqlobj, IProperti
                     ISQLExpression * param = &funccols->item(0);
                     int paramtype = param->getExpType();
 
-                    if (strlen(col->getAlias())>0)
-                        selectStructSB.append(col->getAlias());
+                    const char * alias = col->getAlias();
+                    if (alias && *alias)
+                        selectStructSB.append(alias);
                     else
-                        selectStructSB.append(param->getNameOrAlias());
+                        selectStructSB.append(param->getName());
                     selectStructSB.append(" := ");
                     selectStructSB.append(func.eclFunctionName).append("( ");
                     if (paramtype == FieldValue_ExpressionType)
@@ -490,8 +518,9 @@ void ECLEngine::generateSelectStruct(HPCCSQLTreeWalker * selectsqlobj, IProperti
             }
             else
             {
-                if (strlen(col->getAlias())>0)
-                    selectStructSB.append(col->getAlias());
+                const char * alias = col->getAlias();
+                if (alias && *alias)
+                    selectStructSB.append(alias);
                 else
                 {
                     selectStructSB.append(col->getName());

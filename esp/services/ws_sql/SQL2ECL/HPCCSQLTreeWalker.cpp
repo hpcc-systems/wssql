@@ -170,6 +170,7 @@ ISQLExpression * HPCCSQLTreeWalker::expressionTreeWalker(pANTLR3_BASE_TREE exprA
 
     if ( exprAST != NULL )
     {
+        bool checkForAlias = false;
         switch (exptype)
         {
             case TOKEN_LISTEXP:
@@ -250,6 +251,7 @@ ISQLExpression * HPCCSQLTreeWalker::expressionTreeWalker(pANTLR3_BASE_TREE exprA
                 tmpexp.setown(new SQLValueExpression(exptype, (char *)exprAST->toString(exprAST)->chars));
                 tmpexp->setName("ConstBool");
                 tmpexp->setECLType("BOOLEAN");
+                checkForAlias = true;
                 break;
             case INTEGER_NUM:
             case REAL_NUMBER:
@@ -257,12 +259,14 @@ ISQLExpression * HPCCSQLTreeWalker::expressionTreeWalker(pANTLR3_BASE_TREE exprA
                 tmpexp.setown(new SQLValueExpression(exptype, (char *)exprAST->toString(exprAST)->chars));
                 tmpexp->setName("ConstNum");
                 tmpexp->setECLType("INTEGER");
+                checkForAlias = true;
                 break;
             //case QUOTED_STRING:
             case TEXT_STRING:
                 tmpexp.setown(new SQLValueExpression(exptype, (char *)exprAST->toString(exprAST)->chars));
                 tmpexp->setName("ConstStr");
                 tmpexp->setECLType("STRING");
+                checkForAlias = true;
                 break;
             case IN_SYM:
             case NOT_IN:
@@ -405,6 +409,25 @@ ISQLExpression * HPCCSQLTreeWalker::expressionTreeWalker(pANTLR3_BASE_TREE exprA
             default:
                 throw MakeStringException(-1, "\n Unexpected expression node found : %s ", (char *)exprAST->toString(exprAST)->chars);
                 break;
+        }
+
+        if (checkForAlias)
+        {
+            if(exprAST->getChildCount(exprAST) == 1)//Alias
+            {
+                pANTLR3_BASE_TREE tmpNode = (pANTLR3_BASE_TREE)(exprAST->getChild(exprAST, 0));
+                ANTLR3_UINT32 columnattributetype = tmpNode->getType(tmpNode);
+
+                if (columnattributetype == TOKEN_ALIAS && tmpNode->getChildCount(tmpNode) == 1)
+                {
+                    pANTLR3_BASE_TREE ithcolumnaliasnode = (pANTLR3_BASE_TREE)(tmpNode->getChild(tmpNode, 0));
+                    tmpexp->setAlias((char *)ithcolumnaliasnode->toString(ithcolumnaliasnode)->chars);
+                }
+                else
+                {
+                    throw MakeStringException(-1, "INVALID NODE: found while processing possible expression alias \n", (char *)tmpNode->toString(tmpNode)->chars);
+                }
+            }
         }
     }
     return tmpexp.getLink();
@@ -886,6 +909,10 @@ void HPCCSQLTreeWalker::verifyColAndDisambiguateName()
                 if (param && param->getExpType() == FieldValue_ExpressionType)
                    verifyColumn((SQLFieldValueExpression *)param);
             }
+        }
+        else if (selcolexp && selcolexp->getExpType() == Value_ExpressionType)
+        {
+            continue;
         }
         else
             throw MakeStringException(-1, "Could not process an entry on the select list");

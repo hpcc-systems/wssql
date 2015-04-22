@@ -141,7 +141,6 @@ public:
     const IArrayOf<ISQLExpression>* getSelectList() const
     {
         return const_cast <const IArrayOf<ISQLExpression>*> (&selectList);
-        //return &selectList;
     }
 
     int getLimit() const

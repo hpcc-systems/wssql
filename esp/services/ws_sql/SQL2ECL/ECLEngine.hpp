@@ -41,6 +41,7 @@ private:
     static void findAppropriateIndex(StringArray * relindexes, HPCCSQLTreeWalker * selectsqlobj, StringBuffer & indexname);
     static bool processIndex(HPCCFile * indexfiletouse, StringBuffer & keyedandwild, HPCCSQLTreeWalker * selectsqlobj);
 
+    static void generateConstSelectDataset(HPCCSQLTreeWalker * selectsqlobj, IProperties* eclEntities,  const IArrayOf<ISQLExpression> & expectedcolumns, const char * datasource);
     static void generateSelectStruct(HPCCSQLTreeWalker * selectsqlobj, IProperties* eclEntities, const IArrayOf<ISQLExpression> & expectedcolumns, const char * datasource);
     static void addFilterClause(HPCCSQLTreeWalker * sqlobj, StringBuffer & sb);
     static void addHavingCluse(HPCCSQLTreeWalker * sqlobj, StringBuffer & sb);
