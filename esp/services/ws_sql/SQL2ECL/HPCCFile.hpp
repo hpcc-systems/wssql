@@ -205,24 +205,6 @@ public:
         return description.str();
     }
 
-    bool static inline isBlankChar(const char * thechar)
-    {
-        if (thechar && *thechar)
-        {
-            switch (*thechar)
-            {
-                case ' ':
-                case '\r':
-                case '\n':
-                case '\t':
-                    return true;
-                default:
-                    return false;
-            }
-        }
-        return false;
-    }
-
     void setDescription(const char* description)
     {
         if (description && *description)
@@ -231,31 +213,34 @@ public:
             const char * pos = strstr(description, "XDBC:RelIndexes");
             if (pos)
             {
-                pos += 15;//advance to end of "XDBC:RelIndexes"
+                pos = pos + 15;//advance to end of "XDBC:RelIndexes"
                 while(pos && *pos) //find the = char
                 {
-                    if (isBlankChar(pos))
-                        pos++;
-                    else if (*pos == '=' )
+                    if (!isspace(*pos))
                     {
-                        pos++;
-                        break;
+                        if (*pos == '=' )
+                        {
+                            pos++;
+                            while(pos && *pos) //find the beginning bracket
+                            {
+                                if (!isspace(*pos))
+                                {
+                                    if (*pos == '[' )
+                                    {
+                                        pos++;
+                                        break;
+                                    }
+                                    else
+                                        return;//found invalid char before [
+                                }
+                                pos++;
+                            }
+                            break;
+                        }
+                        else
+                            return;//found invalid char before = char
                     }
-                    else
-                        return;//perhaps log?
-                }
-
-                while(pos && *pos) //find the beginning bracket
-                {
-                    if (isBlankChar(pos))
-                        pos++;
-                    else if (*pos == '[' )
-                    {
-                        pos++;
-                        break;
-                    }
-                    else
-                        return;//perhaps log?
+                    pos++;
                 }
 
                 if ( pos && *pos) //found keyword
@@ -294,7 +279,7 @@ public:
         StringBuffer index;
         while (str && *str)
         {
-            if (!isBlankChar(str))
+            if (!isspace(*str))
             {
                 if  (*str == ';' || *str == ']')
                 {
