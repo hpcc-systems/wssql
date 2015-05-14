@@ -205,9 +205,110 @@ public:
         return description.str();
     }
 
+    bool static inline isBlankChar(const char * thechar)
+    {
+        if (thechar && *thechar)
+        {
+            switch (*thechar)
+            {
+                case ' ':
+                case '\r':
+                case '\n':
+                case '\t':
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        return false;
+    }
+
     void setDescription(const char* description)
     {
-        this->description.set(description);
+        if (description && *description)
+        {
+            this->description.set(description);
+            const char * pos = strstr(description, "XDBC:RelIndexes");
+            if (pos)
+            {
+                pos += 15;//advance to end of "XDBC:RelIndexes"
+                while(pos && *pos) //find the = char
+                {
+                    if (isBlankChar(pos))
+                        pos++;
+                    else if (*pos == '=' )
+                    {
+                        pos++;
+                        break;
+                    }
+                    else
+                        return;//perhaps log?
+                }
+
+                while(pos && *pos) //find the beginning bracket
+                {
+                    if (isBlankChar(pos))
+                        pos++;
+                    else if (*pos == '[' )
+                    {
+                        pos++;
+                        break;
+                    }
+                    else
+                        return;//perhaps log?
+                }
+
+                if ( pos && *pos) //found keyword
+                    setRelatedIndexes(pos);
+            }
+        }
+    }
+
+    void getRelatedIndexes(StringArray & indexes)
+    {
+        ForEachItemIn(c, relIndexFiles)
+        {
+            indexes.append(relIndexFiles.item(c));
+        }
+    }
+
+    const char * getRelatedIndex(int relindexpos)
+    {
+        if (relindexpos > -1 && relindexpos < relIndexFiles.length())
+            return relIndexFiles.item(relindexpos);
+        else
+            return NULL;
+    }
+
+    int getRelatedIndexCount()
+    {
+        return relIndexFiles.length();
+    }
+  /*
+    tutorial::yn::peoplebyzipindex;
+    Tutorial.IDX_PeopleByName;
+    Tutorial.IDX_PeopleByPhonetic]
+*/
+    void setRelatedIndexes(const char * str)
+    {
+        StringBuffer index;
+        while (str && *str)
+        {
+            if (!isBlankChar(str))
+            {
+                if  (*str == ';' || *str == ']')
+                {
+                    relIndexFiles.append(index.str());
+                    if (*str == ']')
+                        break;
+                    else
+                    index.clear();
+                }
+                else
+                    index.append(*str);
+            }
+            str++;
+        }
     }
 
     void setIdxFilePosField(const char* idxfileposfieldname)
@@ -255,6 +356,7 @@ private:
     bool hasNestedColumns;
     StringBuffer description;
     StringBuffer owner;
+    StringArray relIndexFiles;
 }
 ;
 
