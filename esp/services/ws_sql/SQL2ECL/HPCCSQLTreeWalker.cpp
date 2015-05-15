@@ -425,7 +425,7 @@ ISQLExpression * HPCCSQLTreeWalker::expressionTreeWalker(pANTLR3_BASE_TREE exprA
                 }
                 else
                 {
-                    throw MakeStringException(-1, "INVALID NODE: found while processing possible expression alias \n", (char *)tmpNode->toString(tmpNode)->chars);
+                    throw MakeStringException(-1, "INVALID NODE: '%s' found while processing possible expression alias \n", (char *)tmpNode->toString(tmpNode)->chars);
                 }
             }
         }
@@ -934,7 +934,7 @@ bool HPCCSQLTreeWalker::normalizeSQL()
         {
             if (sqlType == SQLTypeSelect)
             {
-                normalizedSQL.append("SELECT");
+                normalizedSQL.append("SELECT ");
                 ForEachItemIn(idx1, selectList)
                 {
                     if (idx1 > 0)
@@ -949,6 +949,10 @@ bool HPCCSQLTreeWalker::normalizeSQL()
 
                     SQLTable tab = (SQLTable)tableList.item(idxt);
                     normalizedSQL.append(tab.getName());
+
+                    if (tab.hasIndexHint())
+                        normalizedSQL.append(" USE INDEX ( ").append(tab.getIndexhint()).append(" ) ");
+
                     if (tab.hasJoin())
                     {
                         tab.getJoin()->toString(normalizedSQL);

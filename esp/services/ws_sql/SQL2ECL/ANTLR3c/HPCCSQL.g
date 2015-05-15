@@ -563,8 +563,9 @@ join_condition
 
 index_hint
 :
-  USE_SYM INDEX_SYM LPAREN ( index_name | v= 'NONE' ) RPAREN -> {$v != NULL}? ^(TOKEN_AVOID_INDEX index_name)
-                                                             -> ^(TOKEN_INDEX_HINT index_name)
+  USE_SYM INDEX_SYM LPAREN ( index_name | u = 'NONE' | l = 'none') RPAREN -> {$u != NULL}? ^(TOKEN_AVOID_INDEX index_name)
+                                                                          -> {$l != NULL}? ^(TOKEN_AVOID_INDEX index_name)
+                                                                          -> ^(TOKEN_INDEX_HINT index_name)
 ;
 
 root_statement
