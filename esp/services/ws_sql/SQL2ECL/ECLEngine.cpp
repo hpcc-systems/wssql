@@ -42,7 +42,7 @@ void ECLEngine::generateECL(HPCCSQLTreeWalker * sqlobj, StringBuffer & out)
     }
 }
 
-void ECLEngine::generateIndexSetupAndFetch(SQLTable * table, int tableindex, HPCCSQLTreeWalker * selectsqlobj, IProperties* eclEntities)
+void ECLEngine::generateIndexSetupAndFetch(HPCCFilePtr file, SQLTable * table, int tableindex, HPCCSQLTreeWalker * selectsqlobj, IProperties* eclEntities)
 {
     bool isPayloadIndex = false;
     bool avoidindex = false;
@@ -52,35 +52,28 @@ void ECLEngine::generateIndexSetupAndFetch(SQLTable * table, int tableindex, HPC
         return;
 
     const char * tname = table->getName();
-
+    StringBuffer indexHintFromSQL;
     if (table->hasIndexHint())
     {
-        StringBuffer indexhint;
-        indexhint.set(table->getIndexhint());
-        if (strncmp(indexhint.trim().str(), "0", 1)==0)
+        indexHintFromSQL.set(table->getIndexhint());
+        if (strncmp(indexHintFromSQL.trim().str(), "0", 1)==0)
         {
             avoidindex = true;
             WARNLOG("Will not use any index.");
-            indexhint.clear();
+            return;
         }
-        else if (indexhint.length() == 0)
-        {
+        else
             WARNLOG("Empty index hint found!");
-        }
-
-        if (!avoidindex)
-        {
-            findAppropriateIndex(indexhint.str(), selectsqlobj, indexname);
-            if (indexname.length() == 0)
-                WARNLOG("Empty USE INDEX detected.");
-        }
     }
+
+    findAppropriateIndex(file, indexHintFromSQL.str(), selectsqlobj, indexname);
+    if (indexHintFromSQL.length() > 0 && indexname.length() == 0)
+        WARNLOG("Unusable index hint detected.");
 
     if (indexname.length()>0)
     {
-        HPCCFilePtr datafile = dynamic_cast<HPCCFile *>(selectsqlobj->queryHPCCFileCache()->getHpccFileByName(tname));
         HPCCFilePtr indexfile = dynamic_cast<HPCCFile *>(selectsqlobj->queryHPCCFileCache()->getHpccFileByName(indexname));
-        if (indexfile && datafile)
+        if (indexfile && file)
         {
             StringBuffer idxsetupstr;
             StringBuffer idxrecdefname;
@@ -91,7 +84,7 @@ void ECLEngine::generateIndexSetupAndFetch(SQLTable * table, int tableindex, HPC
             indexPosField.set(indexfile->getIdxFilePosField());
             HPCCColumnMetaData * poscol = indexfile->getColumn(indexPosField);
 
-            datafile->getFileRecDefwithIndexpos(poscol, idxsetupstr, idxrecdefname.str());
+            file->getFileRecDefwithIndexpos(poscol, idxsetupstr, idxrecdefname.str());
             eclEntities->appendProp("INDEXFILERECDEF", idxsetupstr.str());
 
             StringBuffer keyedAndWild;
@@ -181,10 +174,9 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
             out.append("\n");
             if (tableidx == 0)
             {
-
                 //Currently only utilizing index fetch/read for single table queries
-                if (table.hasIndexHint() && tables->length() == 1 && !file->isFileKeyed())
-                    generateIndexSetupAndFetch(&table, tableidx, selectsqlobj, eclEntities);
+                if ((table.hasIndexHint() || file->getRelatedIndexCount()) && tables->length() == 1 && !file->isFileKeyed())
+                    generateIndexSetupAndFetch(file, &table, tableidx, selectsqlobj, eclEntities);
 
                 if (eclEntities->hasProp("INDEXFILERECDEF"))
                 {
@@ -701,10 +693,14 @@ bool ECLEngine::processIndex(HPCCFile * indexfiletouse, StringBuffer & keyedandw
     return isPayloadIndex;
 }
 
-void ECLEngine::findAppropriateIndex(const char * indexhint, HPCCSQLTreeWalker * selectsqlobj, StringBuffer & indexname)
+void ECLEngine::findAppropriateIndex(HPCCFilePtr file, const char * indexhint, HPCCSQLTreeWalker * selectsqlobj, StringBuffer & indexname)
 {
     StringArray indexhints;
-    indexhints.append(indexhint);
+    if (indexhint && *indexhint)
+        indexhints.append(indexhint);
+
+    if (file)
+        file->getRelatedIndexes(indexhints);
 
     findAppropriateIndex(&indexhints, selectsqlobj, indexname);
 }
@@ -716,18 +712,25 @@ void ECLEngine::findAppropriateIndex(StringArray * relindexes, HPCCSQLTreeWalker
 
     if (whereclause)
         whereclause->getUniqueExpressionColumnNames(uniquenames);
+    else
+        return;
 
     int totalparamcount = uniquenames.length();
 
     if (relindexes->length() <= 0 || totalparamcount <= 0)
-        return ;
+        return;
 
     bool payloadIdxWithAtLeast1KeyedFieldFound = false;
 
     IntArray scores;
     for (int indexcounter = 0; indexcounter < relindexes->length(); indexcounter++)
     {
+        scores.add(std::numeric_limits<int>::min(), indexcounter);
+
         const char * indexname = relindexes->item(indexcounter);
+        if (!selectsqlobj->queryHPCCFileCache()->isHpccFileCached(indexname))
+            selectsqlobj->queryHPCCFileCache()->cacheHpccFileByName(indexname);
+
         HPCCFilePtr indexfile = dynamic_cast<HPCCFile *>(selectsqlobj->queryHPCCFileCache()->getHpccFileByName(indexname));
 
         if (indexfile)
@@ -764,7 +767,7 @@ void ECLEngine::findAppropriateIndex(StringArray * relindexes, HPCCSQLTreeWalker
                     }
                 }
                 int commonparamsscore = commonparamscount * NumberOfCommonParamInThisIndex_WEIGHT;
-                scores.add(commonparamsscore, indexcounter);
+                scores.replace(commonparamsscore, indexcounter);
 
                 if (payloadIdxWithAtLeast1KeyedFieldFound && commonparamscount == 0)
                     break; // Don't bother with this index
@@ -788,12 +791,12 @@ void ECLEngine::findAppropriateIndex(StringArray * relindexes, HPCCSQLTreeWalker
 
                 if (keycolscount == 0)
                 {
-                    scores.add(std::numeric_limits<int>::min(), indexcounter);
+                    scores.replace(std::numeric_limits<int>::min(), indexcounter);
                     continue;
                 }
 
                 int keycolsscore = keycolscount * NumberofColsKeyedInThisIndex_WEIGHT;
-                scores.add(keycolsscore + scores.item(indexcounter), indexcounter);
+                scores.replace(keycolsscore + scores.item(indexcounter), indexcounter);
                 if (commonparamscount == expectedretcolumns->length() && keycolscount > 0)
                         payloadIdxWithAtLeast1KeyedFieldFound = true; // during scoring, give this priority
             }

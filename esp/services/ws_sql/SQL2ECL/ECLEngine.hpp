@@ -37,7 +37,7 @@ private:
     static void generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer & out);
     //static void generateCallECL(HPCCSQLTreeWalker * callsqlobj, StringBuffer & out);
 
-    static void findAppropriateIndex(const char * indexhint, HPCCSQLTreeWalker * selectsqlobj, StringBuffer & indexname);
+    static void findAppropriateIndex(HPCCFilePtr file, const char * indexhint, HPCCSQLTreeWalker * selectsqlobj, StringBuffer & indexname);
     static void findAppropriateIndex(StringArray * relindexes, HPCCSQLTreeWalker * selectsqlobj, StringBuffer & indexname);
     static bool processIndex(HPCCFile * indexfiletouse, StringBuffer & keyedandwild, HPCCSQLTreeWalker * selectsqlobj);
 
@@ -46,7 +46,7 @@ private:
     static void addFilterClause(HPCCSQLTreeWalker * sqlobj, StringBuffer & sb);
     static void addHavingCluse(HPCCSQLTreeWalker * sqlobj, StringBuffer & sb);
     static bool appendTranslatedHavingClause(HPCCSQLTreeWalker * sqlobj, StringBuffer & sb, const char * latesDSName);
-    static void generateIndexSetupAndFetch(SQLTable * table, int tableindex, HPCCSQLTreeWalker * selectsqlobj, IProperties* eclEntities);
+    static void generateIndexSetupAndFetch(HPCCFilePtr file, SQLTable * table, int tableindex, HPCCSQLTreeWalker * selectsqlobj, IProperties* eclEntities);
 
     static const char * SELECTOUTPUTNAME;
 };
