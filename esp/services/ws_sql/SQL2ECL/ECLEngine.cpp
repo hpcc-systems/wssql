@@ -305,29 +305,6 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
             out.append(latestDS).append(" := ").append(eclEntities->queryProp("CONSTDATASETSTRUCT")).append(";\n");
         }
 
-        if (selectsqlobj->isSelectDistinct())
-        {
-            out.append(latestDS)
-            .append("Deduped := Dedup( ")
-            .append(latestDS)
-            .append(", HASH);\n");
-            latestDS.append("Deduped");
-        }
-
-        out.append("OUTPUT(");
-        if (limit>0 || (!eclEntities->hasProp("NONSCALAREXPECTED") && !selectsqlobj->hasGroupByColumns()))
-            out.append("CHOOSEN(");
-
-        if (selectsqlobj->hasOrderByColumns())
-            out.append("SORT(");
-
-        out.append(latestDS);
-        if (selectsqlobj->hasOrderByColumns())
-        {
-            out.append(",");
-            selectsqlobj->getOrderByString(out);
-            out.append(")");
-        }
     }
     else //PROCESSING FOR INDEX BASED FETCH
     {
@@ -381,28 +358,28 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
             }
             out.append(");\n");
             latestDS.append("Table");
-
-            if (selectsqlobj->isSelectDistinct())
-            {
-                out.append(latestDS)
-                .append("Deduped := Dedup( ")
-                .append(latestDS)
-                .append(", HASH);\n");
-
-                latestDS.append("Deduped");
-            }
-
-            if (eclEntities->hasProp("ORDERBY"))
-            {
-                out.append(latestDS).append("Sorted := SORT( ").append(latestDS).append(", ");
-                eclEntities->getProp("ORDERBY", out);
-                out.append(");\n");
-                latestDS.append("Sorted");
-            }
-
-            out.append("OUTPUT(CHOOSEN(");
-            out.append(latestDS);
         }
+    }
+
+    if (selectsqlobj->isSelectDistinct())
+    {
+        out.appendf("%sDeduped := Dedup( %s, HASH);\n",latestDS,latestDS);
+        latestDS.append("Deduped");
+    }
+
+    out.append("OUTPUT(");
+    if (limit>0 || (!eclEntities->hasProp("NONSCALAREXPECTED") && !selectsqlobj->hasGroupByColumns()))
+        out.append("CHOOSEN(");
+
+    if (selectsqlobj->hasOrderByColumns())
+        out.append("SORT(");
+
+    out.append(latestDS);
+    if (selectsqlobj->hasOrderByColumns())
+    {
+        out.append(",");
+        selectsqlobj->getOrderByString(out);
+        out.append(")");
     }
 
     if (!eclEntities->hasProp("NONSCALAREXPECTED") && !selectsqlobj->hasGroupByColumns())
