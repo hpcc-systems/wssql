@@ -532,107 +532,105 @@ void myDisplayRecognitionError (pANTLR3_BASE_RECOGNIZER recognizer,pANTLR3_UINT8
 HPCCSQLTreeWalker * CwssqlEx::parseSQL(IEspContext &context, StringBuffer & sqltext)
 {
     int limit = -1;
-   pHPCCSQLLexer hpccSqlLexer = NULL;
-   pANTLR3_COMMON_TOKEN_STREAM sqlTokens = NULL;
-   pHPCCSQLParser hpccSqlParser = NULL;
-   pANTLR3_BASE_TREE sqlAST  = NULL;
-   pANTLR3_INPUT_STREAM sqlInputStream = NULL;
-   Owned<HPCCSQLTreeWalker> hpccSqlTreeWalker;
+    pHPCCSQLLexer hpccSqlLexer = NULL;
+    pANTLR3_COMMON_TOKEN_STREAM sqlTokens = NULL;
+    pHPCCSQLParser hpccSqlParser = NULL;
+    pANTLR3_BASE_TREE sqlAST  = NULL;
+    pANTLR3_INPUT_STREAM sqlInputStream = NULL;
+    Owned<HPCCSQLTreeWalker> hpccSqlTreeWalker;
 
-   try
-   {
-       if (sqltext.length() <= 0)
-           throw MakeStringException(-1, "Empty SQL String detected.");
+    try
+    {
+        if (sqltext.length() <= 0)
+            throw MakeStringException(-1, "Empty SQL String detected.");
 
-       pANTLR3_UINT8 input_string = (pANTLR3_UINT8)sqltext.str();
-       pANTLR3_INPUT_STREAM sqlinputstream = antlr3StringStreamNew(input_string,
+        pANTLR3_UINT8 input_string = (pANTLR3_UINT8)sqltext.str();
+        pANTLR3_INPUT_STREAM sqlinputstream = antlr3StringStreamNew(input_string,
                                                                 ANTLR3_ENC_8BIT,
                                                                 sqltext.length(),
                                                                 (pANTLR3_UINT8)"SQL INPUT");
 
-       pHPCCSQLLexer hpccsqllexer = HPCCSQLLexerNew(sqlinputstream);
-       //hpccSqlLexer->pLexer->rec->displayRecognitionError = myDisplayRecognitionError;
+        pHPCCSQLLexer hpccsqllexer = HPCCSQLLexerNew(sqlinputstream);
+        //hpccSqlLexer->pLexer->rec->displayRecognitionError = myDisplayRecognitionError;
 
-       //ANTLR3_UINT32  lexerrors = hpccsqllexer->pLexer->rec->getNumberOfSyntaxErrors(hpccsqllexer->pLexer->rec);
-       //if (lexerrors > 0)
-       //     throw MakeStringException(-1, "HPCCSQL Lexer reported %d error(s), request aborted.", lexerrors);
+        //ANTLR3_UINT32  lexerrors = hpccsqllexer->pLexer->rec->getNumberOfSyntaxErrors(hpccsqllexer->pLexer->rec);
+        //if (lexerrors > 0)
+        //     throw MakeStringException(-1, "HPCCSQL Lexer reported %d error(s), request aborted.", lexerrors);
 
-       pANTLR3_COMMON_TOKEN_STREAM sqltokens = antlr3CommonTokenStreamSourceNew(ANTLR3_SIZE_HINT, TOKENSOURCE(hpccsqllexer));
-       if (sqltokens == NULL)
-       {
-           throw MakeStringException(-1, "Out of memory trying to allocate ANTLR HPCCSQLParser token stream.");
-       }
+        pANTLR3_COMMON_TOKEN_STREAM sqltokens = antlr3CommonTokenStreamSourceNew(ANTLR3_SIZE_HINT, TOKENSOURCE(hpccsqllexer));
+        if (sqltokens == NULL)
+        {
+            throw MakeStringException(-1, "Out of memory trying to allocate ANTLR HPCCSQLParser token stream.");
+        }
 
-       pHPCCSQLParser hpccsqlparser = HPCCSQLParserNew(sqltokens);
+        pHPCCSQLParser hpccsqlparser = HPCCSQLParserNew(sqltokens);
 //#if not defined(_DEBUG)
-       hpccsqlparser->pParser->rec->displayRecognitionError = myDisplayRecognitionError;
+        hpccsqlparser->pParser->rec->displayRecognitionError = myDisplayRecognitionError;
 //#endif
-       pANTLR3_BASE_TREE sqlAST  = (hpccsqlparser->root_statement(hpccsqlparser)).tree;
+        pANTLR3_BASE_TREE sqlAST  = (hpccsqlparser->root_statement(hpccsqlparser)).tree;
 
-       ANTLR3_UINT32 parserrors = hpccsqlparser->pParser->rec->getNumberOfSyntaxErrors(hpccsqlparser->pParser->rec);
-       if (parserrors > 0)
-           throw MakeStringException(-1, "HPCCSQL Parser reported %d error(s), request aborted.", parserrors);
+        ANTLR3_UINT32 parserrors = hpccsqlparser->pParser->rec->getNumberOfSyntaxErrors(hpccsqlparser->pParser->rec);
+        if (parserrors > 0)
+            throw MakeStringException(-1, "HPCCSQL Parser reported %d error(s), request aborted.", parserrors);
 
 #if defined(_DEBUG)
 printTree(sqlAST, 0);
 #endif
 
-       hpccSqlTreeWalker.setown(new HPCCSQLTreeWalker(sqlAST, context));
+        hpccSqlTreeWalker.setown(new HPCCSQLTreeWalker(sqlAST, context));
 
-       hpccsqlparser->free(hpccsqlparser);
-       sqltokens->free(sqltokens);
-       hpccsqllexer->free(hpccsqllexer);
-       sqlinputstream->free(sqlinputstream);
+        hpccsqlparser->free(hpccsqlparser);
+        sqltokens->free(sqltokens);
+        hpccsqllexer->free(hpccsqllexer);
+        sqlinputstream->free(sqlinputstream);
+    }
+    catch(IException* e)
+    {
+        try
+        {
+            if (hpccSqlParser)
+                hpccSqlParser->free(hpccSqlParser);
+            if (sqlTokens)
+                sqlTokens->free(sqlTokens);
+            if (hpccSqlLexer)
+                hpccSqlLexer->free(hpccSqlLexer);
+            if (sqlInputStream)
+                sqlInputStream->free(sqlInputStream);
 
-   }
-   catch(IException* e)
-   {
-       try
-       {
-           if (hpccSqlParser)
-               hpccSqlParser->free(hpccSqlParser);
-           if (sqlTokens)
-               sqlTokens->free(sqlTokens);
-           if (hpccSqlLexer)
-               hpccSqlLexer->free(hpccSqlLexer);
-           if (sqlInputStream)
-               sqlInputStream->free(sqlInputStream);
+            hpccSqlTreeWalker.clear();
+        }
+        catch (...)
+        {
+            ERRLOG("!!! Unable to free HPCCSQL parser/lexer objects.");
+        }
 
-           hpccSqlTreeWalker.clear();
-       }
-       catch (...)
-       {
-           ERRLOG("!!! Unable to free HPCCSQL parser/lexer objects.");
-       }
+        //All IExceptions get bubbled up
+        throw e;
+    }
+    catch(...)
+    {
+        try
+        {
+            if (hpccSqlParser)
+                hpccSqlParser->free(hpccSqlParser);
+            if (sqlTokens)
+                sqlTokens->free(sqlTokens);
+            if (hpccSqlLexer)
+                hpccSqlLexer->free(hpccSqlLexer);
+            if (sqlInputStream)
+                sqlInputStream->free(sqlInputStream);
 
-       //All IExceptions get bubbled up
-       throw e;
-   }
-   catch(...)
-   {
-       try
-       {
-           if (hpccSqlParser)
-               hpccSqlParser->free(hpccSqlParser);
-           if (sqlTokens)
-               sqlTokens->free(sqlTokens);
-           if (hpccSqlLexer)
-               hpccSqlLexer->free(hpccSqlLexer);
-           if (sqlInputStream)
-               sqlInputStream->free(sqlInputStream);
+            hpccSqlTreeWalker.clear();
+        }
+        catch (...)
+        {
+            ERRLOG("!!! Unable to free HPCCSQL parser/lexer objects.");
+        }
 
-           hpccSqlTreeWalker.clear();
-       }
-       catch (...)
-       {
-           ERRLOG("!!! Unable to free HPCCSQL parser/lexer objects.");
-       }
-
-       //All other unexpected exceptions are reported as generic ecl generation error.
-       throw MakeStringException(-1, "Error generating ECL code.");
-   }
-
-   return hpccSqlTreeWalker.getLink();
+        //All other unexpected exceptions are reported as generic ecl generation error.
+        throw MakeStringException(-1, "Error generating ECL code.");
+    }
+    return hpccSqlTreeWalker.getLink();
 }
 
 bool CwssqlEx::getWUResult(IEspContext &context, const char * wuid, StringBuffer &result, unsigned start, unsigned count, int sequence, const char * schemaname)
@@ -718,12 +716,14 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
 
         StringBuffer xmlparams;
         StringBuffer normalizedSQL = parsedSQL->getNormalizedSQL();
-        normalizedSQL.append("--HARDLIMIT").append(resultLimit);
-        normalizedSQL.append("--TC").append(cluster);
-        normalizedSQL.append("--USER").append(username.str());
+        normalizedSQL.append(" | --TC=").append(cluster);
+        if (username.length() > 0)
+            normalizedSQL.append("--USER=").append(username.str());
+        if (resultLimit > 0)
+            normalizedSQL.append("--HARDLIMIT=").append(resultLimit);
         const char * wuusername = req.getUserName();
         if (wuusername && *wuusername)
-            normalizedSQL.append("--WUOWN").append(wuusername);
+            normalizedSQL.append("--WUOWN=").append(wuusername);
 
         ESPLOG(LogMax, "WsSQL: getWorkUnitFactory...");
         Owned<IWorkUnitFactory> factory = getWorkUnitFactory(context.querySecManager(), context.queryUser());
@@ -765,8 +765,11 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
                     throw MakeStringException(-1, "Invalid cluster name: %s", cluster);
 
                 ESPLOG(LogNormal, "WsSQL: generating ECL...");
-                ECLEngine::generateECL(parsedSQL,ecltext.clear());
+                ECLEngine::generateECL(parsedSQL,ecltext);
                 ESPLOG(LogNormal, "WsSQL: Finished generating ECL...");
+                //ecltext.appendf("\n\n/****************************************************\nOriginal SQL:     \"%s\"\nNormalized SQL: \"%s\"\n****************************************************/\n", sqltext.str(), normalizedSQL.str());
+                ecltext.appendf(EMBEDDEDSQLQUERYCOMMENT, sqltext.str(), normalizedSQL.str());
+
 #if defined _DEBUG
                 fprintf(stderr, "GENERATED ECL:\n%s\n", ecltext.toCharArray());
 #endif
@@ -1125,8 +1128,9 @@ bool CwssqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, IE
 
         StringBuffer xmlparams;
         StringBuffer normalizedSQL = parsedSQL->getNormalizedSQL();
-        normalizedSQL.append("--TC").append(cluster);
-        normalizedSQL.append("--USER").append(username.str());
+        normalizedSQL.append(" | --TC=").append(cluster);
+        if (username.length() > 0)
+            normalizedSQL.append("--USER=").append(username.str());
 
         Owned<IWorkUnitFactory> factory = getWorkUnitFactory(context.querySecManager(), context.queryUser());
 
@@ -1190,13 +1194,16 @@ bool CwssqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, IE
                 if (!isValidCluster(cluster))
                     throw MakeStringException(-1/*ECLWATCH_INVALID_CLUSTER_NAME*/, "Invalid cluster name: %s", cluster);
 
-                ECLEngine::generateECL(parsedSQL,ecltext.clear());
+                ECLEngine::generateECL(parsedSQL,ecltext);
 #if defined _DEBUG
                 fprintf(stderr, "GENERATED ECL:\n%s\n", ecltext.toCharArray());
 #endif
 
                 if (isEmpty(ecltext))
                     throw MakeStringException(1,"Could not generate ECL from SQL.");
+
+                //ecltext.appendf("\n\n/****************************************************\nOriginal SQL:     \"%s\"\nNormalized SQL: \"%s\"\n****************************************************/\n", sqltext.str(), normalizedSQL.str());
+                ecltext.appendf(EMBEDDEDSQLQUERYCOMMENT, sqltext.str(), normalizedSQL.str());
 
                 NewWsWorkunit wu(context);
                 wu->getWuid(wuid);
