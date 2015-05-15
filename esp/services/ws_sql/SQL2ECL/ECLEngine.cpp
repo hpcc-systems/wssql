@@ -346,10 +346,7 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
 
             const char *selectstr = eclEntities->queryProp("SELECTSTRUCT");
             out.append(selectstr);
-            out.append(latestDS)
-            .append("Table := TABLE(")
-            .append(latestDS)
-            .append(", SelectStruct ");
+            out.appendf("%sTable := TABLE(%s, SelectStruct ", latestDS.str(), latestDS.str());
 
             if (eclEntities->hasProp("GROUPBY") && !selectsqlobj->hasHavingClause())
             {
@@ -363,7 +360,7 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
 
     if (selectsqlobj->isSelectDistinct())
     {
-        out.appendf("%sDeduped := Dedup( %s, HASH);\n",latestDS,latestDS);
+        out.appendf("%sDeduped := Dedup( %s, HASH);\n",latestDS.str(),latestDS.str());
         latestDS.append("Deduped");
     }
 
