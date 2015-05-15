@@ -363,11 +363,7 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
 
     if (selectsqlobj->isSelectDistinct())
     {
-        out.append(latestDS)
-        .append("Deduped := Dedup( ")
-        .append(latestDS)
-        .append(", HASH);\n");
-
+        out.appendf("%sDeduped := Dedup( %s, HASH);\n",latestDS,latestDS);
         latestDS.append("Deduped");
     }
 
