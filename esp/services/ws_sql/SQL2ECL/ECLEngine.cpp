@@ -524,13 +524,22 @@ void ECLEngine::generateSelectStruct(HPCCSQLTreeWalker * selectsqlobj, IProperti
 
                 if ((strcmp(func.name,"COUNT"))!=0  && funccols->length() > 0)
                 {
-                    const char * paramname = funccols->item(0).getName();
-                    if (paramname && paramname[0]!='*' && funccols->item(0).getExpType() != Value_ExpressionType)
+
+                    ISQLExpression &funccol = funccols->item(0);
+                    const char * paramname = funccol.getName();
+                    if (paramname && paramname[0]!='*')
                     {
                         selectStructSB.append(", ");
-                        selectStructSB.append(datasource);
-                        selectStructSB.append(".");
-                        selectStructSB.append(paramname);
+                        if (funccol.getExpType() != Value_ExpressionType)
+                        {
+                            selectStructSB.append(datasource);
+                            selectStructSB.append(".");
+                            selectStructSB.append(paramname);
+                        }
+                        else
+                        {
+                            funccol.toString(selectStructSB, false);
+                        }
                     }
                 }
             }
