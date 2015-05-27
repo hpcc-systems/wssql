@@ -1365,7 +1365,7 @@ bool CwssqlEx::cloneAndExecuteWU(IEspContext &context, const char * originalwuid
 
        if (originalwuid && *originalwuid)
        {
-           if (!looksLikeAWuid(originalwuid))
+           if (!looksLikeAWuid(originalwuid, 'W'))
                throw MakeStringException(ECLWATCH_INVALID_INPUT, "Invalid Workunit ID: %s", originalwuid);
 
            Owned<IConstWorkUnit> pwu = factory->openWorkUnit(originalwuid, false);
