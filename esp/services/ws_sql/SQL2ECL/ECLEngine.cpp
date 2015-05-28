@@ -395,7 +395,7 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
         out.append(")");
     }
 
-    out.appendf(",NAMED(\'%s\'),THOR);", SELECTOUTPUTNAME); //THOR= WU written to file
+    out.appendf(",NAMED(\'%s\'),THOR);", SELECTOUTPUTNAME); //THOR= WU results written to file
 }
 
 void ECLEngine::generateConstSelectDataset(HPCCSQLTreeWalker * selectsqlobj, IProperties* eclEntities,  const IArrayOf<ISQLExpression> & expectedcolumns, const char * datasource)
