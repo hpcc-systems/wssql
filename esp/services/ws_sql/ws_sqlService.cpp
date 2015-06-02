@@ -633,7 +633,7 @@ printTree(sqlAST, 0);
     return hpccSqlTreeWalker.getLink();
 }
 
-bool CwssqlEx::getWUResult(IEspContext &context, const char * wuid, StringBuffer &result, unsigned start, unsigned count, int sequence, const char * schemaname)
+bool CwssqlEx::getWUResult(IEspContext &context, const char * wuid, StringBuffer &result, unsigned start, unsigned count, int sequence, const char * dsname, const char * schemaname)
 {
     if (wuid && *wuid)
     {
@@ -653,9 +653,9 @@ bool CwssqlEx::getWUResult(IEspContext &context, const char * wuid, StringBuffer
            {
                StringBufferAdaptor resultXML(result);
                Owned<IResultSetFactory> factory = getResultSetFactory(context.queryUserId(), context.queryPassword());
-               Owned<INewResultSet> nr = factory->createNewResultSet(wuid, sequence, "");
+               Owned<INewResultSet> nr = factory->createNewResultSet(wuid, sequence, NULL);
                if (nr.get())
-                   getResultXml(resultXML, nr.get(), WSSQLRESULT, start, count, schemaname);
+                   getResultXml(resultXML, nr.get(), dsname, start, count, schemaname);
                else
                    return false;
                break;
@@ -780,7 +780,7 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
                 NewWsWorkunit wu(context);
                 wu->getWuid(compiledwuid);
 
-                wu.setQueryText(ecltext.str( ));
+                wu.setQueryText(ecltext.str());
                 wu->setClusterName(cluster);
                 if (clonable)
                     wu->setCloneable(true);
@@ -816,7 +816,6 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
         }
         else
         {
-
             if (querytype == SQLTypeCall)
                 createXMLParams(xmlparams, parsedSQL, NULL, cw);
             else if (querytype == SQLTypeSelect)
@@ -860,8 +859,13 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
             if (!req.getSuppressResults())
             {
                 StringBuffer result;
-                if (getWUResult(context, runningwuid.str(), result, (unsigned)resultWindowStart, (unsigned)resultWindowCount, 0, req.getSuppressXmlSchema() ? NULL : WSSQLRESULTSCHEMA))
+                if (getWUResult(context, runningwuid.str(), result, (unsigned)resultWindowStart, (unsigned)resultWindowCount, 0, WSSQLRESULT, req.getSuppressXmlSchema() ? NULL : WSSQLRESULTSCHEMA))
+                {
+                    StringBuffer count;
+                    if (getWUResult( context, runningwuid.str(), count , 0, 1, 1, WSSQLCOUNT, NULL))
+                        result.append(count.str());
                     resp.setResult(result.str());
+                }
             }
 
             WsWuInfo winfo(context, runningwuid);
@@ -1031,7 +1035,7 @@ bool CwssqlEx::onExecutePreparedSQL(IEspContext &context, IEspExecutePreparedSQL
            if (!req.getSuppressResults())
            {
                StringBuffer result;
-               if (getWUResult(context, runningWuId.str(), result, (unsigned)resultWindowStart, (unsigned)resultWindowCount, 0, req.getSuppressXmlSchema() ? NULL : WSSQLRESULTSCHEMA))
+               if (getWUResult(context, runningWuId.str(), result, (unsigned)resultWindowStart, (unsigned)resultWindowCount, 0, WSSQLRESULT, req.getSuppressXmlSchema() ? NULL : WSSQLRESULTSCHEMA))
                    resp.setResult(result.str());
            }
 
@@ -1315,7 +1319,7 @@ bool CwssqlEx::executePublishedQuery(IEspContext &context, const char * queryset
         if (!cw)
             throw MakeStringException(ECLWATCH_CANNOT_UPDATE_WORKUNIT,"Cannot open workunit %s.", clonedwui.str());
 
-        getWUResult(context, clonedwui.str(), resp, start, count, 0, WSSQLRESULTSCHEMA);
+        getWUResult(context, clonedwui.str(), resp, start, count, 0, WSSQLRESULT,  WSSQLRESULTSCHEMA);
     }
     else
         success = false;
@@ -1347,7 +1351,7 @@ bool CwssqlEx::executePublishedQuery(IEspContext &context, const char * wuid, St
         if (!cw)
             throw MakeStringException(ECLWATCH_CANNOT_UPDATE_WORKUNIT,"Cannot open workunit %s.", clonedwui.str());
 
-        getWUResult(context, clonedwui.str(), resp, start, count, 0, WSSQLRESULTSCHEMA);
+        getWUResult(context, clonedwui.str(), resp, start, count, 0, WSSQLRESULT, WSSQLRESULTSCHEMA);
 
     }
     else
@@ -1430,7 +1434,7 @@ bool CwssqlEx::onGetResults(IEspContext &context, IEspGetResultsRequest &req, IE
             resp.setResultWindowStart((unsigned)resultWindowStart);
 
             StringBuffer result;
-            if (getWUResult(context, parentWuId, result, (unsigned)resultWindowStart, (unsigned)resultWindowCount, 0, req.getSuppressXmlSchema() ? NULL : WSSQLRESULTSCHEMA))
+            if (getWUResult(context, parentWuId, result, (unsigned)resultWindowStart, (unsigned)resultWindowCount, 0, WSSQLRESULT, req.getSuppressXmlSchema() ? NULL : WSSQLRESULTSCHEMA))
                 resp.setResult(result.str());
 
             WsWuInfo winfo(context, parentWuId);
