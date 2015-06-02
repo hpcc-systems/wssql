@@ -126,6 +126,7 @@ void ECLEngine::generateIndexSetupAndFetch(HPCCFilePtr file, SQLTable * table, i
             }
             idxsetupstr.append(");\n");
 
+
             eclEntities->appendProp("IndexRead", idxsetupstr.str());
         }
         else
@@ -182,6 +183,7 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
                 {
                     eclDSSourceMapping->appendProp(tname, "IdxDS0");
                     eclEntities->getProp("INDEXFILERECDEF", out);
+                    latestDS.set("IdxDS0");
                 }
                 else
                     file->getFileRecDef(out, currntTblRecDef);
@@ -289,22 +291,36 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
 
             out.append(", SelectStruct ");
 
+            // If group by contains HAVING clause, use ECL 'HAVING' function,
+            // otherwise group can be done implicitly in table step.
+            // since the implicit approach has better performance.
             if (selectsqlobj->hasGroupByColumns() && !selectsqlobj->hasHavingClause())
             {
                 out.append(", ");
                 selectsqlobj->getGroupByString(out);
+                out.append(" /*grouped by this field*/");
             }
 
             out.append(");\n");
-
             latestDS.append("Table");
+
+            if (selectsqlobj->hasGroupByColumns() && selectsqlobj->hasHavingClause())
+            {
+                out.appendf("%sGrouped := GROUP( %s, ", latestDS.str(), latestDS.str());
+                selectsqlobj->getGroupByString(out);
+                out.append(", ALL);\n");
+
+                latestDS.append("Grouped");
+
+                if (appendTranslatedHavingClause(selectsqlobj, out, latestDS.str()))
+                   latestDS.append("Having");
+            }
         }
         else
         {
             generateConstSelectDataset(selectsqlobj, eclEntities.getLink(), *selectsqlobj->getSelectList(),latestDS.str());
             out.append(latestDS).append(" := ").append(eclEntities->queryProp("CONSTDATASETSTRUCT")).append(";\n");
         }
-
     }
     else //PROCESSING FOR INDEX BASED FETCH
     {
@@ -312,28 +328,15 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
         //performing index read/fetch.
         eclEntities->getProp("IndexDef",out);
         eclEntities->getProp("IndexRead",out);
-        StringBuffer latestDS = "IdxDS0";
 
-        //if (eclEntities.containsKey("COUNTDEDUP"))
-        //    eclCode.append(eclEntities.get("COUNTDEDUP"));
-
-        if (eclEntities->hasProp("SCALAROUTNAME"))
-        {
-            out.append("OUTPUT(ScalarOut ,NAMED(\'");
-            eclEntities->getProp("SCALAROUTNAME", out);
-            out.append("\'));\n");
-        }
-        else
-        {
+        { //This scope is not needed, will remove after code review.
             // If group by contains HAVING clause, use ECL 'HAVING' function,
             // otherwise group can be done implicitly in table step.
             // since the implicit approach has better performance.
-            if (eclEntities->hasProp("GROUPBY") && selectsqlobj->hasHavingClause())
+            if (selectsqlobj->hasGroupByColumns() && selectsqlobj->hasHavingClause())
             {
-                out.append(latestDS).append("Grouped").append(" := GROUP( ");
-                out.append(latestDS);
-                out.append(", ");
-                eclEntities->getProp("GROUPBY", out);
+                out.appendf("%sGrouped := GROUP( %s, ", latestDS.str(), latestDS.str());
+                selectsqlobj->getGroupByString(out);
                 out.append(", ALL);\n");
 
                 latestDS.append("Grouped");
@@ -348,10 +351,11 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
             out.append(selectstr);
             out.appendf("%sTable := TABLE(%s, SelectStruct ", latestDS.str(), latestDS.str());
 
-            if (eclEntities->hasProp("GROUPBY") && !selectsqlobj->hasHavingClause())
+            if (selectsqlobj->hasGroupByColumns() && !selectsqlobj->hasHavingClause())
             {
                 out.append(", ");
-                eclEntities->getProp("GROUPBY", out);
+                selectsqlobj->getGroupByString(out);
+                out.append(" /*grouped by this field*/");
             }
             out.append(");\n");
             latestDS.append("Table");
@@ -364,9 +368,7 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
         latestDS.append("Deduped");
     }
 
-    out.append("OUTPUT(");
-    if (limit>0 || (!eclEntities->hasProp("NONSCALAREXPECTED") && !selectsqlobj->hasGroupByColumns()))
-        out.append("CHOOSEN(");
+    out.appendf("%sOut := CHOOSEN(", latestDS.str());
 
     if (selectsqlobj->hasOrderByColumns())
         out.append("SORT(");
@@ -378,24 +380,32 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
         selectsqlobj->getOrderByString(out);
         out.append(")");
     }
+    latestDS.append("Out");
 
     if (!eclEntities->hasProp("NONSCALAREXPECTED") && !selectsqlobj->hasGroupByColumns())
     {
-        out.append(", 1)");
+        out.append(", 1);\n");
     }
-    else if (limit>0)
+    else
     {
         out.append(",");
-        out.append(limit);
-        if (offset>0)
+        if (limit>0)
         {
-            out.append(",");
-            out.append(offset);
+            out.append(limit);
+            if (offset>0)
+            {
+                out.append(",");
+                out.append(offset);
+            }
         }
-        out.append(")");
+        else
+            out.append("ALL");
+
+        out.append(");\n");
     }
 
-    out.appendf(",NAMED(\'%s\'));", SELECTOUTPUTNAME);
+    out.appendf("OUTPUT(%s, NAMED(\'%s\'));\n", latestDS.str(), SELECTOUTPUTNAME);
+    out.appendf("OUTPUT( COUNT(%s), NAMED(\'%sCount\'));\n", latestDS.str(), SELECTOUTPUTNAME);
 }
 
 void ECLEngine::generateConstSelectDataset(HPCCSQLTreeWalker * selectsqlobj, IProperties* eclEntities,  const IArrayOf<ISQLExpression> & expectedcolumns, const char * datasource)
