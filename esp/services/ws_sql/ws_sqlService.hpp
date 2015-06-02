@@ -40,6 +40,7 @@ limitations under the License.
 
 static const char* WSSQLACCESS = "WsSqlAccess";
 static const char* WSSQLRESULT = "WsSQLResult";
+static const char* WSSQLCOUNT  = "WsSQLCount";
 static const char* WSSQLRESULTSCHEMA = "WsSQLResultSchema";
 
 //Use of this static variable will result in a compile-time warning:
@@ -93,7 +94,7 @@ public:
     bool onEcho(IEspContext &context, IEspEchoRequest &req, IEspEchoResponse &resp);
     bool onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, IEspPrepareSQLResponse &resp);
     bool onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IEspExecuteSQLResponse &resp);
-    bool getWUResult(IEspContext &context, const char * wuid, StringBuffer &resp, unsigned start, unsigned count, int sequence, const char * schemaname);
+    bool getWUResult(IEspContext &context, const char * wuid, StringBuffer &resp, unsigned start, unsigned count, int sequence, const char * dsname, const char * schemaname);
     bool onExecutePreparedSQL(IEspContext &context, IEspExecutePreparedSQLRequest &req, IEspExecutePreparedSQLResponse &resp);
     bool onGetDBSystemInfo(IEspContext &context, IEspGetDBSystemInfoRequest &req, IEspGetDBSystemInfoResponse &resp);
     bool onGetDBMetaData(IEspContext &context, IEspGetDBMetaDataRequest &req, IEspGetDBMetaDataResponse &resp);
