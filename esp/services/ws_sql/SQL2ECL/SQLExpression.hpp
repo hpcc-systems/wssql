@@ -517,19 +517,25 @@ public:
         StringBuffer result1;
         StringBuffer result2;
         operand1->getExpressionFromColumnName(colname, result1);
+        if (!result1.length())
+            return; // no need to waste time fetching the right sub-expression
+
         operand2->getExpressionFromColumnName(colname, result2);
 
-        if (result1.length() > 0 && result2.length() > 0)
-        {
-            str.appendf("%s %s %s", result1.str(), getOpStr(),result2.str());
-        }
-        else if (op == OR_SYM)
+        if (result2.length() > 0)
+            str.appendf(" %s %s %s ", result1.str(), getOpStr(),result2.str());
+
+        /* this was meant to provide sub-expressions based on the colname provided,
+         * however providing the OR'ed sub-expression can be misleading and the logic
+         * arithmetic can be flawed, therefore this else is taken out, but will keep within
+         * comment block for reference:
+         * else if (op == OR_SYM)
         {
             if (result1.length() > 0)
-               str.append(result1);
+               str.appendf(" %s ", result1.str());
             else if (result2.length() > 0)
-                str.append(result2);
-        }
+                str.appendf(" %s ", result2.str());
+        }*/
     }
 
     void getUniqueExpressionColumnNames(StringArray & uniquenames)
@@ -774,12 +780,7 @@ public:
         }
 
         if (paramlist.length()>0)
-        {
-            str.append(function.eclFunctionName);
-            str.append("( ");
-            str.append( paramlist );
-            str.append(" )");
-        }
+            str.appendf(" %s( %s ) ", function.eclFunctionName, paramlist.str());
     }
 
     void getUniqueExpressionColumnNames(StringArray & uniquenames)

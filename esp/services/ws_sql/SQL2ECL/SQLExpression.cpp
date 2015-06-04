@@ -833,11 +833,7 @@ void SQLListExpression::getExpressionFromColumnName(const char * colname, String
     }
     
     if (paramlist.length()>0)
-    {
-       str.append("[ ");
-       str.append( paramlist );
-       str.append(" ]");
-    }
+        str.appendf(" [ %s ] ", paramlist.str());
 }
 
 void SQLListExpression::getUniqueExpressionColumnNames(StringArray &  uniquenames)
