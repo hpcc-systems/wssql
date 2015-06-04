@@ -677,22 +677,23 @@ bool ECLEngine::processIndex(HPCCFile * indexfiletouse, StringBuffer & keyedandw
             }
         }
 
-        if (keyed.length() > 0)
+        int keyedlen = keyed.length();
+        if (keyedlen > 0)
         {
-            for (int keyedi = 0; keyedi < keyed.length(); keyedi++)
+            for (int keyedi = 0; keyedi < keyedlen; keyedi++)
             {
                 keyedandwild.append(" KEYED( ");
                 keyedandwild.append(keyed.item(keyedi));
 
                 keyedandwild.append(" )");
-                if (keyedi < keyed.length() - 1)
+                if (keyedi < keyedlen - 1)
                     keyedandwild.append(", ");
             }
             if (wild.length() > 0)
             {
                 for (int wildi = 0; wildi < wild.length(); wildi++)
                 {
-                    if (keyed.length() || wildi > 0)
+                    if (keyedlen || wildi > 0)
                         keyedandwild.append(" AND ");
                     keyedandwild.appendf("WILD( %s )", wild.item(wildi));
                 }
