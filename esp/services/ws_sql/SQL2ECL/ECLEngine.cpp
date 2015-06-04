@@ -90,7 +90,8 @@ void ECLEngine::generateIndexSetupAndFetch(HPCCFilePtr file, SQLTable * table, i
             StringBuffer keyedAndWild;
             isPayloadIndex = processIndex(indexfile, keyedAndWild, selectsqlobj);
 
-            eclEntities->appendProp("KEYEDWILD", keyedAndWild.str());
+            if (keyedAndWild.length() > 0)
+                eclEntities->appendProp("KEYEDWILD", keyedAndWild.str());
 
             if (isPayloadIndex)
                 eclEntities->appendProp("PAYLOADINDEX", "true");
@@ -324,42 +325,46 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
     }
     else //PROCESSING FOR INDEX BASED FETCH
     {
-        //Not creating a filtered DS because filtering is applied while
-        //performing index read/fetch.
         eclEntities->getProp("IndexDef",out);
         eclEntities->getProp("IndexRead",out);
 
-        { //This scope is not needed, will remove after code review.
-            // If group by contains HAVING clause, use ECL 'HAVING' function,
-            // otherwise group can be done implicitly in table step.
-            // since the implicit approach has better performance.
-            if (selectsqlobj->hasGroupByColumns() && selectsqlobj->hasHavingClause())
-            {
-                out.appendf("%sGrouped := GROUP( %s, ", latestDS.str(), latestDS.str());
-                selectsqlobj->getGroupByString(out);
-                out.append(", ALL);\n");
+        // If group by contains HAVING clause, use ECL 'HAVING' function,
+        // otherwise group can be done implicitly in table step.
+        // since the implicit approach has better performance.
+        if (selectsqlobj->hasGroupByColumns() && selectsqlobj->hasHavingClause())
+        {
+            out.appendf("%sGrouped := GROUP( %s, ", latestDS.str(), latestDS.str());
+            selectsqlobj->getGroupByString(out);
+            out.append(", ALL);\n");
 
-                latestDS.append("Grouped");
+            latestDS.append("Grouped");
 
-                if (appendTranslatedHavingClause(selectsqlobj, out, latestDS.str()))
-                    latestDS.append("Having");
-            }
-
-            generateSelectStruct(selectsqlobj, eclEntities.get(), *selectsqlobj->getSelectList(),latestDS.str());
-
-            const char *selectstr = eclEntities->queryProp("SELECTSTRUCT");
-            out.append(selectstr);
-            out.appendf("%sTable := TABLE(%s, SelectStruct ", latestDS.str(), latestDS.str());
-
-            if (selectsqlobj->hasGroupByColumns() && !selectsqlobj->hasHavingClause())
-            {
-                out.append(", ");
-                selectsqlobj->getGroupByString(out);
-                out.append(" /*grouped by this field*/");
-            }
-            out.append(");\n");
-            latestDS.append("Table");
+            if (appendTranslatedHavingClause(selectsqlobj, out, latestDS.str()))
+                latestDS.append("Having");
         }
+
+        generateSelectStruct(selectsqlobj, eclEntities.get(), *selectsqlobj->getSelectList(),latestDS.str());
+
+        out.append(eclEntities->queryProp("SELECTSTRUCT"));
+        out.appendf("%sTable := TABLE(%s",latestDS.str(), latestDS.str());
+
+        //Filtering all non-payload index, because the original filter applied at fetch could
+        //be incomplete due to non-keyed fields
+        if (!eclEntities->hasProp("PAYLOADINDEX"))
+        {
+            addFilterClause(selectsqlobj, out);
+        }
+
+        out.append(", SelectStruct ");
+
+        if (selectsqlobj->hasGroupByColumns() && !selectsqlobj->hasHavingClause())
+        {
+            out.append(", ");
+            selectsqlobj->getGroupByString(out);
+            out.append(" /*grouped by this field*/");
+        }
+        out.append(");\n");
+        latestDS.append("Table");
     }
 
     if (selectsqlobj->isSelectDistinct())
@@ -611,79 +616,105 @@ bool containsPayload(const HPCCFile * indexfiletotest, const HPCCSQLTreeWalker *
 
 bool ECLEngine::processIndex(HPCCFile * indexfiletouse, StringBuffer & keyedandwild, HPCCSQLTreeWalker * selectsqlobj)
 {
-    bool isPayloadIndex = containsPayload(indexfiletouse, selectsqlobj);
-
-    StringArray keyed;
-    StringArray wild;
-    StringArray uniquenames;
-
     ISQLExpression * whereclause = selectsqlobj->getWhereClause();
 
     if (!whereclause)
         return false;
 
+    bool isPayloadIndex = containsPayload(indexfiletouse, selectsqlobj);
+
+    StringArray keyed;
+    StringArray wild;
+
+    StringArray filterclauseuniquenames;
+    whereclause->getUniqueExpressionColumnNames(filterclauseuniquenames);
+    bool allfieldsinfilterexistinindexfile = true;
+
     // Create keyed and wild string
-    IArrayOf<HPCCColumnMetaData> * cols = indexfiletouse->getColumns();
-    for (int i = 0; i < cols->length(); i++)
-    {
-        HPCCColumnMetaData currcol = cols->item(i);
-        if (currcol.isKeyedField())
-        {
-            const char * keyedcolname = currcol.getColumnName();
-            StringBuffer keyedorwild;
+    IArrayOf<HPCCColumnMetaData> * indexfilecolumns = indexfiletouse->getColumns();
 
-            if (whereclause->containsKey(keyedcolname))
+    //We need to know if the filter clause contains only fields which exist in the index file
+    ForEachItemIn(uniquenamesidx, filterclauseuniquenames)
+    {
+        bool currfilterfieldexistsinindexfile = false;
+        for (int indexfilecolumnindex = 0; indexfilecolumnindex < indexfilecolumns->length(); indexfilecolumnindex++)
+        {
+            HPCCColumnMetaData currcol = indexfilecolumns->item(indexfilecolumnindex);
+            const char * currindexfilecolname = currcol.getColumnName();
+            if(stricmp( filterclauseuniquenames.item(uniquenamesidx), currindexfilecolname)==0)
             {
-                keyedorwild.set(" ");
-                whereclause->getExpressionFromColumnName(keyedcolname, keyedorwild);
-                keyedorwild.append(" ");
-                keyed.append(keyedorwild);
+                currfilterfieldexistsinindexfile = true;
+                break;
             }
-            else
-            {
-                keyedorwild.setf(" %s ", keyedcolname);
-                wild.append(keyedorwild);
-            }
+        }
+
+        if (!currfilterfieldexistsinindexfile)
+        {
+            allfieldsinfilterexistinindexfile = false;
+            break;
         }
     }
 
-    if (isPayloadIndex)
+    if (allfieldsinfilterexistinindexfile)
     {
-        if (keyed.length() > 0)
+        for (int indexfilecolumnindex = 0; indexfilecolumnindex < indexfilecolumns->length(); indexfilecolumnindex++)
         {
-            keyedandwild.append("KEYED( ");
-            for (int i = 0; i < keyed.length(); i++)
+            HPCCColumnMetaData currcol = indexfilecolumns->item(indexfilecolumnindex);
+            const char * currindexfilecolname = currcol.getColumnName();
+            if (currcol.isKeyedField())
             {
-                keyedandwild.append(keyed.item(i));
-                if (i < keyed.length() - 1)
-                    keyedandwild.append(" AND ");
+                StringBuffer keyedorwild;
+                whereclause->getExpressionFromColumnName(currindexfilecolname, keyedorwild);
+                if (whereclause->containsKey(currindexfilecolname) && keyedorwild.length())
+                {
+                    keyed.append(keyedorwild.str());
+                }
+                else
+                {
+                    keyedorwild.setf(" %s ", currindexfilecolname);
+                    wild.append(keyedorwild.str());
+                }
             }
-            keyedandwild.append(" )");
         }
 
-        if (wild.length() > 0)
+        int keyedlen = keyed.length();
+        if (keyedlen > 0)
         {
-            // TODO should I bother making sure there's a KEYED entry ?
-            for (int i = 0; i < wild.length(); i++)
+            for (int keyedi = 0; keyedi < keyedlen; keyedi++)
             {
-                keyedandwild.append(" and WILD( ");
-                keyedandwild.append(wild.item(i));
+                keyedandwild.append(" KEYED( ");
+                keyedandwild.append(keyed.item(keyedi));
+
                 keyedandwild.append(" )");
+                if (keyedi < keyedlen - 1)
+                    keyedandwild.append(", ");
             }
-        }
-        keyedandwild.append(" and ( ");
-        whereclause->toString(keyedandwild, false);
-        keyedandwild.append(" )");
-    }
-    else
-    {
-        // non-payload just AND the keyed expressions
-        keyedandwild.append("( ");
-        whereclause->toString(keyedandwild, false);
-        keyedandwild.append(" )");
-    }
+            if (wild.length() > 0)
+            {
+                for (int wildi = 0; wildi < wild.length(); wildi++)
+                {
+                    if (keyedlen || wildi > 0)
+                        keyedandwild.append(" AND ");
+                    keyedandwild.appendf("WILD( %s )", wild.item(wildi));
+                }
+            }
 
-    return isPayloadIndex;
+            keyedandwild.append(" AND ");
+        }
+        keyedandwild.append(" (");
+        whereclause->toString(keyedandwild, false);
+        keyedandwild.append(") ");
+    }
+    /*
+     * Even though filtering at the fetch is preferable,
+     * the filter can only reference keyed/non-keyed fields from the index file
+     * it is not always feasible to extract the algebraic condition based only on those fields
+     * else {}
+     *
+     */
+
+    //if the filter condition contains field not in the payload index file, we cannot do a payload read
+    return isPayloadIndex && allfieldsinfilterexistinindexfile;
 }
 
 void ECLEngine::findAppropriateIndex(HPCCFilePtr file, const char * indexhint, HPCCSQLTreeWalker * selectsqlobj, StringBuffer & indexname)
