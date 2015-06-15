@@ -2640,7 +2640,25 @@ Jim Smith FL 33024
 Jane Row FL 33024
 </programlisting>
 
-      <para></para>
+      <para>A Select query returns two dataset outputs per request. The second
+      dataset (named WsSQLCount) provides the total result count. This is
+      useful when paging results. </para>
+
+      <para>Example:</para>
+
+      <programlisting>&lt;Dataset name='WsSQLResult'&gt;
+  &lt;Row&gt;
+    &lt;yearbuilt&gt;1203&lt;/yearbuilt&gt;
+    &lt;id&gt;4&lt;/id&gt;&lt;/Row&gt;
+  &lt;Row&gt;
+    &lt;yearbuilt&gt;2003&lt;/yearbuilt&gt;
+    &lt;id&gt;5&lt;/id&gt;&lt;/Row&gt;
+&lt;/Dataset&gt;
+&lt;Dataset name='WsSQLCount'&gt;
+  &lt;Row&gt;
+    &lt;WSSQLSelectQueryResultCount&gt;2&lt;/WSSQLSelectQueryResultCount&gt;
+  &lt;/Row&gt;
+&lt;/Dataset&gt;</programlisting>
     </sect1>
 
     <sect1>
