@@ -965,27 +965,21 @@ bool HPCCSQLTreeWalker::normalizeSQL()
                     whereClause->toString(normalizedSQL, true);
                 }
 
-                if (!orderbyList.empty()>0)
+                if (!orderbyList.empty())
                 {
                     normalizedSQL.append(" ORDER BY ");
-                    ForEachItemIn(idxobl, orderbyList)
-                    {
-                        if (idxobl > 0)
-                            normalizedSQL.append(", ");
-
-                        orderbyList.item(idxobl).toString(normalizedSQL, true);
-                    }
+                    getOrderByString(normalizedSQL);
                 }
 
                 if (!groupbyList.empty())
                 {
                     normalizedSQL.append(" GROUP BY ");
-                    ForEachItemIn(idxgbl, groupbyList)
-                    {
-                        if (idxgbl > 0)
-                            normalizedSQL.append(", ");
+                    getGroupByString(normalizedSQL);
 
-                        groupbyList.item(idxgbl).toString(normalizedSQL, true);
+                    if ( havingClause.get())
+                    {
+                        normalizedSQL.append(" HAVING ");
+                        havingClause->toString(normalizedSQL, true);
                     }
                 }
 
