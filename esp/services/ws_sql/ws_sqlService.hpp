@@ -38,12 +38,12 @@ limitations under the License.
 
 #include "HPCCSQLTreeWalker.hpp"
 
+#define EMBEDDEDSQLQUERYCOMMENT "\n\n/****************************************************\nOriginal SQL:     \"%s\"\nNormalized SQL: \"%s\"\n****************************************************/\n"
+
 static const char* WSSQLACCESS = "WsSqlAccess";
 static const char* WSSQLRESULT = "WsSQLResult";
 static const char* WSSQLCOUNT  = "WsSQLCount";
 static const char* WSSQLRESULTSCHEMA = "WsSQLResultSchema";
-
-#define EMBEDDEDSQLQUERYCOMMENT "\n\n/****************************************************\nOriginal SQL:     \"%s\"\nNormalized SQL: \"%s\"\n****************************************************/\n"
 
 class CwssqlSoapBindingEx : public CwssqlSoapBinding
 {
