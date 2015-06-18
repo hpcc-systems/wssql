@@ -409,7 +409,7 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
         out.append(");\n");
     }
 
-    out.appendf("OUTPUT(%s, NAMED(\'%s\'));\n", latestDS.str(), SELECTOUTPUTNAME);
+    out.appendf("OUTPUT(%s, NAMED(\'%s\'), THOR);\n", latestDS.str(), SELECTOUTPUTNAME); //THOR= WU written to file
     out.appendf("OUTPUT( COUNT(%s), NAMED(\'%sCount\'));\n", latestDS.str(), SELECTOUTPUTNAME);
 }
 
