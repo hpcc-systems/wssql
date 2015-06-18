@@ -43,10 +43,7 @@ static const char* WSSQLRESULT = "WsSQLResult";
 static const char* WSSQLCOUNT  = "WsSQLCount";
 static const char* WSSQLRESULTSCHEMA = "WsSQLResultSchema";
 
-//Use of this static variable will result in a compile-time warning:
-//"warning: format not a string literal, argument types not checked [-Wformat-nonliteral]"
-//Use this format template with caution
-static const char* EMBEDDEDSQLQUERYCOMMENT = "\n\n/****************************************************\nOriginal SQL:     \"%s\"\nNormalized SQL: \"%s\"\n****************************************************/\n";
+#define EMBEDDEDSQLQUERYCOMMENT "\n\n/****************************************************\nOriginal SQL:     \"%s\"\nNormalized SQL: \"%s\"\n****************************************************/\n"
 
 class CwssqlSoapBindingEx : public CwssqlSoapBinding
 {
