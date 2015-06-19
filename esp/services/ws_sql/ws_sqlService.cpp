@@ -650,6 +650,7 @@ bool CwssqlEx::getWUResult(IEspContext &context, const char * wuid, StringBuffer
            case WUStateCompleted:
            case WUStateFailed:
            case WUStateUnknown:
+           case WUStateCompiled:
            {
                StringBufferAdaptor resultXML(result);
                Owned<IResultSetFactory> factory = getResultSetFactory(context.queryUserId(), context.queryPassword());
@@ -1234,6 +1235,10 @@ bool CwssqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, IE
 
         winfo.getCommon(resp.updateWorkunit(), WUINFO_All);
         winfo.getExceptions(resp.updateWorkunit(), WUINFO_All);
+
+        StringBuffer result;
+        getWUResult(context, wuid.str(), result, (unsigned)0, (unsigned)0, 0, WSSQLRESULT, WSSQLRESULTSCHEMA);
+        resp.setResult(result);
 
         AuditSystemAccess(context.queryUserId(), true, "Updated %s", wuid.str());
     }
