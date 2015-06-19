@@ -31,6 +31,8 @@ void CwssqlEx::init(IPropertyTree *_cfg, const char *_process, const char *_serv
     }
 
     refreshValidClusters();
+
+    setWsSqlBuildVersion(WSSQL_BASE_BUILD_TAG);
 }
 
 bool CwssqlEx::onEcho(IEspContext &context, IEspEchoRequest &req, IEspEchoResponse &resp)
@@ -273,13 +275,49 @@ bool CwssqlEx::onGetDBSystemInfo(IEspContext &context, IEspGetDBSystemInfoReques
                     maturity.append(*tail++);
                 resp.setMaturity(maturity.str());
             }
+        }
+
+        const char* wssqlbuild_ver = getWsSqlBuildVersion();
+        if (wssqlbuild_ver && *wssqlbuild_ver)
+        {
+            StringBuffer major;
+            StringBuffer minor;
+            StringBuffer point;
+            StringBuffer maturity;
+
+            //5.4.0-trunk1-Debug[heads/wssql-0-gb9e351-dirty
+            const char * tail = wssqlbuild_ver;
+
+            while (tail && *tail != '.')
+                major.append(*tail++);
+            resp.setWsSQLMajor(major.str());
+
+            tail++;
+            while (tail && *tail != '.')
+                minor.append(*tail++);
+            resp.setWsSQLMinor(minor.str());
+
+            tail++;
+            while (tail && *tail != '-')
+                point.append(*tail++);
+            resp.setWsSQLPoint(point.str());
+
+            if (req.getIncludeAll())
+            {
+                resp.setWsSQLFullVersion(wssqlbuild_ver);
+
+                tail++;
+                while (tail && *tail != '-' && *tail != '[')
+                    maturity.append(*tail++);
+                resp.setWsSQLMaturity(maturity.str());
+            }
 
             success = true;
         }
     }
     catch (...)
     {
-        ERRLOG("Error Parsing HPCC Version string.");
+        ERRLOG("Error Parsing HPCC and/or WsSQL Version string.");
     }
 
     return success;

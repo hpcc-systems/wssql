@@ -163,6 +163,13 @@ ESPresponse [exceptions_inline] GetDBSystemInfoResponse
     string Point;
     string Project;
     string Maturity;
+
+    string WsSQLFullVersion;
+    string WsSQLMajor;
+    string WsSQLMinor;
+    string WsSQLPoint;
+    string WsSQLProject;
+    string WsSQLMaturity;
 };
 
 ESPrequest GetDBMetaDataRequest
