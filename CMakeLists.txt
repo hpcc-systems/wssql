@@ -221,6 +221,7 @@ IF ( NOT MAKE_DOCS_ONLY )
     ENDIF()
     MESSAGE("-- Base build tag is '${BASE_BUILD_TAG}'")
 
+    CONFIGURE_FILE(${HPCC_WSSQL_SOURCE_DIR}/wssql-build-config.h.cmake "wssql-build-config.h" )
     CONFIGURE_FILE(${HPCC_SOURCE_DIR}/build-config.h.cmake "build-config.h" )
 
     IF( UNIX )

@@ -18,6 +18,8 @@ limitations under the License.
 #ifndef _ESPWIZ_WS_SQL_HPP__
 #define _ESPWIZ_WS_SQL_HPP__
 
+#include <wssql-build-config.h>
+
 #include "ws_sql.hpp"
 #include "ws_sql_esp.ipp"
 
@@ -44,6 +46,8 @@ static const char* WSSQLACCESS = "WsSqlAccess";
 static const char* WSSQLRESULT = "WsSQLResult";
 static const char* WSSQLCOUNT  = "WsSQLCount";
 static const char* WSSQLRESULTSCHEMA = "WsSQLResultSchema";
+
+static StringBuffer g_wssqlBuildVersion;
 
 class CwssqlSoapBindingEx : public CwssqlSoapBinding
 {
@@ -83,6 +87,15 @@ private:
         time(&cacheFlushTime);
     }
 
+    void setWsSqlBuildVersion(const char* buildVersion)
+    {
+        g_wssqlBuildVersion.clear();
+        if(buildVersion&&*buildVersion)
+            g_wssqlBuildVersion.set(buildVersion);
+
+        g_wssqlBuildVersion.trim();
+    }
+
 public:
     IMPLEMENT_IINTERFACE;
 
@@ -113,6 +126,10 @@ public:
 
     void createXMLParams(StringBuffer & xmlparams, HPCCSQLTreeWalker* parsedSQL, IArrayOf<IConstNamedValue> *variables, IConstWorkUnit * cw);
 
+    const char* getWsSqlBuildVersion()
+    {
+        return g_wssqlBuildVersion.str();
+    }
 };
 
 #endif //_ESPWIZ_WS_SQL_HPP__
