@@ -819,6 +819,8 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
                 NewWsWorkunit wu(context);
                 wu->getWuid(compiledwuid);
 
+                wu->setJobName("WsSQL Job");
+
                 wu.setQueryText(ecltext.str());
                 wu->setClusterName(cluster);
                 if (clonable)
