@@ -1237,7 +1237,7 @@ bool CwssqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, IE
         winfo.getExceptions(resp.updateWorkunit(), WUINFO_All);
 
         StringBuffer result;
-        getWUResult(context, wuid.str(), result, (unsigned)0, (unsigned)0, 0, WSSQLRESULT, WSSQLRESULTSCHEMA);
+        getWUResult(context, wuid.str(), result, 0, 0, 0, WSSQLRESULT, WSSQLRESULTSCHEMA);
         resp.setResult(result);
 
         AuditSystemAccess(context.queryUserId(), true, "Updated %s", wuid.str());
