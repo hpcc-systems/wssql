@@ -709,43 +709,50 @@ bool CwssqlEx::getWUResult(IEspContext &context, const char * wuid, StringBuffer
 
 bool CwssqlEx::onSetRelatedIndexes(IEspContext &context, IEspSetRelatedIndexesRequest &req, IEspSetRelatedIndexesResponse &resp)
 {
-    if (!context.validateFeatureAccess(WSSQLACCESS, SecAccess_Read, false))
-        throw MakeStringException(-1, "Failed to execute SQL. Permission denied.");
+    if (!context.validateFeatureAccess(WSSQLACCESS, SecAccess_Write, false))
+        throw MakeStringException(-1, "WsSQL::SetRelatedIndexes failed to execute SQL. Permission denied.");
 
-    bool success = false;
     StringBuffer username;
     context.getUserID(username);
 
     const char* passwd = context.queryPassword();
 
     IArrayOf<IConstRelatedIndexSet>& relatedindexSets = req.getRelatedIndexSets();
+    if (relatedindexSets.length() == 0)
+        throw MakeStringException(-1, "WsSQL::SetRelatedIndexes empty request detected.");
+
     ForEachItemIn(relatedindexsetindex, relatedindexSets)
     {
         IConstRelatedIndexSet &relatedIndexSet = relatedindexSets.item(relatedindexsetindex);
         const char * fileName = relatedIndexSet.getFileName();
+
+        if (!fileName || !*fileName)
+            throw MakeStringException(-1, "WsSQL::SetRelatedIndexes error: Empty file name detected.");
+
         StringArray& indexHints = relatedIndexSet.getIndexes();
 
         Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(fileName,username.str(), passwd, false);
 
-        StringBuffer description;
-        if (file)
-        {
-            StringBuffer currentIndexes;
-            description = file->getDescription();
-            HPCCFile::parseOutRelatedIndexes(description, currentIndexes);
+        if (!file)
+            throw MakeStringException(-1, "WsSQL::SetRelatedIndexes error: could not find file: %s.", fileName);
 
+        StringBuffer description;
+
+        StringBuffer currentIndexes;
+        description = file->getDescription();
+        HPCCFile::parseOutRelatedIndexes(description, currentIndexes);
+
+        int indexHintsCount = indexHints.length();
+        if (indexHintsCount > 0)
+        {
             description.append("\nXDBC:RelIndexes=[");
-            int indexHintsCount = indexHints.length();
-            if (indexHintsCount > 0)
+            for(int indexHintIndex = 0; indexHintIndex < indexHintsCount; indexHintIndex++)
             {
-                for(int indexHintIndex = 0; indexHintIndex < indexHintsCount; indexHintIndex++)
-                {
-                    description.appendf("%s%c", indexHints.item(indexHintIndex), (indexHintIndex < indexHintsCount-1 ? ',' : ' '));
-                }
-                description.append("]\n");
-                HPCCFileCache::updateHpccFileDescription(fileName, username, passwd, description.str());
-                file->setDescription(description.str());
+                description.appendf("%s%c", indexHints.item(indexHintIndex), (indexHintIndex < indexHintsCount-1 ? ';' : ' '));
             }
+            description.append("]\n");
+            HPCCFileCache::updateHpccFileDescription(fileName, username, passwd, description.str());
+            file->setDescription(description.str());
         }
     }
 
@@ -761,7 +768,10 @@ bool CwssqlEx::onGetRelatedIndexes(IEspContext &context, IEspGetRelatedIndexesRe
         if (!context.validateFeatureAccess(WSSQLACCESS, SecAccess_Read, false))
             throw MakeStringException(-1, "Failed to execute SQL. Permission denied.");
 
-        bool success = false;
+        StringArray& filenames = req.getFileNames();
+        if (filenames.length() == 0)
+            throw MakeStringException(-1, "WsSQL::GetRelatedIndexes error: No filenames detected");
+
         StringBuffer username;
         context.getUserID(username);
 
@@ -769,20 +779,21 @@ bool CwssqlEx::onGetRelatedIndexes(IEspContext &context, IEspGetRelatedIndexesRe
 
         IArrayOf<IEspRelatedIndexSet> relatedindexSets;
 
-        StringArray& filenames = req.getFileNames();
         ForEachItemIn(filenameindex, filenames)
         {
             const char * fileName = filenames.item(filenameindex);
             Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(fileName,username.str(), passwd, false);
 
-            StringArray indexHints;
             if (file)
+            {
+                StringArray indexHints;
                 file->getRelatedIndexes(indexHints);
 
-            Owned<IEspRelatedIndexSet> relatedIndexSet = createRelatedIndexSet("", "");
-            relatedIndexSet->setFileName(fileName);
-            relatedIndexSet->setIndexes(indexHints);
-            relatedindexSets.append(*relatedIndexSet.getLink());
+                Owned<IEspRelatedIndexSet> relatedIndexSet = createRelatedIndexSet("", "");
+                relatedIndexSet->setFileName(fileName);
+                relatedIndexSet->setIndexes(indexHints);
+                relatedindexSets.append(*relatedIndexSet.getLink());
+            }
         }
 
         resp.setRelatedIndexSets(relatedindexSets);

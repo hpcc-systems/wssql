@@ -125,7 +125,6 @@ bool HPCCFileCache::cacheAllHpccFiles(const char * filterby)
 }
 bool HPCCFileCache::updateHpccFileDescription(const char * filename, const char * user, const char * pass, const char * description)
 {
-    bool success = true;
     Owned<IUserDescriptor> userdesc;
     try
     {
