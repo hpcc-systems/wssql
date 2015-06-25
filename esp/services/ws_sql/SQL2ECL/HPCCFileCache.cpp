@@ -73,7 +73,7 @@ bool HPCCFileCache::populateTablesResponse(IEspGetDBMetaDataResponse & tablesres
      return success;
  }
 
-bool HPCCFileCache::fetchHpccFilesByTableName(IArrayOf<SQLTable> * sqltables, HpccFiles * hpccfilecache)
+bool HPCCFileCache::fetchHpccFilesByTableName(IArrayOf<SQLTable> * sqltables)
 {
     bool allFound = true;
 
@@ -123,16 +123,53 @@ bool HPCCFileCache::cacheAllHpccFiles(const char * filterby)
 
     return success;
 }
-
-const char * HPCCFileCache::cacheHpccFileByName(const char * filename, bool namevalidated)
+bool HPCCFileCache::updateHpccFileDescription(const char * filename, const char * user, const char * pass, const char * description)
 {
-    if(cache.getValue(filename))
-        return filename;
-
-    Owned<HPCCFile> file;
-
+    bool success = true;
+    Owned<IUserDescriptor> userdesc;
     try
     {
+        userdesc.setown(createUserDescriptor());
+        userdesc->set(user, pass);
+
+        //queryDistributedFileDirectory returns singleton
+        IDistributedFileDirectory & dfd = queryDistributedFileDirectory();
+        Owned<IDistributedFile> df = dfd.lookup(filename, userdesc);
+
+        if(!df)
+            return false;
+
+        DistributedFilePropertyLock lock(df);
+        lock.queryAttributes().setProp("@description",description);
+    }
+    catch (...)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+
+HPCCFile * HPCCFileCache::fetchHpccFileByName(IUserDescriptor *user, const char * filename, bool namevalidated)
+{
+    StringBuffer username;
+    user->getUserName(username);
+    StringBuffer password;
+    user->getPassword(password);
+
+    return HPCCFileCache::fetchHpccFileByName(filename, username.str(), password.str(), namevalidated);
+}
+
+HPCCFile * HPCCFileCache::fetchHpccFileByName(const char * filename, const char * user, const char * pass, bool namevalidated)
+{
+    Owned<HPCCFile> file;
+    Owned<IUserDescriptor> userdesc;
+    try
+    {
+        userdesc.setown(createUserDescriptor());
+        userdesc->set(user, pass);
+
         //queryDistributedFileDirectory returns singleton
         IDistributedFileDirectory & dfd = queryDistributedFileDirectory();
         Owned<IDistributedFile> df = dfd.lookup(filename, userdesc);
@@ -247,6 +284,29 @@ const char * HPCCFileCache::cacheHpccFileByName(const char * filename, bool name
         if (file && ( file->containsNestedColumns() || strncmp(file->getFormat(), "XML", 3)==0))
             throw MakeStringException(-1,"Nested data files not supported: %s.",filename);
 
+    }
+    catch (...)
+    {
+        if (file)
+            file.clear();
+    }
+
+    if (file)
+        return file.getLink();
+    else
+        return NULL;
+}
+
+const char * HPCCFileCache::cacheHpccFileByName(const char * filename, bool namevalidated)
+{
+    if(cache.getValue(filename))
+        return filename;
+
+    Owned<HPCCFile> file;
+
+    try
+    {
+        file.setown(HPCCFileCache::fetchHpccFileByName(userdesc, filename, namevalidated));
     }
     catch (...)
     {

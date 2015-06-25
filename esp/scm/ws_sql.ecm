@@ -216,8 +216,36 @@ ESPresponse EchoResponse
     string Response;
 };
 
-ESPservice [version("3.01"), default_client_version("3.01"), exceptions_inline("./smc_xslt/exceptions.xslt")] wssql
+ESPStruct RelatedIndexSet
 {
+    String FileName;
+    ESParray<String, Index> Indexes;
+};
+
+ESPrequest GetRelatedIndexesRequest
+{
+    ESParray<String, FileName> FileNames;
+};
+
+ESPresponse GetRelatedIndexesResponse
+{
+    ESParray<ESPstruct RelatedIndexSet, RelatedIndexSet> RelatedIndexSets;
+};
+
+ESPrequest SetRelatedIndexesRequest
+{
+    ESParray<ESPstruct RelatedIndexSet, RelatedIndexSet> RelatedIndexSets;
+};
+
+ESPresponse SetRelatedIndexesResponse
+{
+    ESParray<ESPstruct RelatedIndexSet, RelatedIndexSet> RelatedIndexSets;
+};
+
+ESPservice [version("3.02"), default_client_version("3.02"), exceptions_inline("./smc_xslt/exceptions.xslt")] wssql
+{
+    ESPmethod [min_ver("3.02")] SetRelatedIndexes(SetRelatedIndexesRequest, SetRelatedIndexesResponse);
+    ESPmethod [min_ver("3.02")] GetRelatedIndexes(GetRelatedIndexesRequest, GetRelatedIndexesResponse);
     ESPmethod [] PrepareSQL(PrepareSQLRequest, PrepareSQLResponse);
     ESPmethod [] ExecuteSQL(ExecuteSQLRequest, ExecuteSQLResponse);
     ESPmethod [] ExecutePreparedSQL(ExecutePreparedSQLRequest, ExecutePreparedSQLResponse);
