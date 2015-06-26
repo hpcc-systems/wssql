@@ -731,20 +731,20 @@ bool CwssqlEx::onSetRelatedIndexes(IEspContext &context, IEspSetRelatedIndexesRe
 
         StringArray& indexHints = relatedIndexSet.getIndexes();
 
-        Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(fileName,username.str(), passwd, false);
-
-        if (!file)
-            throw MakeStringException(-1, "WsSQL::SetRelatedIndexes error: could not find file: %s.", fileName);
-
-        StringBuffer description;
-
-        StringBuffer currentIndexes;
-        description = file->getDescription();
-        HPCCFile::parseOutRelatedIndexes(description, currentIndexes);
-
         int indexHintsCount = indexHints.length();
         if (indexHintsCount > 0)
         {
+            Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(fileName,username.str(), passwd, false);
+
+            if (!file)
+                throw MakeStringException(-1, "WsSQL::SetRelatedIndexes error: could not find file: %s.", fileName);
+
+            StringBuffer description;
+
+            StringBuffer currentIndexes;
+            description = file->getDescription();
+            HPCCFile::parseOutRelatedIndexes(description, currentIndexes);
+
             description.append("\nXDBC:RelIndexes=[");
             for(int indexHintIndex = 0; indexHintIndex < indexHintsCount; indexHintIndex++)
             {
