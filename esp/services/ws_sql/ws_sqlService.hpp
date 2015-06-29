@@ -109,6 +109,8 @@ public:
     bool onGetDBSystemInfo(IEspContext &context, IEspGetDBSystemInfoRequest &req, IEspGetDBSystemInfoResponse &resp);
     bool onGetDBMetaData(IEspContext &context, IEspGetDBMetaDataRequest &req, IEspGetDBMetaDataResponse &resp);
     bool onGetResults(IEspContext &context, IEspGetResultsRequest &req, IEspGetResultsResponse &resp);
+    bool onGetRelatedIndexes(IEspContext &context, IEspGetRelatedIndexesRequest &req, IEspGetRelatedIndexesResponse &resp);
+    bool onSetRelatedIndexes(IEspContext &context, IEspSetRelatedIndexesRequest &req, IEspSetRelatedIndexesResponse &resp);
     void refreshValidClusters();
     bool isValidCluster(const char *cluster);
 
