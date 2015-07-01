@@ -1549,6 +1549,163 @@ bool CwssqlEx::cloneAndExecuteWU(IEspContext &context, const char * originalwuid
     return success;
 }
 
+bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoadRequest &req, IEspCreateTableAndLoadResponse &resp)
+{
+    if (!context.validateFeatureAccess(WSSQLACCESS, SecAccess_Write, false))
+            throw MakeStringException(-1, "Failed to fetch results (open workunit). Permission denied.");
+
+    bool success = true;
+
+    const char * targetTableName = req.getTableName();
+    if (!targetTableName || !*targetTableName)
+        throw MakeStringException(-1, "WsSQL::CreateTable: Error: Detected empty table name.");
+
+    const char * cluster = req.getTargeCluster();
+    if (!cluster || !*cluster)
+        throw MakeStringException(-1, "WsSQL::CreateTable: Error: Detected empty cluster name.");
+
+    StringBuffer ecl;
+    StringBuffer recDef;
+    ecl.set("import std;\n");
+    {
+        IArrayOf<IConstEclFieldDeclaration>& eclFields = req.getEclFields();
+        if (eclFields.length() == 0)
+            throw MakeStringException(-1, "WsSQL::CreateTable: Error: Empty record definition detected.");
+
+
+        recDef.set("TABLERECORDDEF := RECORD\n");
+        ForEachItemIn(fieldindex, eclFields)
+        {
+            IConstEclFieldDeclaration &eclfield = eclFields.item(fieldindex);
+            IConstEclFieldType &ecltype = eclfield.getEclFieldType();
+
+            const char * name      = ecltype.getName();
+            int len       = ecltype.getLength();
+            const char * locale    = ecltype.getLocale();
+            int precision = ecltype.getPrecision();
+
+            recDef.appendf("\t%s", name);
+            if (len > 0)
+            {
+                if(isdigit(recDef.charAt(recDef.length() - 1)))
+                    recDef.append("_");
+                recDef.append(len);
+            }
+
+            if (locale && *locale)
+                recDef.append(locale);
+
+            if (precision > 0)
+                recDef.appendf("_%d", precision);
+
+            recDef.appendf(" %s;\n", eclfield.getFieldName());
+        }
+        recDef.append("END;\n");
+    }
+
+    ecl.append(recDef.str());
+
+    const char * sourceDataFileName = req.getDataSourceName();
+    bool overwrite = req.getOverwrite();
+    if (sourceDataFileName && *sourceDataFileName)
+    {
+        StringBuffer username;
+        context.getUserID(username);
+
+        const char* passwd = context.queryPassword();
+
+        Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(sourceDataFileName,username.str(), passwd, false);
+        if (!file.get())
+            throw MakeStringException(-1, "WsSQL::CreateTable: Error: Could not find source data file.");
+
+        const char * format = req.getDataSourceType();
+        ecl.appendf("\nFILEDATASET := DATASET('~%s', TABLERECORDDEF, %s);\n",req.getDataSourceName(), format);
+        ecl.appendf("OUTPUT(FILEDATASET, ,'%s'%s);", targetTableName, overwrite ? ", OVERWRITE" : "");
+    }
+    else
+    {
+         ecl.appendf("\nFILEDATASET := DATASET('~', TABLERECORDDEF, THOR, OPT);\n");
+         ecl.appendf("OUTPUT(FILEDATASET, %s, '~%s');\n",  overwrite ? ", OVERWRITE" : "", targetTableName);
+    }
+
+    const char * description = req.getTableDescription();
+    if (description && * description)
+        ecl.appendf("\nStd.file.setfiledescription('%s','%s')", targetTableName, description);
+
+    ESPLOG(LogMax, "WsSQL: creating new WU...");
+
+    NewWsWorkunit wu(context);
+    SCMStringBuffer compiledwuid;
+    wu->getWuid(compiledwuid);
+
+    wu->setJobName("WsSQL Create table");
+    wu.setQueryText(ecl.str());
+
+    wu->setClusterName(cluster);
+
+    wu->setAction(WUActionCompile);
+
+    const char * wuusername = req.getOwner();
+    if (wuusername && *wuusername)
+        wu->setUser(wuusername);
+
+    wu->commit();
+    wu.clear();
+
+    ESPLOG(LogMax, "WsSQL: compiling WU...");
+    WsWuHelpers::submitWsWorkunit(context, compiledwuid.str(), cluster, NULL, 0, true, false, false, NULL, NULL, NULL);
+    waitForWorkUnitToCompile(compiledwuid.str(), req.getWait());
+
+    ESPLOG(LogMax, "WsSQL: finish compiling WU...");
+
+    ESPLOG(LogMax, "WsSQL: opening WU...");
+    Owned<IWorkUnitFactory> factory = getWorkUnitFactory(context.querySecManager(), context.queryUser());
+    Owned<IConstWorkUnit> cw = factory->openWorkUnit(compiledwuid.str(), false);
+
+    if (!cw)
+        throw MakeStringException(ECLWATCH_CANNOT_UPDATE_WORKUNIT,"Cannot open workunit %s.", compiledwuid.str());
+
+    WsWUExceptions errors(*cw);
+    if (errors.ErrCount()>0)
+    {
+        WsWuInfo winfo(context, compiledwuid.str());
+        winfo.getExceptions(resp.updateWorkunit(), WUINFO_All);
+    }
+    else
+    {
+        if (notEmpty(cluster) && !isValidCluster(cluster))
+            throw MakeStringException(ECLWATCH_INVALID_CLUSTER_NAME, "Invalid cluster name: %s", cluster);
+
+        StringBuffer runningwuid;
+        ESPLOG(LogMax, "WsSQL: executing WU(%s)...", compiledwuid.str());
+        WsWuHelpers::submitWsWorkunit(context, compiledwuid.str(), cluster, NULL, 0, false, true, true, NULL, NULL, NULL);
+        runningwuid.set(compiledwuid.str());
+
+        ESPLOG(LogMax, "WsSQL: waiting on WU(%s)...", runningwuid.str());
+        waitForWorkUnitToComplete(runningwuid.str(), req.getWait());
+        ESPLOG(LogMax, "WsSQL: finished waiting on WU(%s)...", runningwuid.str());
+
+        Owned<IConstWorkUnit> rw = factory->openWorkUnit(runningwuid.str(), false);
+
+        if (!rw)
+            throw MakeStringException(-1,"WsSQL: Cannot verify create and load request success.");
+
+        WsWUExceptions errors(*rw);
+        if (errors.ErrCount() > 0 )
+        {
+            WsWuInfo winfo(context, compiledwuid.str());
+            winfo.getExceptions(resp.updateWorkunit(), WUINFO_All);
+            success = false;
+        }
+
+        resp.setSuccess(success);
+        resp.setEclRecordDefinition(recDef.str());
+        resp.setTableName(targetTableName);
+    }
+
+    return success;
+}
+
 bool CwssqlEx::onGetResults(IEspContext &context, IEspGetResultsRequest &req, IEspGetResultsResponse &resp)
 {
     if (!context.validateFeatureAccess(WSSQLACCESS, SecAccess_Read, false))

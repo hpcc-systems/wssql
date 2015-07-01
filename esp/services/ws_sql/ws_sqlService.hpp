@@ -111,6 +111,8 @@ public:
     bool onGetResults(IEspContext &context, IEspGetResultsRequest &req, IEspGetResultsResponse &resp);
     bool onGetRelatedIndexes(IEspContext &context, IEspGetRelatedIndexesRequest &req, IEspGetRelatedIndexesResponse &resp);
     bool onSetRelatedIndexes(IEspContext &context, IEspSetRelatedIndexesRequest &req, IEspSetRelatedIndexesResponse &resp);
+    bool onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoadRequest &req, IEspCreateTableAndLoadResponse &resp);
+
     void refreshValidClusters();
     bool isValidCluster(const char *cluster);
 
