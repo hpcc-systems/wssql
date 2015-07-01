@@ -249,6 +249,24 @@ public:
         }
     }
 
+    static bool parseOutRelatedIndexes(StringBuffer & description, StringBuffer & releatedIndexes)
+    {
+        if (description.length() > 0)
+        {
+            const char * head = strstr(description.str(), "XDBC:RelIndexes");
+            if (head && *head)
+            {
+                const char * tail = strchr(head, ']');
+                if (tail && *tail)
+                {
+                    description.remove(head-description.str(), tail-description.str()).trim();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     void getRelatedIndexes(StringArray & indexes)
     {
         ForEachItemIn(c, relIndexFiles)

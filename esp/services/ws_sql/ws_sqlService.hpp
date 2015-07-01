@@ -18,6 +18,8 @@ limitations under the License.
 #ifndef _ESPWIZ_WS_SQL_HPP__
 #define _ESPWIZ_WS_SQL_HPP__
 
+#include <wssql-build-config.h>
+
 #include "ws_sql.hpp"
 #include "ws_sql_esp.ipp"
 
@@ -38,15 +40,14 @@ limitations under the License.
 
 #include "HPCCSQLTreeWalker.hpp"
 
+#define EMBEDDEDSQLQUERYCOMMENT "\n\n/****************************************************\nOriginal SQL:     \"%s\"\nNormalized SQL: \"%s\"\n****************************************************/\n"
+
 static const char* WSSQLACCESS = "WsSqlAccess";
 static const char* WSSQLRESULT = "WsSQLResult";
 static const char* WSSQLCOUNT  = "WsSQLCount";
 static const char* WSSQLRESULTSCHEMA = "WsSQLResultSchema";
 
-//Use of this static variable will result in a compile-time warning:
-//"warning: format not a string literal, argument types not checked [-Wformat-nonliteral]"
-//Use this format template with caution
-static const char* EMBEDDEDSQLQUERYCOMMENT = "\n\n/****************************************************\nOriginal SQL:     \"%s\"\nNormalized SQL: \"%s\"\n****************************************************/\n";
+static StringBuffer g_wssqlBuildVersion;
 
 class CwssqlSoapBindingEx : public CwssqlSoapBinding
 {
@@ -86,6 +87,15 @@ private:
         time(&cacheFlushTime);
     }
 
+    void setWsSqlBuildVersion(const char* buildVersion)
+    {
+        g_wssqlBuildVersion.clear();
+        if(buildVersion&&*buildVersion)
+            g_wssqlBuildVersion.set(buildVersion);
+
+        g_wssqlBuildVersion.trim();
+    }
+
 public:
     IMPLEMENT_IINTERFACE;
 
@@ -99,6 +109,10 @@ public:
     bool onGetDBSystemInfo(IEspContext &context, IEspGetDBSystemInfoRequest &req, IEspGetDBSystemInfoResponse &resp);
     bool onGetDBMetaData(IEspContext &context, IEspGetDBMetaDataRequest &req, IEspGetDBMetaDataResponse &resp);
     bool onGetResults(IEspContext &context, IEspGetResultsRequest &req, IEspGetResultsResponse &resp);
+    bool onGetRelatedIndexes(IEspContext &context, IEspGetRelatedIndexesRequest &req, IEspGetRelatedIndexesResponse &resp);
+    bool onSetRelatedIndexes(IEspContext &context, IEspSetRelatedIndexesRequest &req, IEspSetRelatedIndexesResponse &resp);
+    bool onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoadRequest &req, IEspCreateTableAndLoadResponse &resp);
+
     void refreshValidClusters();
     bool isValidCluster(const char *cluster);
 
@@ -116,6 +130,10 @@ public:
 
     void createXMLParams(StringBuffer & xmlparams, HPCCSQLTreeWalker* parsedSQL, IArrayOf<IConstNamedValue> *variables, IConstWorkUnit * cw);
 
+    const char* getWsSqlBuildVersion()
+    {
+        return g_wssqlBuildVersion.str();
+    }
 };
 
 #endif //_ESPWIZ_WS_SQL_HPP__

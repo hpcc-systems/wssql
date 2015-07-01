@@ -163,6 +163,13 @@ ESPresponse [exceptions_inline] GetDBSystemInfoResponse
     string Point;
     string Project;
     string Maturity;
+
+    [min_ver("3.01")] string WsSQLFullVersion;
+    [min_ver("3.01")] string WsSQLMajor;
+    [min_ver("3.01")] string WsSQLMinor;
+    [min_ver("3.01")] string WsSQLPoint;
+    [min_ver("3.01")] string WsSQLProject;
+    [min_ver("3.01")] string WsSQLMaturity;
 };
 
 ESPrequest GetDBMetaDataRequest
@@ -209,8 +216,72 @@ ESPresponse EchoResponse
     string Response;
 };
 
-ESPservice [version("3.0"), default_client_version("3.0"), exceptions_inline("./smc_xslt/exceptions.xslt")] wssql
+ESPStruct RelatedIndexSet
 {
+    String FileName;
+    ESParray<String, Index> Indexes;
+};
+
+ESPrequest GetRelatedIndexesRequest
+{
+    ESParray<String, FileName> FileNames;
+};
+
+ESPresponse GetRelatedIndexesResponse
+{
+    ESParray<ESPstruct RelatedIndexSet, RelatedIndexSet> RelatedIndexSets;
+};
+
+ESPrequest SetRelatedIndexesRequest
+{
+    ESParray<ESPstruct RelatedIndexSet, RelatedIndexSet> RelatedIndexSets;
+};
+
+ESPresponse SetRelatedIndexesResponse
+{
+    ESParray<ESPstruct RelatedIndexSet, RelatedIndexSet> RelatedIndexSets;
+};
+
+ESPStruct EclFieldType
+{
+    String Name;
+    String Locale;
+    Integer Length;
+    Integer Precision;
+};
+
+ESPStruct EclFieldDeclaration
+{
+    ESPStruct EclFieldType EclFieldType;
+    String FieldName;
+};
+
+ESPrequest CreateTableAndLoadRequest
+{
+    String  TableName;
+    String  TableDescription;
+    Boolean Overwrite;
+    ESParray<ESPstruct EclFieldDeclaration, EclField> EclFields;
+    String  TargeCluster;
+    String  Owner;
+    String  DataSourceName;
+    String  DataSourceType;
+    int Wait(-1);
+};
+
+ESPresponse CreateTableAndLoadResponse
+{
+    String TableName;
+    Boolean Success;
+    String EclRecordDefinition;
+    ESPstruct ECLWorkunit Workunit;
+};
+
+ESPservice [version("3.03"), default_client_version("3.03"), exceptions_inline("./smc_xslt/exceptions.xslt")] wssql
+{
+    ESPmethod [min_ver("3.03")] CreateTableAndLoad(CreateTableAndLoadRequest, CreateTableAndLoadResponse);
+    ESPmethod [min_ver("3.02")] SetRelatedIndexes(SetRelatedIndexesRequest, SetRelatedIndexesResponse);
+    ESPmethod [min_ver("3.02")] GetRelatedIndexes(GetRelatedIndexesRequest, GetRelatedIndexesResponse);
     ESPmethod [] PrepareSQL(PrepareSQLRequest, PrepareSQLResponse);
     ESPmethod [] ExecuteSQL(ExecuteSQLRequest, ExecuteSQLResponse);
     ESPmethod [] ExecutePreparedSQL(ExecutePreparedSQLRequest, ExecutePreparedSQLResponse);

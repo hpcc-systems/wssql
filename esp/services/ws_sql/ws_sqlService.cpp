@@ -31,6 +31,8 @@ void CwssqlEx::init(IPropertyTree *_cfg, const char *_process, const char *_serv
     }
 
     refreshValidClusters();
+
+    setWsSqlBuildVersion(WSSQL_BASE_BUILD_TAG);
 }
 
 bool CwssqlEx::onEcho(IEspContext &context, IEspEchoRequest &req, IEspEchoResponse &resp)
@@ -273,13 +275,49 @@ bool CwssqlEx::onGetDBSystemInfo(IEspContext &context, IEspGetDBSystemInfoReques
                     maturity.append(*tail++);
                 resp.setMaturity(maturity.str());
             }
+        }
+
+        const char* wssqlbuild_ver = getWsSqlBuildVersion();
+        if (wssqlbuild_ver && *wssqlbuild_ver)
+        {
+            StringBuffer major;
+            StringBuffer minor;
+            StringBuffer point;
+            StringBuffer maturity;
+
+            //5.4.0-trunk1-Debug[heads/wssql-0-gb9e351-dirty
+            const char * tail = wssqlbuild_ver;
+
+            while (tail && *tail != '.')
+                major.append(*tail++);
+            resp.setWsSQLMajor(major.str());
+
+            tail++;
+            while (tail && *tail != '.')
+                minor.append(*tail++);
+            resp.setWsSQLMinor(minor.str());
+
+            tail++;
+            while (tail && *tail != '-')
+                point.append(*tail++);
+            resp.setWsSQLPoint(point.str());
+
+            if (req.getIncludeAll())
+            {
+                resp.setWsSQLFullVersion(wssqlbuild_ver);
+
+                tail++;
+                while (tail && *tail != '-' && *tail != '[')
+                    maturity.append(*tail++);
+                resp.setWsSQLMaturity(maturity.str());
+            }
 
             success = true;
         }
     }
     catch (...)
     {
-        ERRLOG("Error Parsing HPCC Version string.");
+        ERRLOG("Error Parsing HPCC and/or WsSQL Version string.");
     }
 
     return success;
@@ -650,6 +688,7 @@ bool CwssqlEx::getWUResult(IEspContext &context, const char * wuid, StringBuffer
            case WUStateCompleted:
            case WUStateFailed:
            case WUStateUnknown:
+           case WUStateCompiled:
            {
                StringBufferAdaptor resultXML(result);
                Owned<IResultSetFactory> factory = getResultSetFactory(context.queryUserId(), context.queryPassword());
@@ -666,6 +705,104 @@ bool CwssqlEx::getWUResult(IEspContext &context, const char * wuid, StringBuffer
         return true;
     }
     return false;
+}
+
+bool CwssqlEx::onSetRelatedIndexes(IEspContext &context, IEspSetRelatedIndexesRequest &req, IEspSetRelatedIndexesResponse &resp)
+{
+    if (!context.validateFeatureAccess(WSSQLACCESS, SecAccess_Write, false))
+        throw MakeStringException(-1, "WsSQL::SetRelatedIndexes failed to execute SQL. Permission denied.");
+
+    StringBuffer username;
+    context.getUserID(username);
+
+    const char* passwd = context.queryPassword();
+
+    IArrayOf<IConstRelatedIndexSet>& relatedindexSets = req.getRelatedIndexSets();
+    if (relatedindexSets.length() == 0)
+        throw MakeStringException(-1, "WsSQL::SetRelatedIndexes empty request detected.");
+
+    ForEachItemIn(relatedindexsetindex, relatedindexSets)
+    {
+        IConstRelatedIndexSet &relatedIndexSet = relatedindexSets.item(relatedindexsetindex);
+        const char * fileName = relatedIndexSet.getFileName();
+
+        if (!fileName || !*fileName)
+            throw MakeStringException(-1, "WsSQL::SetRelatedIndexes error: Empty file name detected.");
+
+        StringArray& indexHints = relatedIndexSet.getIndexes();
+
+        int indexHintsCount = indexHints.length();
+        if (indexHintsCount > 0)
+        {
+            Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(fileName,username.str(), passwd, false);
+
+            if (!file)
+                throw MakeStringException(-1, "WsSQL::SetRelatedIndexes error: could not find file: %s.", fileName);
+
+            StringBuffer description;
+
+            StringBuffer currentIndexes;
+            description = file->getDescription();
+            HPCCFile::parseOutRelatedIndexes(description, currentIndexes);
+
+            description.append("\nXDBC:RelIndexes=[");
+            for(int indexHintIndex = 0; indexHintIndex < indexHintsCount; indexHintIndex++)
+            {
+                description.appendf("%s%c", indexHints.item(indexHintIndex), (indexHintIndex < indexHintsCount-1 ? ';' : ' '));
+            }
+            description.append("]\n");
+            HPCCFileCache::updateHpccFileDescription(fileName, username, passwd, description.str());
+            file->setDescription(description.str());
+        }
+    }
+
+    resp.setRelatedIndexSets(relatedindexSets);
+
+    return true;
+}
+
+bool CwssqlEx::onGetRelatedIndexes(IEspContext &context, IEspGetRelatedIndexesRequest &req, IEspGetRelatedIndexesResponse &resp)
+{
+    try
+    {
+        if (!context.validateFeatureAccess(WSSQLACCESS, SecAccess_Read, false))
+            throw MakeStringException(-1, "Failed to execute SQL. Permission denied.");
+
+        StringArray& filenames = req.getFileNames();
+        if (filenames.length() == 0)
+            throw MakeStringException(-1, "WsSQL::GetRelatedIndexes error: No filenames detected");
+
+        StringBuffer username;
+        context.getUserID(username);
+
+        const char* passwd = context.queryPassword();
+
+        IArrayOf<IEspRelatedIndexSet> relatedindexSets;
+
+        ForEachItemIn(filenameindex, filenames)
+        {
+            const char * fileName = filenames.item(filenameindex);
+            Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(fileName,username.str(), passwd, false);
+
+            if (file)
+            {
+                StringArray indexHints;
+                file->getRelatedIndexes(indexHints);
+
+                Owned<IEspRelatedIndexSet> relatedIndexSet = createRelatedIndexSet("", "");
+                relatedIndexSet->setFileName(fileName);
+                relatedIndexSet->setIndexes(indexHints);
+                relatedindexSets.append(*relatedIndexSet.getLink());
+            }
+        }
+
+        resp.setRelatedIndexSets(relatedindexSets);
+    }
+    catch(IException* e)
+    {
+        FORWARDEXCEPTION(context, e, -1);
+    }
+    return true;
 }
 
 bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IEspExecuteSQLResponse &resp)
@@ -779,6 +916,8 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
                 ESPLOG(LogMax, "WsSQL: creating new WU...");
                 NewWsWorkunit wu(context);
                 wu->getWuid(compiledwuid);
+
+                wu->setJobName("WsSQL Job");
 
                 wu.setQueryText(ecltext.str());
                 wu->setClusterName(cluster);
@@ -1235,6 +1374,10 @@ bool CwssqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, IE
         winfo.getCommon(resp.updateWorkunit(), WUINFO_All);
         winfo.getExceptions(resp.updateWorkunit(), WUINFO_All);
 
+        StringBuffer result;
+        getWUResult(context, wuid.str(), result, 0, 0, 0, WSSQLRESULT, WSSQLRESULTSCHEMA);
+        resp.setResult(result);
+
         AuditSystemAccess(context.queryUserId(), true, "Updated %s", wuid.str());
     }
     catch(IException* e)
@@ -1401,6 +1544,163 @@ bool CwssqlEx::cloneAndExecuteWU(IEspContext &context, const char * originalwuid
     catch(IException* e)
     {
        FORWARDEXCEPTION(context, e, -1);
+    }
+
+    return success;
+}
+
+bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoadRequest &req, IEspCreateTableAndLoadResponse &resp)
+{
+    if (!context.validateFeatureAccess(WSSQLACCESS, SecAccess_Write, false))
+            throw MakeStringException(-1, "Failed to fetch results (open workunit). Permission denied.");
+
+    bool success = true;
+
+    const char * targetTableName = req.getTableName();
+    if (!targetTableName || !*targetTableName)
+        throw MakeStringException(-1, "WsSQL::CreateTable: Error: Detected empty table name.");
+
+    const char * cluster = req.getTargeCluster();
+    if (!cluster || !*cluster)
+        throw MakeStringException(-1, "WsSQL::CreateTable: Error: Detected empty cluster name.");
+
+    StringBuffer ecl;
+    StringBuffer recDef;
+    ecl.set("import std;\n");
+    {
+        IArrayOf<IConstEclFieldDeclaration>& eclFields = req.getEclFields();
+        if (eclFields.length() == 0)
+            throw MakeStringException(-1, "WsSQL::CreateTable: Error: Empty record definition detected.");
+
+
+        recDef.set("TABLERECORDDEF := RECORD\n");
+        ForEachItemIn(fieldindex, eclFields)
+        {
+            IConstEclFieldDeclaration &eclfield = eclFields.item(fieldindex);
+            IConstEclFieldType &ecltype = eclfield.getEclFieldType();
+
+            const char * name      = ecltype.getName();
+            int len       = ecltype.getLength();
+            const char * locale    = ecltype.getLocale();
+            int precision = ecltype.getPrecision();
+
+            recDef.appendf("\t%s", name);
+            if (len > 0)
+            {
+                if(isdigit(recDef.charAt(recDef.length() - 1)))
+                    recDef.append("_");
+                recDef.append(len);
+            }
+
+            if (locale && *locale)
+                recDef.append(locale);
+
+            if (precision > 0)
+                recDef.appendf("_%d", precision);
+
+            recDef.appendf(" %s;\n", eclfield.getFieldName());
+        }
+        recDef.append("END;\n");
+    }
+
+    ecl.append(recDef.str());
+
+    const char * sourceDataFileName = req.getDataSourceName();
+    bool overwrite = req.getOverwrite();
+    if (sourceDataFileName && *sourceDataFileName)
+    {
+        StringBuffer username;
+        context.getUserID(username);
+
+        const char* passwd = context.queryPassword();
+
+        Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(sourceDataFileName,username.str(), passwd, false);
+        if (!file.get())
+            throw MakeStringException(-1, "WsSQL::CreateTable: Error: Could not find source data file.");
+
+        const char * format = req.getDataSourceType();
+        ecl.appendf("\nFILEDATASET := DATASET('~%s', TABLERECORDDEF, %s);\n",req.getDataSourceName(), format);
+        ecl.appendf("OUTPUT(FILEDATASET, ,'%s'%s);", targetTableName, overwrite ? ", OVERWRITE" : "");
+    }
+    else
+    {
+         ecl.appendf("\nFILEDATASET := DATASET('~', TABLERECORDDEF, THOR, OPT);\n");
+         ecl.appendf("OUTPUT(FILEDATASET, %s, '~%s');\n",  overwrite ? ", OVERWRITE" : "", targetTableName);
+    }
+
+    const char * description = req.getTableDescription();
+    if (description && * description)
+        ecl.appendf("\nStd.file.setfiledescription('%s','%s')", targetTableName, description);
+
+    ESPLOG(LogMax, "WsSQL: creating new WU...");
+
+    NewWsWorkunit wu(context);
+    SCMStringBuffer compiledwuid;
+    wu->getWuid(compiledwuid);
+
+    wu->setJobName("WsSQL Create table");
+    wu.setQueryText(ecl.str());
+
+    wu->setClusterName(cluster);
+
+    wu->setAction(WUActionCompile);
+
+    const char * wuusername = req.getOwner();
+    if (wuusername && *wuusername)
+        wu->setUser(wuusername);
+
+    wu->commit();
+    wu.clear();
+
+    ESPLOG(LogMax, "WsSQL: compiling WU...");
+    WsWuHelpers::submitWsWorkunit(context, compiledwuid.str(), cluster, NULL, 0, true, false, false, NULL, NULL, NULL);
+    waitForWorkUnitToCompile(compiledwuid.str(), req.getWait());
+
+    ESPLOG(LogMax, "WsSQL: finish compiling WU...");
+
+    ESPLOG(LogMax, "WsSQL: opening WU...");
+    Owned<IWorkUnitFactory> factory = getWorkUnitFactory(context.querySecManager(), context.queryUser());
+    Owned<IConstWorkUnit> cw = factory->openWorkUnit(compiledwuid.str(), false);
+
+    if (!cw)
+        throw MakeStringException(ECLWATCH_CANNOT_UPDATE_WORKUNIT,"Cannot open workunit %s.", compiledwuid.str());
+
+    WsWUExceptions errors(*cw);
+    if (errors.ErrCount()>0)
+    {
+        WsWuInfo winfo(context, compiledwuid.str());
+        winfo.getExceptions(resp.updateWorkunit(), WUINFO_All);
+    }
+    else
+    {
+        if (notEmpty(cluster) && !isValidCluster(cluster))
+            throw MakeStringException(ECLWATCH_INVALID_CLUSTER_NAME, "Invalid cluster name: %s", cluster);
+
+        StringBuffer runningwuid;
+        ESPLOG(LogMax, "WsSQL: executing WU(%s)...", compiledwuid.str());
+        WsWuHelpers::submitWsWorkunit(context, compiledwuid.str(), cluster, NULL, 0, false, true, true, NULL, NULL, NULL);
+        runningwuid.set(compiledwuid.str());
+
+        ESPLOG(LogMax, "WsSQL: waiting on WU(%s)...", runningwuid.str());
+        waitForWorkUnitToComplete(runningwuid.str(), req.getWait());
+        ESPLOG(LogMax, "WsSQL: finished waiting on WU(%s)...", runningwuid.str());
+
+        Owned<IConstWorkUnit> rw = factory->openWorkUnit(runningwuid.str(), false);
+
+        if (!rw)
+            throw MakeStringException(-1,"WsSQL: Cannot verify create and load request success.");
+
+        WsWUExceptions errors(*rw);
+        if (errors.ErrCount() > 0 )
+        {
+            WsWuInfo winfo(context, compiledwuid.str());
+            winfo.getExceptions(resp.updateWorkunit(), WUINFO_All);
+            success = false;
+        }
+
+        resp.setSuccess(success);
+        resp.setEclRecordDefinition(recDef.str());
+        resp.setTableName(targetTableName);
     }
 
     return success;
