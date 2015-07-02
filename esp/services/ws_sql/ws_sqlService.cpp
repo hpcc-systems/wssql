@@ -1558,11 +1558,34 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
 
     const char * targetTableName = req.getTableName();
     if (!targetTableName || !*targetTableName)
-        throw MakeStringException(-1, "WsSQL::CreateTable: Error: Detected empty table name.");
+        throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Detected empty table name.");
 
     const char * cluster = req.getTargeCluster();
-    if (!cluster || !*cluster)
-        throw MakeStringException(-1, "WsSQL::CreateTable: Error: Detected empty cluster name.");
+    if (notEmpty(cluster) && !isValidCluster(cluster))
+        throw MakeStringException(ECLWATCH_INVALID_CLUSTER_NAME, "WsSQL::CreateTableAndLoad: Invalid cluster name: %s", cluster);
+
+    const char * sourceDataFileName = req.getDataSourceName();
+    if (!sourceDataFileName || !*sourceDataFileName)
+        throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Detected empty source data file name.");
+
+    IConstDataType & format = req.getDataSourceType();
+
+    const char * formatname = format.getName();
+    if (!formatname || !*formatname)
+        throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Detected empty DataSourceType.");
+
+    HPCCFileFormat formatenum = HPCCFile::formatStringToEnum(formatname);
+    if (formatenum == HPCCFileFormatUnknown)
+        throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Invalid file format detected: %s.", formatname);
+
+    StringBuffer username;
+    context.getUserID(username);
+
+    const char* passwd = context.queryPassword();
+
+    Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(sourceDataFileName,username.str(), passwd, false);
+    if (!file.get())
+        throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Could not find source data file.");
 
     StringBuffer ecl;
     StringBuffer recDef;
@@ -1570,7 +1593,7 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
     {
         IArrayOf<IConstEclFieldDeclaration>& eclFields = req.getEclFields();
         if (eclFields.length() == 0)
-            throw MakeStringException(-1, "WsSQL::CreateTable: Error: Empty record definition detected.");
+            throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Empty record definition detected.");
 
 
         recDef.set("TABLERECORDDEF := RECORD\n");
@@ -1580,9 +1603,9 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
             IConstEclFieldType &ecltype = eclfield.getEclFieldType();
 
             const char * name      = ecltype.getName();
-            int len       = ecltype.getLength();
+            int len                = ecltype.getLength();
             const char * locale    = ecltype.getLocale();
-            int precision = ecltype.getPrecision();
+            int precision          = ecltype.getPrecision();
 
             recDef.appendf("\t%s", name);
             if (len > 0)
@@ -1605,28 +1628,38 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
 
     ecl.append(recDef.str());
 
-    const char * sourceDataFileName = req.getDataSourceName();
     bool overwrite = req.getOverwrite();
-    if (sourceDataFileName && *sourceDataFileName)
+
+    StringBuffer formatnamefull = formatname;
+    IArrayOf<IConstDataTypeParam> & formatparams = format.getParams();
+    int formatparamscount = formatparams.length();
+    if (formatparamscount > 0 )
     {
-        StringBuffer username;
-        context.getUserID(username);
+        formatnamefull.append("(");
+        for (int paramindex = 0; paramindex < formatparamscount; paramindex++)
+        {
+            IConstDataTypeParam &paramitem = formatparams.item(paramindex);
+            const char * paramname = paramitem.getName();
+            StringArray & paramvalues = paramitem.getValues();
+            int paramvalueslen = paramvalues.length();
+            formatnamefull.appendf("%s(", paramname);
+            if (paramvalueslen > 1)
+                formatnamefull.append("[");
 
-        const char* passwd = context.queryPassword();
-
-        Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(sourceDataFileName,username.str(), passwd, false);
-        if (!file.get())
-            throw MakeStringException(-1, "WsSQL::CreateTable: Error: Could not find source data file.");
-
-        const char * format = req.getDataSourceType();
-        ecl.appendf("\nFILEDATASET := DATASET('~%s', TABLERECORDDEF, %s);\n",req.getDataSourceName(), format);
-        ecl.appendf("OUTPUT(FILEDATASET, ,'%s'%s);", targetTableName, overwrite ? ", OVERWRITE" : "");
+            for (int paramvaluesindex = 0; paramvaluesindex < paramvalueslen; paramvaluesindex++)
+            {
+                formatnamefull.appendf("'%s'%s", paramvalues.item(paramvaluesindex), paramvaluesindex < paramvalueslen-1 ? "," : "");
+            }
+            if (paramvalueslen > 1)
+                formatnamefull.append("]");
+            formatnamefull.append(")");
+            if (paramindex < formatparamscount-1)
+                formatnamefull.append(",");
+        }
+        formatnamefull.append(")");
     }
-    else
-    {
-         ecl.appendf("\nFILEDATASET := DATASET('~', TABLERECORDDEF, THOR, OPT);\n");
-         ecl.appendf("OUTPUT(FILEDATASET, %s, '~%s');\n",  overwrite ? ", OVERWRITE" : "", targetTableName);
-    }
+    ecl.appendf("\nFILEDATASET := DATASET('~%s', TABLERECORDDEF, %s);\n",sourceDataFileName, formatnamefull.str());
+    ecl.appendf("OUTPUT(FILEDATASET, ,'~%s'%s);", targetTableName, overwrite ? ", OVERWRITE" : "");
 
     const char * description = req.getTableDescription();
     if (description && * description)
@@ -1670,22 +1703,18 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
     {
         WsWuInfo winfo(context, compiledwuid.str());
         winfo.getExceptions(resp.updateWorkunit(), WUINFO_All);
+        success = false;
     }
     else
     {
-        if (notEmpty(cluster) && !isValidCluster(cluster))
-            throw MakeStringException(ECLWATCH_INVALID_CLUSTER_NAME, "Invalid cluster name: %s", cluster);
-
-        StringBuffer runningwuid;
         ESPLOG(LogMax, "WsSQL: executing WU(%s)...", compiledwuid.str());
         WsWuHelpers::submitWsWorkunit(context, compiledwuid.str(), cluster, NULL, 0, false, true, true, NULL, NULL, NULL);
-        runningwuid.set(compiledwuid.str());
 
-        ESPLOG(LogMax, "WsSQL: waiting on WU(%s)...", runningwuid.str());
-        waitForWorkUnitToComplete(runningwuid.str(), req.getWait());
-        ESPLOG(LogMax, "WsSQL: finished waiting on WU(%s)...", runningwuid.str());
+        ESPLOG(LogMax, "WsSQL: waiting on WU(%s)...", compiledwuid.str());
+        waitForWorkUnitToComplete(compiledwuid.str(), req.getWait());
+        ESPLOG(LogMax, "WsSQL: finished waiting on WU(%s)...", compiledwuid.str());
 
-        Owned<IConstWorkUnit> rw = factory->openWorkUnit(runningwuid.str(), false);
+        Owned<IConstWorkUnit> rw = factory->openWorkUnit(compiledwuid.str(), false);
 
         if (!rw)
             throw MakeStringException(-1,"WsSQL: Cannot verify create and load request success.");

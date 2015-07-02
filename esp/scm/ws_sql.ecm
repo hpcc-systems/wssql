@@ -256,6 +256,18 @@ ESPStruct EclFieldDeclaration
     String FieldName;
 };
 
+ESPstruct DataTypeParam
+{
+    String Name;
+    ESParray<String, Value> Values;
+};
+
+ESPStruct DataType
+{
+    String Name;
+    ESParray<ESPstruct DataTypeParam, Param> Params;
+};
+
 ESPrequest CreateTableAndLoadRequest
 {
     String  TableName;
@@ -265,7 +277,7 @@ ESPrequest CreateTableAndLoadRequest
     String  TargeCluster;
     String  Owner;
     String  DataSourceName;
-    String  DataSourceType;
+    ESPStruct DataType  DataSourceType;
     int Wait(-1);
 };
 
