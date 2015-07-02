@@ -45,7 +45,9 @@ typedef enum _HPCCFileFormat
     HPCCFileFormatCSV,
     HPCCFileFormatXML,
     HPCCFileFormatKey,
+    HPCCFileFormatJSON,
 } HPCCFileFormat;
+
 
 class HPCCFile : public CInterface, public IInterface
 {
@@ -88,9 +90,9 @@ public:
         return true;
     }
 
-    const char * getFormat() const
+    static const char * formatToString(HPCCFileFormat format)
     {
-        switch(formatEnum)
+        switch(format)
         {
             case HPCCFileFormatFlat:
                 return "FLAT";
@@ -100,31 +102,52 @@ public:
                 return "XML";
             case HPCCFileFormatKey:
                 return "KEYED";
+            case HPCCFileFormatJSON:
+                return "JSON";
             case HPCCFileFormatUnknown:
             default:
                 return "UNKNOWN";
         }
     }
 
-    void setFormat(const char * format)
+    const char * getFormat() const
     {
-        if (!format || !*format)
-            this->formatEnum = DEFAULTFORMAT;
+        return formatToString(formatEnum);
+    }
+
+    static HPCCFileFormat formatStringToEnum(const char * formatstr)
+    {
+        if (!formatstr || !*formatstr)
+            return HPCCFileFormatUnknown;
         else
         {
-            if (stricmp(format, "FLAT")==0)
-                this->formatEnum = HPCCFileFormatFlat;
-            else if (stricmp(format, "utf8n")==0)
-                this->formatEnum = HPCCFileFormatCSV;
-            else if (stricmp(format, "CSV")==0)
-                this->formatEnum = HPCCFileFormatCSV;
-            else if (stricmp(format, "XML")==0)
-                this->formatEnum = HPCCFileFormatXML;
-            else if (stricmp(format, "KEY")==0)
-                this->formatEnum = HPCCFileFormatKey;
+            StringBuffer toUpper = formatstr;
+            toUpper.trim().toUpperCase();
+
+            if (strcmp(toUpper.str(), "FLAT")==0)
+                return HPCCFileFormatFlat;
+            else if (strcmp(toUpper.str(), "UTF8N")==0)
+                return HPCCFileFormatCSV;
+            else if (strcmp(toUpper.str(), "CSV")==0)
+                return HPCCFileFormatCSV;
+            else if (strcmp(toUpper.str(), "XML")==0)
+                return HPCCFileFormatXML;
+            else if (strcmp(toUpper.str(), "KEY")==0)
+                return HPCCFileFormatKey;
+            else if (strcmp(toUpper.str(), "JSON")==0)
+                return HPCCFileFormatJSON;
             else
-                this->formatEnum = DEFAULTFORMAT;
+                return HPCCFileFormatUnknown;
         }
+    }
+
+    void setFormat(const char * format)
+    {
+        HPCCFileFormat formatenum = formatStringToEnum(format);
+        if (formatenum == HPCCFileFormatUnknown)
+            this->formatEnum = DEFAULTFORMAT;
+        else
+            this->formatEnum = formatenum;
     }
 
     const char * getFullname() const
