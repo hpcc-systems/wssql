@@ -1558,34 +1558,72 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
 
     const char * targetTableName = req.getTableName();
     if (!targetTableName || !*targetTableName)
-        throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Detected empty table name.");
+        throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: TableName cannot be empty.");
 
-    const char * cluster = req.getTargeCluster();
+    if (!HPCCFile::validateFileName(targetTableName))
+        throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Target TableName is invalid: %s.", targetTableName);
+
+    const char * cluster = req.getTargetCluster();
     if (notEmpty(cluster) && !isValidCluster(cluster))
         throw MakeStringException(ECLWATCH_INVALID_CLUSTER_NAME, "WsSQL::CreateTableAndLoad: Invalid cluster name: %s", cluster);
 
-    const char * sourceDataFileName = req.getDataSourceName();
-    if (!sourceDataFileName || !*sourceDataFileName)
-        throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Detected empty source data file name.");
+    IConstDataSourceInfo & datasource = req.getDataSource();
+
+    StringBuffer sourceDataFileName;
+    sourceDataFileName.set(datasource.getSprayedFileName()).trim();
+
+    if (sourceDataFileName.length() == 0)
+    {
+        sourceDataFileName.set(datasource.getLandingZoneFileName());
+        if (sourceDataFileName.length() == 0)
+            throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Data Source File Name cannot be empty, provide either sprayed file name, or landing zone file name.");
+
+        const char * lzIP = datasource.getLandingZoneIP();
+        if (!lzIP || !*lzIP)
+            throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: LandingZone IP cannot be empty if targeting a landing zone file.");
+
+        StringBuffer lzPath = datasource.getLandingZonePath();
+
+        if (!lzPath || !*lzPath)
+        {
+            //if (!getDropZoneDirByIP(lzIP, lzPath))
+            throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Landingzone path cannot be empty.");
+        }
+
+        addPathSepChar(lzPath);
+
+        RemoteFilename rfn;
+        SocketEndpoint ep(lzIP);
+
+        rfn.setPath(ep, lzPath.append(sourceDataFileName.str()).str());
+
+        CDfsLogicalFileName dlfn;
+        dlfn.setExternal(rfn);
+        dlfn.get(sourceDataFileName.clear(), false, false);
+    }
 
     IConstDataType & format = req.getDataSourceType();
 
-    const char * formatname = format.getName();
-    if (!formatname || !*formatname)
-        throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Detected empty DataSourceType.");
+    const char * formatname = "";
+    CHPCCFileType formattype = format.getType();
 
-    HPCCFileFormat formatenum = HPCCFile::formatStringToEnum(formatname);
-    if (formatenum == HPCCFileFormatUnknown)
-        throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Invalid file format detected: %s.", formatname);
-
-    StringBuffer username;
-    context.getUserID(username);
-
-    const char* passwd = context.queryPassword();
-
-    Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(sourceDataFileName,username.str(), passwd, false, true);
-    if (!file.get())
-        throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Could not find source data file.");
+    switch (formattype)
+    {
+        case CHPCCFileType_FLAT:
+            formatname = "FLAT";
+            break;
+        case CHPCCFileType_CSV:
+            formatname = "FLAT";
+            break;
+        case CHPCCFileType_JSON:
+            formatname = "FLAT";
+            break;
+        case CHPCCFileType_XML:
+            formatname = "FLAT";
+            break;
+        default:
+            throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Invalid file format detected.");
+    }
 
     StringBuffer ecl;
     StringBuffer recDef;
@@ -1602,7 +1640,47 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
             IConstEclFieldDeclaration &eclfield = eclFields.item(fieldindex);
             IConstEclFieldType &ecltype = eclfield.getEclFieldType();
 
-            const char * name      = ecltype.getName();
+            const char * name = "";
+            CHPCCFieldType format = ecltype.getType();
+            switch (format)
+            {
+                case CHPCCFieldType_BOOLEAN:
+                    name = "BOOLEAN";
+                    break;
+                case CHPCCFieldType_INTEGER:
+                    name = "INTEGER";
+                    break;
+                case CHPCCFieldType_xUNSIGNED:
+                    name = "UNSIGNED";
+                    break;
+                case CHPCCFieldType_REAL:
+                    name = "REAL";
+                    break;
+                case CHPCCFieldType_DECIMAL:
+                    name = "DECIMAL";
+                    break;
+                case CHPCCFieldType_xSTRING:
+                    name = "STRING";
+                    break;
+                case CHPCCFieldType_QSTRING:
+                    name = "QSTRING";
+                    break;
+                case CHPCCFieldType_UNICODE:
+                    name = "FLAT";
+                    break;
+                case CHPCCFieldType_DATA:
+                    name = "DATA";
+                    break;
+                case CHPCCFieldType_VARSTRING:
+                    name = "VARSTRING";
+                    break;
+                case CHPCCFieldType_VARUNICODE:
+                    name = "VARUNICODE";
+                    break;
+                default:
+                    throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Unrecognized field type detected.");
+            }
+
             int len                = ecltype.getLength();
             const char * locale    = ecltype.getLocale();
             int precision          = ecltype.getPrecision();
@@ -1640,6 +1718,9 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
         {
             IConstDataTypeParam &paramitem = formatparams.item(paramindex);
             const char * paramname = paramitem.getName();
+            if (!paramname || !*paramname)
+                throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Format type '%s' appears to have unnamed parameter(s).", formatname);
+
             StringArray & paramvalues = paramitem.getValues();
             int paramvalueslen = paramvalues.length();
             formatnamefull.appendf("%s(", paramname);
@@ -1658,12 +1739,12 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
         }
         formatnamefull.append(")");
     }
-    ecl.appendf("\nFILEDATASET := DATASET('~%s', TABLERECORDDEF, %s);\n",sourceDataFileName, formatnamefull.str());
+    ecl.appendf("\nFILEDATASET := DATASET('~%s', TABLERECORDDEF, %s);\n",sourceDataFileName.str(), formatnamefull.str());
     ecl.appendf("OUTPUT(FILEDATASET, ,'~%s'%s);", targetTableName, overwrite ? ", OVERWRITE" : "");
 
     const char * description = req.getTableDescription();
     if (description && * description)
-        ecl.appendf("\nStd.file.setfiledescription('%s','%s')", targetTableName, description);
+        ecl.appendf("\nStd.file.setfiledescription('~%s','%s')", targetTableName, description);
 
     ESPLOG(LogMax, "WsSQL: creating new WU...");
 
@@ -1696,7 +1777,7 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
     Owned<IConstWorkUnit> cw = factory->openWorkUnit(compiledwuid.str(), false);
 
     if (!cw)
-        throw MakeStringException(ECLWATCH_CANNOT_UPDATE_WORKUNIT,"Cannot open workunit %s.", compiledwuid.str());
+        throw MakeStringException(ECLWATCH_CANNOT_UPDATE_WORKUNIT,"Cannot open WorkUnit %s.", compiledwuid.str());
 
     WsWUExceptions errors(*cw);
     if (errors.ErrCount()>0)
@@ -1719,14 +1800,15 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
         if (!rw)
             throw MakeStringException(-1,"WsSQL: Cannot verify create and load request success.");
 
+        WsWuInfo winfo(context, compiledwuid.str());
         WsWUExceptions errors(*rw);
         if (errors.ErrCount() > 0 )
         {
-            WsWuInfo winfo(context, compiledwuid.str());
             winfo.getExceptions(resp.updateWorkunit(), WUINFO_All);
             success = false;
         }
 
+        winfo.getCommon(resp.updateWorkunit(), WUINFO_All);
         resp.setSuccess(success);
         resp.setEclRecordDefinition(recDef.str());
         resp.setTableName(targetTableName);

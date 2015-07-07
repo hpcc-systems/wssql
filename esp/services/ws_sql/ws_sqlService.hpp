@@ -40,6 +40,8 @@ limitations under the License.
 
 #include "HPCCSQLTreeWalker.hpp"
 
+#include "dautils.hpp"
+
 #define EMBEDDEDSQLQUERYCOMMENT "\n\n/****************************************************\nOriginal SQL:     \"%s\"\nNormalized SQL: \"%s\"\n****************************************************/\n"
 
 static const char* WSSQLACCESS = "WsSqlAccess";
@@ -124,7 +126,6 @@ public:
     bool executePublishedQueryByWuId(IEspContext &context, const char * targetwuid, StringBuffer &clonedwuid, const char *paramXml, IArrayOf<IConstNamedValue> *variables, const char * targetcluster, int start, int count);
     bool executePublishedQuery(IEspContext &context, const char * queryset, const char * queryname, StringBuffer &resp, int start, int count, int waittime);
     bool executePublishedQuery(IEspContext &context, const char * wuid, StringBuffer &resp, int start, int count, int waittime);
-
     bool cloneAndExecuteWU(IEspContext &context, const char * originalwuid, StringBuffer &clonedwuid, const char *paramXml, IArrayOf<IConstNamedValue> *variables, IArrayOf<IConstNamedValue> *debugs, const char * targetcluster);
     bool publishWorkunit(IEspContext &context, const char * queryname, const char * wuid, const char * targetcluster);
 
