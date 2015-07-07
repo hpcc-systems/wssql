@@ -73,6 +73,9 @@ IF ( NOT MAKE_DOCS_ONLY )
     #Due to unstandard HPCC versioning, we will only request versions up to the point value.
     SET(HPCC_VERSION "${HPCC_MAJOR}.${HPCC_MINOR}.${HPCC_POINT}")
 
+    MATH( EXPR ceiling "${HPCC_MAJOR} + 1" )
+    SET(HPCC_VERSION_CEILING "${ceiling}.0.0")
+
     MESSAGE("-- Minimum HPCC Platform version required: ${HPCC_MAJOR_REQ}.${HPCC_MINOR_REQ}")
     MESSAGE("--- Building against HPCC Platform version: ${HPCC_MAJOR}.${HPCC_MINOR}.${HPCC_POINT}-${HPCC_MATURITY}${HPCC_SEQUENCE}")
 
