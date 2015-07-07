@@ -734,7 +734,7 @@ bool CwssqlEx::onSetRelatedIndexes(IEspContext &context, IEspSetRelatedIndexesRe
         int indexHintsCount = indexHints.length();
         if (indexHintsCount > 0)
         {
-            Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(fileName,username.str(), passwd, false);
+            Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(fileName,username.str(), passwd, false, false);
 
             if (!file)
                 throw MakeStringException(-1, "WsSQL::SetRelatedIndexes error: could not find file: %s.", fileName);
@@ -782,7 +782,7 @@ bool CwssqlEx::onGetRelatedIndexes(IEspContext &context, IEspGetRelatedIndexesRe
         ForEachItemIn(filenameindex, filenames)
         {
             const char * fileName = filenames.item(filenameindex);
-            Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(fileName,username.str(), passwd, false);
+            Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(fileName,username.str(), passwd, false, false);
 
             if (file)
             {
@@ -1583,7 +1583,7 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
 
     const char* passwd = context.queryPassword();
 
-    Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(sourceDataFileName,username.str(), passwd, false);
+    Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(sourceDataFileName,username.str(), passwd, false, true);
     if (!file.get())
         throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Could not find source data file.");
 

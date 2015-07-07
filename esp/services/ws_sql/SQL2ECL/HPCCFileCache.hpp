@@ -39,8 +39,8 @@ public:
     bool cacheAllHpccFiles(const char * filterby);
     bool fetchHpccFilesByTableName(IArrayOf<SQLTable> * sqltables);
     static bool updateHpccFileDescription(const char * filename, const char * user, const char * pass, const char * description);
-    HPCCFile * fetchHpccFileByName(IUserDescriptor *user, const char * filename, bool namevalidated);
-    static HPCCFile * fetchHpccFileByName(const char * filename, const char * user, const char * pass, bool namevalidated);
+    HPCCFile * fetchHpccFileByName(IUserDescriptor *user, const char * filename, bool namevalidated, bool acceptrawfiles=false);
+    static HPCCFile * fetchHpccFileByName(const char * filename, const char * user, const char * pass, bool namevalidated, bool acceptrawfiles);
     const char * cacheHpccFileByName(const char * filename, bool namevalidated = false);
     bool isHpccFileCached(const char * filename);
     HPCCFilePtr getHpccFileByName(const char * filename);
