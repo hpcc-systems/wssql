@@ -242,9 +242,24 @@ ESPresponse SetRelatedIndexesResponse
     ESParray<ESPstruct RelatedIndexSet, RelatedIndexSet> RelatedIndexSets;
 };
 
+ESPenum HPCCFieldType : string
+{
+    BOOLEAN("BOOLEAN"),
+    INTEGER("INTEGER"),
+    xUNSIGNED("UNSIGNED"),
+    REAL("REAL"),
+    DECIMAL("DECIMAL"),
+    xSTRING("STRING"),
+    QSTRING("QSTRING"),
+    UNICODE("UNICODE"),
+    DATA("DATA"),
+    VARSTRING("VARSTRING"),
+    VARUNICODE("VARUNICODE"),
+};
+
 ESPStruct EclFieldType
 {
-    String Name;
+    ESPenum HPCCFieldType Type;
     String Locale;
     Integer Length;
     Integer Precision;
@@ -252,8 +267,8 @@ ESPStruct EclFieldType
 
 ESPStruct EclFieldDeclaration
 {
-    ESPStruct EclFieldType EclFieldType;
     String FieldName;
+    ESPStruct EclFieldType EclFieldType;
 };
 
 ESPstruct DataTypeParam
@@ -262,9 +277,17 @@ ESPstruct DataTypeParam
     ESParray<String, Value> Values;
 };
 
+ESPenum HPCCFileType : string
+{
+    FLAT("FLAT"),
+    CSV("CSV"),
+    JSON("JSON"),
+    XML("XML"),
+};
+
 ESPStruct DataType
 {
-    String Name;
+    ESPenum HPCCFileType Type;
     ESParray<ESPstruct DataTypeParam, Param> Params;
 };
 
@@ -274,10 +297,10 @@ ESPrequest CreateTableAndLoadRequest
     String  TableDescription;
     Boolean Overwrite;
     ESParray<ESPstruct EclFieldDeclaration, EclField> EclFields;
-    String  TargeCluster;
+    String  TargetCluster;
     String  Owner;
     String  DataSourceName;
-    ESPStruct DataType  DataSourceType;
+    ESPStruct DataType DataSourceType;
     int Wait(-1);
 };
 
