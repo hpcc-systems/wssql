@@ -734,7 +734,7 @@ bool CwssqlEx::onSetRelatedIndexes(IEspContext &context, IEspSetRelatedIndexesRe
         int indexHintsCount = indexHints.length();
         if (indexHintsCount > 0)
         {
-            Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(fileName,username.str(), passwd, false);
+            Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(fileName,username.str(), passwd, false, false);
 
             if (!file)
                 throw MakeStringException(-1, "WsSQL::SetRelatedIndexes error: could not find file: %s.", fileName);
@@ -782,7 +782,7 @@ bool CwssqlEx::onGetRelatedIndexes(IEspContext &context, IEspGetRelatedIndexesRe
         ForEachItemIn(filenameindex, filenames)
         {
             const char * fileName = filenames.item(filenameindex);
-            Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(fileName,username.str(), passwd, false);
+            Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(fileName,username.str(), passwd, false, false);
 
             if (file)
             {
@@ -1560,6 +1560,9 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
     if (!targetTableName || !*targetTableName)
         throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: TableName cannot be empty.");
 
+    if (!HPCCFile::validateFileName(targetTableName))
+        throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Target TableName is invalid: %s.", targetTableName);
+
     const char * cluster = req.getTargetCluster();
     if (notEmpty(cluster) && !isValidCluster(cluster))
         throw MakeStringException(ECLWATCH_INVALID_CLUSTER_NAME, "WsSQL::CreateTableAndLoad: Invalid cluster name: %s", cluster);
@@ -1596,7 +1599,7 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
 
     const char* passwd = context.queryPassword();
 
-    Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(sourceDataFileName,username.str(), passwd, false);
+    Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(sourceDataFileName,username.str(), passwd, false, true);
     if (!file.get())
         throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Could not find source data file.");
 
@@ -1694,7 +1697,7 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
             IConstDataTypeParam &paramitem = formatparams.item(paramindex);
             const char * paramname = paramitem.getName();
             if (!paramname || !*paramname)
-                throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Format type '%s' cannot have unnamed parameter.", formatname);
+                throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Format type '%s' appears to have unnamed parameter(s).", formatname);
 
             StringArray & paramvalues = paramitem.getValues();
             int paramvalueslen = paramvalues.length();
@@ -1752,7 +1755,7 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
     Owned<IConstWorkUnit> cw = factory->openWorkUnit(compiledwuid.str(), false);
 
     if (!cw)
-        throw MakeStringException(ECLWATCH_CANNOT_UPDATE_WORKUNIT,"Cannot open workunit %s.", compiledwuid.str());
+        throw MakeStringException(ECLWATCH_CANNOT_UPDATE_WORKUNIT,"Cannot open WorkUnit %s.", compiledwuid.str());
 
     WsWUExceptions errors(*cw);
     if (errors.ErrCount()>0)
