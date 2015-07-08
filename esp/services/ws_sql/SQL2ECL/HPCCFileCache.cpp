@@ -150,17 +150,17 @@ bool HPCCFileCache::updateHpccFileDescription(const char * filename, const char 
 }
 
 
-HPCCFile * HPCCFileCache::fetchHpccFileByName(IUserDescriptor *user, const char * filename, bool namevalidated)
+HPCCFile * HPCCFileCache::fetchHpccFileByName(IUserDescriptor *user, const char * filename, bool namevalidated, bool acceptrawfiles)
 {
     StringBuffer username;
     user->getUserName(username);
     StringBuffer password;
     user->getPassword(password);
 
-    return HPCCFileCache::fetchHpccFileByName(filename, username.str(), password.str(), namevalidated);
+    return HPCCFileCache::fetchHpccFileByName(filename, username.str(), password.str(), namevalidated, acceptrawfiles);
 }
 
-HPCCFile * HPCCFileCache::fetchHpccFileByName(const char * filename, const char * user, const char * pass, bool namevalidated)
+HPCCFile * HPCCFileCache::fetchHpccFileByName(const char * filename, const char * user, const char * pass, bool namevalidated, bool acceptrawfiles)
 {
     Owned<HPCCFile> file;
     Owned<IUserDescriptor> userdesc;
@@ -210,7 +210,7 @@ HPCCFile * HPCCFileCache::fetchHpccFileByName(const char * filename, const char 
 
         if(properties.hasProp("ECL"))
             file->setEcl(properties.queryProp("ECL"));
-        else
+        else if (!acceptrawfiles)
             throw MakeStringException(-1,"File %s does not contain required ECL record layout.",filename);
 
         file->setOwner(properties.queryProp("@owner"));
@@ -305,7 +305,7 @@ const char * HPCCFileCache::cacheHpccFileByName(const char * filename, bool name
 
     try
     {
-        file.setown(HPCCFileCache::fetchHpccFileByName(userdesc, filename, namevalidated));
+        file.setown(HPCCFileCache::fetchHpccFileByName(userdesc, filename, namevalidated, false));
     }
     catch (...)
     {

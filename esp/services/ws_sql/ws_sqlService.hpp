@@ -40,6 +40,8 @@ limitations under the License.
 
 #include "HPCCSQLTreeWalker.hpp"
 
+#include "dautils.hpp"
+
 #define EMBEDDEDSQLQUERYCOMMENT "\n\n/****************************************************\nOriginal SQL:     \"%s\"\nNormalized SQL: \"%s\"\n****************************************************/\n"
 
 static const char* WSSQLACCESS = "WsSqlAccess";
@@ -112,6 +114,8 @@ public:
     bool onGetRelatedIndexes(IEspContext &context, IEspGetRelatedIndexesRequest &req, IEspGetRelatedIndexesResponse &resp);
     bool onSetRelatedIndexes(IEspContext &context, IEspSetRelatedIndexesRequest &req, IEspSetRelatedIndexesResponse &resp);
     bool onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoadRequest &req, IEspCreateTableAndLoadResponse &resp);
+
+    static const char* getDropZoneDirByIP(const char* ip, StringBuffer& dir);
 
     void refreshValidClusters();
     bool isValidCluster(const char *cluster);

@@ -291,6 +291,14 @@ ESPStruct DataType
     ESParray<ESPstruct DataTypeParam, Param> Params;
 };
 
+ESPStruct DataSourceInfo
+{
+    String SprayedFileName;
+    String LandingZoneIP;
+    String LandingZonePath;
+    String LandingZoneFileName;
+};
+
 ESPrequest CreateTableAndLoadRequest
 {
     String  TableName;
@@ -299,7 +307,7 @@ ESPrequest CreateTableAndLoadRequest
     ESParray<ESPstruct EclFieldDeclaration, EclField> EclFields;
     String  TargetCluster;
     String  Owner;
-    String  DataSourceName;
+    ESPStruct DataSourceInfo DataSource;
     ESPStruct DataType DataSourceType;
     int Wait(-1);
 };

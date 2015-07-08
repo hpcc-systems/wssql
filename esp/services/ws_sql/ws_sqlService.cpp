@@ -734,7 +734,7 @@ bool CwssqlEx::onSetRelatedIndexes(IEspContext &context, IEspSetRelatedIndexesRe
         int indexHintsCount = indexHints.length();
         if (indexHintsCount > 0)
         {
-            Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(fileName,username.str(), passwd, false);
+            Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(fileName,username.str(), passwd, false, false);
 
             if (!file)
                 throw MakeStringException(-1, "WsSQL::SetRelatedIndexes error: could not find file: %s.", fileName);
@@ -782,7 +782,7 @@ bool CwssqlEx::onGetRelatedIndexes(IEspContext &context, IEspGetRelatedIndexesRe
         ForEachItemIn(filenameindex, filenames)
         {
             const char * fileName = filenames.item(filenameindex);
-            Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(fileName,username.str(), passwd, false);
+            Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(fileName,username.str(), passwd, false, false);
 
             if (file)
             {
@@ -1549,6 +1549,39 @@ bool CwssqlEx::cloneAndExecuteWU(IEspContext &context, const char * originalwuid
     return success;
 }
 
+const char* CwssqlEx::getDropZoneDirByIP(const char* ip, StringBuffer& dir)
+{
+    if (!ip || !*ip)
+        return NULL;
+
+    Owned<IEnvironmentFactory> factory = getEnvironmentFactory();
+    Owned<IConstEnvironment> env = factory->openEnvironment();
+    if (!env)
+        return NULL;
+
+    Owned<IConstMachineInfo> machine = env->getMachineByAddress(ip);
+    if (!machine)
+    {
+        IpAddress ipAddr;
+        ipAddr.ipset(ip);
+        if (!ipAddr.isLocal())
+            return NULL;
+        machine.setown(env->getMachineForLocalHost());
+        if (!machine)
+            return NULL;
+    }
+    SCMStringBuffer computer, directory;
+    machine->getName(computer);
+    if (!computer.length())
+        return NULL;
+
+    Owned<IConstDropZoneInfo> dropZone = env->getDropZoneByComputer(computer.str());
+    if (!dropZone)
+        return NULL;
+    dropZone->getDirectory(directory);
+    return dir.set(directory.str()).str();
+}
+
 bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoadRequest &req, IEspCreateTableAndLoadResponse &resp)
 {
     if (!context.validateFeatureAccess(WSSQLACCESS, SecAccess_Write, false))
@@ -1560,13 +1593,60 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
     if (!targetTableName || !*targetTableName)
         throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: TableName cannot be empty.");
 
+    if (!HPCCFile::validateFileName(targetTableName))
+        throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Target TableName is invalid: %s.", targetTableName);
+
     const char * cluster = req.getTargetCluster();
     if (notEmpty(cluster) && !isValidCluster(cluster))
         throw MakeStringException(ECLWATCH_INVALID_CLUSTER_NAME, "WsSQL::CreateTableAndLoad: Invalid cluster name: %s", cluster);
 
-    const char * sourceDataFileName = req.getDataSourceName();
-    if (!sourceDataFileName || !*sourceDataFileName)
-        throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: DataSourcName (file name) cannot be empty.");
+    IConstDataSourceInfo & datasource = req.getDataSource();
+
+    StringBuffer sourceDataFileName;
+    sourceDataFileName.set(datasource.getSprayedFileName()).trim();
+
+    if (sourceDataFileName.length() == 0)
+    {
+        sourceDataFileName.set(datasource.getLandingZoneFileName());
+        if (sourceDataFileName.length() == 0)
+            throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Data Source File Name cannot be empty, provide either sprayed file name, or landing zone file name.");
+
+        const char * lzIP = datasource.getLandingZoneIP();
+        if (!lzIP || !*lzIP)
+            throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: LandingZone IP cannot be empty if targeting a landing zone file.");
+
+        StringBuffer lzPath = datasource.getLandingZonePath();
+
+        if (!lzPath || !*lzPath)
+        {
+            if (getDropZoneDirByIP(lzIP, lzPath))
+            {
+                if (lzPath.length())
+                    addPathSepChar(lzPath);
+            }
+            else
+                throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: LandingZone IP did not yield a valid file system path to landingzone.");
+        }
+
+        RemoteFilename rfn;
+        SocketEndpoint ep(lzIP);
+        if (isAbsolutePath(lzPath))
+            rfn.setPath(ep, lzPath);
+
+        if (getDropZoneDirByIP(lzIP, lzPath))
+        {
+            if (lzPath.length())
+                addPathSepChar(lzPath);
+        }
+        else
+            throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: LandingZone IP did not yield a valid file system path to landingzone.");
+
+        rfn.setPath(ep, lzPath.append(sourceDataFileName.str()).str());
+
+        CDfsLogicalFileName dlfn;
+        dlfn.setExternal(rfn);
+        dlfn.get(sourceDataFileName.clear(), false, false);
+    }
 
     IConstDataType & format = req.getDataSourceType();
 
@@ -1590,15 +1670,6 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
         default:
             throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Invalid file format detected.");
     }
-
-    StringBuffer username;
-    context.getUserID(username);
-
-    const char* passwd = context.queryPassword();
-
-    Owned<HPCCFile> file = HPCCFileCache::fetchHpccFileByName(sourceDataFileName,username.str(), passwd, false);
-    if (!file.get())
-        throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Could not find source data file.");
 
     StringBuffer ecl;
     StringBuffer recDef;
@@ -1694,7 +1765,7 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
             IConstDataTypeParam &paramitem = formatparams.item(paramindex);
             const char * paramname = paramitem.getName();
             if (!paramname || !*paramname)
-                throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Format type '%s' cannot have unnamed parameter.", formatname);
+                throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Format type '%s' appears to have unnamed parameter(s).", formatname);
 
             StringArray & paramvalues = paramitem.getValues();
             int paramvalueslen = paramvalues.length();
@@ -1714,7 +1785,7 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
         }
         formatnamefull.append(")");
     }
-    ecl.appendf("\nFILEDATASET := DATASET('~%s', TABLERECORDDEF, %s);\n",sourceDataFileName, formatnamefull.str());
+    ecl.appendf("\nFILEDATASET := DATASET('~%s', TABLERECORDDEF, %s);\n",sourceDataFileName.str(), formatnamefull.str());
     ecl.appendf("OUTPUT(FILEDATASET, ,'~%s'%s);", targetTableName, overwrite ? ", OVERWRITE" : "");
 
     const char * description = req.getTableDescription();
@@ -1752,7 +1823,7 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
     Owned<IConstWorkUnit> cw = factory->openWorkUnit(compiledwuid.str(), false);
 
     if (!cw)
-        throw MakeStringException(ECLWATCH_CANNOT_UPDATE_WORKUNIT,"Cannot open workunit %s.", compiledwuid.str());
+        throw MakeStringException(ECLWATCH_CANNOT_UPDATE_WORKUNIT,"Cannot open WorkUnit %s.", compiledwuid.str());
 
     WsWUExceptions errors(*cw);
     if (errors.ErrCount()>0)
@@ -1775,14 +1846,15 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
         if (!rw)
             throw MakeStringException(-1,"WsSQL: Cannot verify create and load request success.");
 
+        WsWuInfo winfo(context, compiledwuid.str());
         WsWUExceptions errors(*rw);
         if (errors.ErrCount() > 0 )
         {
-            WsWuInfo winfo(context, compiledwuid.str());
             winfo.getExceptions(resp.updateWorkunit(), WUINFO_All);
             success = false;
         }
 
+        winfo.getCommon(resp.updateWorkunit(), WUINFO_All);
         resp.setSuccess(success);
         resp.setEclRecordDefinition(recDef.str());
         resp.setTableName(targetTableName);
