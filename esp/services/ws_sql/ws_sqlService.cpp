@@ -1584,11 +1584,8 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
 
         StringBuffer lzPath = datasource.getLandingZonePath();
 
-        if (!lzPath || !*lzPath)
-        {
-            //if (!getDropZoneDirByIP(lzIP, lzPath))
+        if (!lzPath.length())
             throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Landingzone path cannot be empty.");
-        }
 
         addPathSepChar(lzPath);
 
@@ -1613,13 +1610,13 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
             formatname = "FLAT";
             break;
         case CHPCCFileType_CSV:
-            formatname = "FLAT";
+            formatname = "CSV";
             break;
         case CHPCCFileType_JSON:
-            formatname = "FLAT";
+            formatname = "JSON";
             break;
         case CHPCCFileType_XML:
-            formatname = "FLAT";
+            formatname = "XML";
             break;
         default:
             throw MakeStringException(-1, "WsSQL::CreateTableAndLoad: Error: Invalid file format detected.");
@@ -1666,7 +1663,7 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
                     name = "QSTRING";
                     break;
                 case CHPCCFieldType_UNICODE:
-                    name = "FLAT";
+                    name = "UNICODE";
                     break;
                 case CHPCCFieldType_DATA:
                     name = "DATA";
