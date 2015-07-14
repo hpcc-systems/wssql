@@ -73,7 +73,7 @@ bool HPCCFile::validateFileName(const char * fullname)
         for (int i = 0; i < tvect->count; i++)
         {
             pANTLR3_COMMON_TOKEN  token = (pANTLR3_COMMON_TOKEN  )tvect->get(tvect, i);
-            if (token->type != ID && token->type != ABSOLUTE_FILE_ID_PREFIX)
+            if (token->type != ID && token->type != ABSOLUTE_FILE_ID_PREFIX && token->type != ABSOLUTE_FILE_ID)
             {
 #if defined _DEBUG
     fprintf(stderr, "\nNot reporting file %s as supported.\n", fullname);
