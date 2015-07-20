@@ -35,6 +35,9 @@ void ECLEngine::generateECL(HPCCSQLTreeWalker * sqlobj, StringBuffer & out)
                 break;
             case SQLTypeCall:
                 break;
+            case SQLTypeCreateAndLoad:
+                generateCreateAndLoad(sqlobj, out);
+            break;
             case SQLTypeUnknown:
             default:
                 break;
@@ -133,6 +136,46 @@ void ECLEngine::generateIndexSetupAndFetch(HPCCFilePtr file, SQLTable * table, i
         else
             WARNLOG("NOT USING INDEX!");
     }
+}
+
+void ECLEngine::generateCreateAndLoad(HPCCSQLTreeWalker * sqlobj, StringBuffer & out)
+{
+        const char * targetTableName = sqlobj->getTableName();
+        if (!targetTableName || !*targetTableName)
+            throw MakeStringException(-1, "Error: TableName cannot be empty.");
+
+        if (!HPCCFile::validateFileName(targetTableName))
+            throw MakeStringException(-1, "Error: Target TableName is invalid: %s.", targetTableName);
+
+        StringBuffer sourceFileName;
+        sourceFileName.set(sqlobj->getSourceDataTableName()).trim();
+
+        StringBuffer landingZoneIP = sqlobj->getLandingZoneIp();
+        if (landingZoneIP.length())
+        {
+            StringBuffer landingZonePath = sqlobj->getLandingZonePath();
+            if (landingZonePath.length())
+            {
+                addPathSepChar(landingZonePath);
+
+                RemoteFilename rfn;
+                SocketEndpoint ep(landingZoneIP);
+
+                rfn.setPath(ep, landingZonePath.append(sourceFileName.str()).str());
+
+                CDfsLogicalFileName dlfn;
+                dlfn.setExternal(rfn);
+                dlfn.get(sourceFileName.clear(), false, false);
+            }
+        }
+
+        out.appendf("import std;\nTABLERECORDDEF := RECORD\n%s\nEND;\n", sqlobj->getRecordDefinition());
+        out.appendf("FILEDATASET := DATASET('~%s', TABLERECORDDEF, %s);\n",sourceFileName.str(), sqlobj->getSourceDataType());
+        out.appendf("OUTPUT(FILEDATASET, ,'~%s'%s);", targetTableName, sqlobj->isOverwrite() ? ", OVERWRITE" : "");
+
+        const char * description = sqlobj->getComment();
+        if (description && * description)
+            out.appendf("\nStd.file.setfiledescription('~%s','%s')", targetTableName, description);
 }
 
 void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer & out)

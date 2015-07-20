@@ -47,7 +47,8 @@ typedef enum _SQLQueryType
 {
     SQLTypeUnknown=-1,
     SQLTypeSelect,
-    SQLTypeCall
+    SQLTypeCall,
+    SQLTypeCreateAndLoad
 } SQLQueryType;
 
 class HPCCSQLTreeWalker: public CInterface, public IInterface
@@ -75,9 +76,19 @@ private:
     StringBuffer querySetName;
     IArrayOf<ISQLExpression> paramList;
 
+    bool overwrite;
+    StringBuffer tableName;
+    StringBuffer sourceDataTableName;
+    StringBuffer comment;
+    StringBuffer sourceDataType;
+    StringBuffer landingZoneIP;
+    StringBuffer LandingZonePath;
+    StringBuffer recordDefinition;
+
     void sqlTreeWalker(pANTLR3_BASE_TREE sqlAST);
     void selectStatementTreeWalker(pANTLR3_BASE_TREE selectsqlAST);
     void callStatementTreeWalker(pANTLR3_BASE_TREE callsqlAST);
+    void createAndLoadStatementTreeWalker(pANTLR3_BASE_TREE clsqlAST);
     void columnListTreeWalker(pANTLR3_BASE_TREE columnsAST, IArrayOf<SQLColumn>& collist);
     ISQLExpression* expressionTreeWalker(pANTLR3_BASE_TREE exprAST, pANTLR3_BASE_TREE parent);
     void fromTreeWalker(pANTLR3_BASE_TREE fromsqlAST);
@@ -245,8 +256,87 @@ public:
         return tmpHPCCFileCache.get();
     }
 
-    //unsigned getQueryHash();
-    const char * getNormalizedSQL();
+    const char* getNormalizedSQL();
+
+    const char * getRecordDefinition()
+    {
+        return recordDefinition.str();
+    }
+
+    void setRecordDefinition(const char * recordDefinition)
+    {
+        this->recordDefinition.set(recordDefinition);
+    }
+
+    const char *  getComment() const
+    {
+        return comment.str();
+    }
+
+    void setComment(const char * comment)
+    {
+        this->comment.set(comment);
+    }
+
+    const char * getLandingZoneIp() const
+    {
+        return landingZoneIP.str();
+    }
+
+    void setLandingZoneIp(const char * landingZoneIp)
+    {
+        landingZoneIP.set(landingZoneIp);
+    }
+
+    const char * getLandingZonePath() const
+    {
+        return LandingZonePath.str();
+    }
+
+    void setLandingZonePath(const char * landingZonePath)
+    {
+        LandingZonePath.set(landingZonePath);
+    }
+
+    const char * getSourceDataType() const
+    {
+        return sourceDataType.str();
+    }
+
+    void setSourceDataType(const char * sourceDataType)
+    {
+        this->sourceDataType.set(sourceDataType);
+    }
+
+    bool isOverwrite() const
+    {
+        return overwrite;
+    }
+
+    void setOverwrite(bool overwrite)
+    {
+        this->overwrite = overwrite;
+    }
+
+    const char * getSourceDataTableName() const
+    {
+        return sourceDataTableName.str();
+    }
+
+    void setSourceDataTableName(const char * sourceDataTableName)
+    {
+        this->sourceDataTableName.set(sourceDataTableName);
+    }
+
+    const char * getTableName() const
+    {
+        return tableName.str();
+    }
+
+    void setTableName(const char * tableName)
+    {
+        this->tableName.set(tableName);
+    }
 
 private:
 
