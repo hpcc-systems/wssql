@@ -82,7 +82,7 @@ private:
     StringBuffer comment;
     StringBuffer sourceDataType;
     StringBuffer landingZoneIP;
-    StringBuffer LandingZonePath;
+    StringBuffer landingZonePath;
     StringBuffer recordDefinition;
 
     void sqlTreeWalker(pANTLR3_BASE_TREE sqlAST);
@@ -169,19 +169,19 @@ public:
         return offset;
     }
 
-    void setOffset(int offset)
+    void setOffset(int _offset)
     {
-        this->offset = offset;
+        offset = _offset;
     }
 
     void setSqlType(SQLQueryType type)
     {
-        this->sqlType = type;
+        sqlType = type;
     }
 
     SQLQueryType getSqlType()
     {
-        return this->sqlType;
+        return sqlType;
     }
 
     bool hasGroupByColumns()
@@ -263,9 +263,9 @@ public:
         return recordDefinition.str();
     }
 
-    void setRecordDefinition(const char * recordDefinition)
+    void setRecordDefinition(const char * _recordDefinition)
     {
-        this->recordDefinition.set(recordDefinition);
+        recordDefinition.set(_recordDefinition);
     }
 
     const char *  getComment() const
@@ -273,9 +273,9 @@ public:
         return comment.str();
     }
 
-    void setComment(const char * comment)
+    void setComment(const char * _comment)
     {
-        this->comment.set(comment);
+        comment.set(_comment);
     }
 
     const char * getLandingZoneIp() const
@@ -283,19 +283,19 @@ public:
         return landingZoneIP.str();
     }
 
-    void setLandingZoneIp(const char * landingZoneIp)
+    void setLandingZoneIp(const char * _landingZoneIp)
     {
-        landingZoneIP.set(landingZoneIp);
+        landingZoneIP.set(_landingZoneIp);
     }
 
     const char * getLandingZonePath() const
     {
-        return LandingZonePath.str();
+        return landingZonePath.str();
     }
 
-    void setLandingZonePath(const char * landingZonePath)
+    void setLandingZonePath(const char * _landingZonePath)
     {
-        LandingZonePath.set(landingZonePath);
+        landingZonePath.set(_landingZonePath);
     }
 
     const char * getSourceDataType() const
@@ -303,9 +303,9 @@ public:
         return sourceDataType.str();
     }
 
-    void setSourceDataType(const char * sourceDataType)
+    void setSourceDataType(const char * _sourceDataType)
     {
-        this->sourceDataType.set(sourceDataType);
+        sourceDataType.set(_sourceDataType);
     }
 
     bool isOverwrite() const
@@ -313,9 +313,9 @@ public:
         return overwrite;
     }
 
-    void setOverwrite(bool overwrite)
+    void setOverwrite(bool _overwrite)
     {
-        this->overwrite = overwrite;
+        overwrite = _overwrite;
     }
 
     const char * getSourceDataTableName() const
@@ -323,9 +323,9 @@ public:
         return sourceDataTableName.str();
     }
 
-    void setSourceDataTableName(const char * sourceDataTableName)
+    void setSourceDataTableName(const char * _sourceDataTableName)
     {
-        this->sourceDataTableName.set(sourceDataTableName);
+        sourceDataTableName.set(_sourceDataTableName);
     }
 
     const char * getTableName() const
@@ -333,9 +333,9 @@ public:
         return tableName.str();
     }
 
-    void setTableName(const char * tableName)
+    void setTableName(const char * _tableName)
     {
-        this->tableName.set(tableName);
+        tableName.set(_tableName);
     }
 
 private:

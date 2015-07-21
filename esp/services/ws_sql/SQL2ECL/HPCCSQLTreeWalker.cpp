@@ -695,7 +695,7 @@ void HPCCSQLTreeWalker::createAndLoadStatementTreeWalker(pANTLR3_BASE_TREE clsql
                     throw MakeStringException(-1, "Error detected in CREATE and LOAD: Missing LOAD information.");
 
                 pANTLR3_BASE_TREE loadPartIthChild = (pANTLR3_BASE_TREE)(loadPart->getChild(loadPart, 0));
-                const char * newtablename = (char *)loadPartIthChild->toString(loadPartIthChild)->chars;
+
                 if (strcmp((char *)loadPartIthChild->toString(loadPartIthChild)->chars, tableName.str()) != 0)
                     throw MakeStringException(-1, "Error detected in CREATE and LOAD: LOAD must target newly created table.");
 
@@ -720,8 +720,8 @@ void HPCCSQLTreeWalker::createAndLoadStatementTreeWalker(pANTLR3_BASE_TREE clsql
                             trimSingleQuotes(landingZoneIP);
 
                             lzinfo = (pANTLR3_BASE_TREE)(loadPartIthChild->getChild(loadPartIthChild, 1));
-                            LandingZonePath.set((char *)lzinfo->toString(lzinfo)->chars);
-                            trimSingleQuotes(LandingZonePath);
+                            landingZonePath.set((char *)lzinfo->toString(lzinfo)->chars);
+                            trimSingleQuotes(landingZonePath);
                         }
                         else if (loadPartIthChildType == TYPE_SYM)
                         {
@@ -1385,7 +1385,7 @@ bool HPCCSQLTreeWalker::normalizeSQL()
             if (sqlType == SQLTypeCreateAndLoad)
             {
                 normalizedSQL.appendf("CREATE %s TABLE %s \n( %s )\n%s;\n", isOverwrite() ? "" : "IF NOT EXISTS", tableName.str(), recordDefinition.str(), comment.length() ? comment.str() : "");
-                normalizedSQL.appendf("LOAD DATA INFILE %s %s %s %s INTO TABLE %s", sourceDataTableName.str(), landingZoneIP.length() ? landingZoneIP.str() : "", LandingZonePath.length() ? LandingZonePath.str() : "", sourceDataType.str(), tableName.str());
+                normalizedSQL.appendf("LOAD DATA INFILE %s %s %s %s INTO TABLE %s", sourceDataTableName.str(), landingZoneIP.length() ? landingZoneIP.str() : "", landingZonePath.length() ? landingZonePath.str() : "", sourceDataType.str(), tableName.str());
             }
             else
                 success = false;
