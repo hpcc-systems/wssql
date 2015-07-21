@@ -21,6 +21,7 @@ limitations under the License.
 #include "HPCCSQLTreeWalker.hpp"
 #include "HPCCFile.hpp"
 #include "SQLColumn.hpp"
+#include "dautils.hpp"
 
 #define NumberOfCommonParamInThisIndex_WEIGHT    5
 #define NumberofColsKeyedInThisIndex_WEIGHT      2
@@ -35,6 +36,7 @@ public:
 
 private:
     static void generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer & out);
+    static void generateCreateAndLoad(HPCCSQLTreeWalker * sqlobj, StringBuffer & out);
     //static void generateCallECL(HPCCSQLTreeWalker * callsqlobj, StringBuffer & out);
 
     static void findAppropriateIndex(HPCCFilePtr file, const char * indexhint, HPCCSQLTreeWalker * selectsqlobj, StringBuffer & indexname);
@@ -50,6 +52,5 @@ private:
 
     static const char * SELECTOUTPUTNAME;
 };
-
 
 #endif /* ECLENGINE_HPP_ */

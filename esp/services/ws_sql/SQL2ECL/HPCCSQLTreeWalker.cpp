@@ -17,6 +17,21 @@ limitations under the License.
 
 #include "HPCCSQLTreeWalker.hpp"
 
+void trimSingleQuotes(StringBuffer & quotedString)
+{
+    int len = quotedString.length();
+    if (len)
+    {
+        quotedString.trim();
+
+        if (quotedString.charAt(0) == '\'' && quotedString.charAt(len-1) == '\'')
+        {
+            quotedString.remove(len-1, 1);
+            quotedString.remove(0, 1);
+        }
+    }
+}
+
 HPCCSQLTreeWalker::HPCCSQLTreeWalker()
 {
     sqlType = SQLTypeUnknown;
@@ -406,6 +421,191 @@ ISQLExpression * HPCCSQLTreeWalker::expressionTreeWalker(pANTLR3_BASE_TREE exprA
                 tmpexp.setown(tmpfve.getLink());
                 break;
             }
+            case TOKEN_COLUMN_DEF:
+            {
+                const char * colname = NULL;
+                int nodeChildrenCount = exprAST->getChildCount(exprAST);
+
+                if (nodeChildrenCount != 2)
+                    throw MakeStringException(-1, "Invalid column definition encountered");
+
+                pANTLR3_BASE_TREE tmpNode = (pANTLR3_BASE_TREE)(exprAST->getChild(exprAST, 0));
+
+                Owned<SQLFieldValueExpression> tmpfve = new SQLFieldValueExpression();
+                tmpfve->setName((char *)tmpNode->toString(tmpNode)->chars);
+
+                tmpNode = (pANTLR3_BASE_TREE)(exprAST->getChild(exprAST, 1));
+                ANTLR3_UINT32 columnattributetype = tmpNode->getType(tmpNode);
+
+                bool isunsigned = false;
+                bool isbinary = false;
+                const char * length = NULL;
+                int lengthi = 0;
+                const char * presicion = NULL;
+
+                StringBuffer strList;
+                int typechildcount = tmpNode->getChildCount(tmpNode);
+                for (int typechildindex = 0; typechildindex < typechildcount; typechildindex++)
+                {
+                    pANTLR3_BASE_TREE tmpCNode = (pANTLR3_BASE_TREE)(tmpNode->getChild(tmpNode, typechildindex));
+                    ANTLR3_UINT32 typechildtype = tmpCNode->getType(tmpCNode);
+                    if (typechildtype == UNSIGNED_SYM)
+                        isunsigned = true;
+                    else if (typechildtype == INTEGER_NUM)
+                    {
+                        length = (char *)tmpCNode->toString(tmpCNode)->chars;
+                        lengthi = atoi(length);
+                        if (tmpCNode->getChildCount(tmpCNode)>0)
+                        {
+                            tmpCNode = (pANTLR3_BASE_TREE)(tmpCNode->getChild(tmpCNode, 0));
+                            presicion = (char *)tmpCNode->toString(tmpCNode)->chars;
+                        }
+                    }
+                    else if (typechildtype == TOKEN_PROC_PARAMS)
+                    {
+                        int strListCount = tmpCNode->getChildCount(tmpCNode);
+                        for (int strListIndex = 0; strListIndex < strListCount; strListIndex++)
+                        {
+                            pANTLR3_BASE_TREE strValue = (pANTLR3_BASE_TREE)(tmpCNode->getChild(tmpCNode, strListIndex));
+                            strList.appendf("%s%s", (char *)strValue->toString(strValue)->chars, (strListIndex < strListCount-1) ? "," : "");
+                        }
+                    }
+                    else if (typechildtype == BINARY_SYM)
+                    {
+                        isbinary = true;
+                    }
+                    else
+                        throw MakeStringException(-1, "\n Unexpected type option encountered: %s ", (char *)tmpCNode->toString(tmpCNode)->chars);
+                }
+
+                StringBuffer ecltype;
+                switch (columnattributetype)
+                {
+                   case BIT_SYM:
+                        ecltype.set("BOOlEAN");
+                        break;
+                    case TINYINT:
+                        ecltype.setf("%s", isunsigned ? "UNSIGNED1" : "INTEGER1");
+                        break;
+                    case SMALLINT:
+                        ecltype.setf("%s", isunsigned ? "UNSIGNED2" : "INTEGER2");
+                        break;
+                    case MEDIUMINT:
+                        ecltype.setf("%s", isunsigned ? "UNSIGNED3" : "INTEGER3");
+                        break;
+                    case INTEGER_SYM:
+                        ecltype.setf("%s%s", isunsigned ? "UNSIGNED" : "INTEGER", lengthi > 0 && lengthi < 4 ? length : "4");
+                        break;
+                    case BIGINT_SYM:
+                        ecltype.setf("%s%s", isunsigned ? "UNSIGNED" : "INTEGER", lengthi > 0 && lengthi < 8 ? length : "8");
+                        break;
+                    case REAL_SYM:
+                        ecltype.setf("REAL%s", lengthi < 3 ? "4" : "8"); //Ecl real can only be 8 or 4
+                        break;
+                    case DOUBLE_SYM:
+                        ecltype.set("REAL8"); //Ecl real can only be 8 or 4
+                        break;
+                    case FLOAT_SYM:
+                        ecltype.set("REAL4"); //Ecl real can only be 8 or 4
+                        break;
+                    case DECIMAL_SYM:
+                        ecltype.setf("%sDECIMAL", isunsigned ? "UNSIGNED " : "");//A packed decimal value of n total digits (to a maximum of 32).
+                                                                                 //If the _y value is present, it defines the number of decimal places
+                        if (lengthi > 0)
+                        {
+                            if (lengthi >= 32)
+                                ecltype.append("32");
+                            else
+                                ecltype.append(length);
+
+                            if (presicion && *presicion)
+                                ecltype.appendf("_%s", presicion);
+                        }
+                        break;
+                    case NUMERIC_SYM:
+                        throw MakeStringException(-1, "Ambiguous 'NUMERIC' column type encountered, please specify actual type.");
+                        break;
+                    case DATE_SYM:
+                        ecltype.set("std.Date.DATE_T");
+                        break;
+                    case TIME_SYM:
+                        ecltype.set("std.Date.TIME_T");
+                        break;
+                    case TIMESTAMP_SYM:
+                        ecltype.set("DATA8");
+                        break;
+                    case DATETIME_SYM:
+                        ecltype.set("DATETIME_T");
+                        break;
+                    case YEAR_SYM:
+                        throw MakeStringException(-1, "'YEAR' column type not supported in ECL.");
+                        break;
+                    case CHAR_SYM:
+                        ecltype.setf("STRING%s", lengthi > 0 && lengthi < 255 ? length : "255");
+                        break;
+                    case VARCHAR_SYM:
+                        ecltype.setf("STRING%s", lengthi > 0 && lengthi < 65535 ? length : "65535");
+                        break;
+                    case BINARY_SYM:
+                        //ecltype.setf("DATA%s", lengthi > 0 && lengthi < 255 ? length : "255"); //DATA[n] A "packed hexadecimal" data block of n bytes,
+                        ecltype.set("DATA");
+                        break;
+                    case VARBINARY_SYM:
+                        //ecltype.setf("DATA%s", lengthi > 0 && lengthi < 255 ? length : "255"); //DATA[n] A "packed hexadecimal" data block of n bytes,
+                        ecltype.set("DATA");
+                        break;
+                    case TINYBLOB_SYM: //255 max size
+                        //ecltype.setf("DATA%s", lengthi > 0 && lengthi < 255  ? length : "255"); //DATA[n] A "packed hexadecimal" data block of n bytes,
+                        ecltype.set("DATA");
+                        break;
+                    case BLOB_SYM://65535 max size
+                        //ecltype.setf("DATA%s", lengthi > 0 && lengthi < 65535  ? length : "65535"); //DATA[n] A "packed hexadecimal" data block of n bytes,
+                        ecltype.set("DATA");
+                        break;
+                    case MEDIUMBLOB_SYM: //16777215 max size
+                        //ecltype.setf("DATA%s", lengthi > 0 && lengthi < 16777215  ? length : "16777215");//DATA[n] A "packed hexadecimal" data block of n bytes,
+                        ecltype.set("DATA");
+                        break;
+                    case LONGBLOB_SYM://4294967295 max size
+                        //ecltype.setf("DATA%s", lengthi > 0 && lengthi < 4294967295 ? length : "4294967295");//DATA[n] A "packed hexadecimal" data block of n bytes,
+                        ecltype.set("DATA");
+                        break;
+                    case TINYTEXT_SYM:
+                        //ecltype.setf("%s%s", isbinary ? "DATA" : "STRING", lengthi > 0 && lengthi < 255? length : "255");
+                        ecltype.setf("%s", isbinary ? "DATA" : "STRING");
+                        break;
+                    case TEXT_SYM:
+                        //ecltype.setf("%s%s", isbinary ? "DATA" : "STRING", lengthi > 0 && lengthi < 65535 ? length : "65535");
+                        ecltype.setf("%s", isbinary ? "DATA" : "STRING");
+                        break;
+                    case MEDIUMTEXT_SYM:
+                        //ecltype.setf("%s%s", isbinary ? "DATA" : "STRING", lengthi > 0 && lengthi < 16777215 ? length : "16777215");
+                        ecltype.setf("%s", isbinary ? "DATA" : "STRING");
+                        break;
+                    case LONGTEXT_SYM:
+                        //ecltype.set("DATA"); // Should really be allowed to be a string - max len 4Gig
+                        ecltype.setf("%s", isbinary ? "DATA" : "STRING");
+                        break;
+                    case ENUM_SYM:
+                        if (strList.length())
+                            ecltype.setf("ENUM ( %s )", strList.str());
+                        else
+                            throw MakeStringException(-1, "\n Enumeration definition must contain at least one entry");
+                        break;
+                    case SET_SYM:
+                        if (strList.length())
+                            ecltype.setf("SET OF STRING");
+                        else
+                            throw MakeStringException(-1, "\n SET definition must contain at least one entry");
+                        break;
+                    default:
+                        throw MakeStringException(-1, "\n Unexpected/Unsupported SQL field type encountered");
+                        break;
+                }
+                tmpfve->setECLType(ecltype.str());
+                tmpexp.setown(tmpfve.getLink());
+                break;
+            }
             default:
                 throw MakeStringException(-1, "\n Unexpected expression node found : %s ", (char *)exprAST->toString(exprAST)->chars);
                 break;
@@ -431,6 +631,180 @@ ISQLExpression * HPCCSQLTreeWalker::expressionTreeWalker(pANTLR3_BASE_TREE exprA
         }
     }
     return tmpexp.getLink();
+}
+
+void HPCCSQLTreeWalker::createAndLoadStatementTreeWalker(pANTLR3_BASE_TREE clsqlAST)
+{
+    if ( clsqlAST != NULL )
+    {
+        char * tokenText = NULL;
+
+        if (clsqlAST->getChildCount(clsqlAST) != 2 || clsqlAST->getType(clsqlAST) != TOKEN_CREATE_LOAD_TABLE_STATEMENT)
+            throw MakeStringException(-1, "\nError in Create and Load command(s). WsSQL requires CREATE command to be accompanied by a LOAD command.\n");
+
+        pANTLR3_BASE_TREE createPart = (pANTLR3_BASE_TREE)(clsqlAST->getChild(clsqlAST, 0));
+        if ( createPart->getType(createPart) == TOKEN_CREATE_TABLE)
+        {
+            int createPartCount = createPart->getChildCount(createPart);
+            if (createPartCount >= 1)
+            {
+                pANTLR3_BASE_TREE newTableName = (pANTLR3_BASE_TREE)(createPart->getChild(createPart, 0));
+                tokenText = (char *)newTableName->toString(newTableName)->chars;
+                if (!tokenText || !*tokenText)
+                    throw MakeStringException(-1, "Error detected in CREATE and LOAD: New table name cannot be empty.");
+                tableName.set(tokenText);
+
+                for (int createAttributesIndex = 1; createAttributesIndex < createPartCount; createAttributesIndex++)
+                {
+                    pANTLR3_BASE_TREE ithTableAttribute = (pANTLR3_BASE_TREE)(createPart->getChild(createPart, createAttributesIndex));
+                    ANTLR3_UINT32 ithTableAttributeType = ithTableAttribute->getType(ithTableAttribute);
+                    if ( ithTableAttributeType == TOKEN_DONOT_OVERWRITE)
+                    {
+                        overwrite = false;
+                    }
+                    else if (ithTableAttributeType == COMMENT_SYM)
+                    {
+                        pANTLR3_BASE_TREE commentNode = (pANTLR3_BASE_TREE)(ithTableAttribute->getChild(ithTableAttribute, 0));
+                        comment = (char *)commentNode->toString(commentNode)->chars;
+                        trimSingleQuotes(comment);
+                    }
+                    else if (ithTableAttributeType == TOKEN_COLUMN_DEF_LIST)
+                    {
+                        int fieldsCount = ithTableAttribute->getChildCount(ithTableAttribute);
+                        for (int fieldIndex = 0; fieldIndex < fieldsCount; fieldIndex++)
+                        {
+                            pANTLR3_BASE_TREE ithField = (pANTLR3_BASE_TREE)(ithTableAttribute->getChild(ithTableAttribute, fieldIndex));
+                            Owned<ISQLExpression> exp = expressionTreeWalker(ithField,NULL);
+                            if (exp.get())
+                                recordDefinition.appendf("%s\t%s;\n", exp->getECLType(), exp->getName());
+                            else
+                                throw MakeStringException(-1, "\nError in call list\n");
+                        }
+                    }
+                }
+            }
+            else
+                throw MakeStringException(-1, "Error detected in CREATE and LOAD: Missing CREATE information.");
+
+            pANTLR3_BASE_TREE loadPart = (pANTLR3_BASE_TREE)(clsqlAST->getChild(clsqlAST, 1));
+            if ( loadPart->getType(loadPart) == TOKEN_LOAD_TABLE)
+            {
+                int loadPartCount = loadPart->getChildCount(loadPart);
+
+                if (loadPartCount < 2)
+                    throw MakeStringException(-1, "Error detected in CREATE and LOAD: Missing LOAD information.");
+
+                pANTLR3_BASE_TREE loadPartIthChild = (pANTLR3_BASE_TREE)(loadPart->getChild(loadPart, 0));
+
+                if (strcmp((char *)loadPartIthChild->toString(loadPartIthChild)->chars, tableName.str()) != 0)
+                    throw MakeStringException(-1, "Error detected in CREATE and LOAD: LOAD must target newly created table.");
+
+                loadPartIthChild = (pANTLR3_BASE_TREE)(loadPart->getChild(loadPart, 1));
+                sourceDataTableName = (char *)loadPartIthChild->toString(loadPartIthChild)->chars;
+                trimSingleQuotes(sourceDataTableName);
+
+                if (loadPartCount > 2)
+                {
+                    for (int loadPartIndex = 2; loadPartIndex < loadPartCount; loadPartIndex++)
+                    {
+                        loadPartIthChild = (pANTLR3_BASE_TREE)(loadPart->getChild(loadPart, loadPartIndex));
+                        ANTLR3_UINT32 loadPartIthChildType = loadPartIthChild->getType(loadPartIthChild);
+                        if (loadPartIthChildType == TOKEN_LANDING_ZONE)
+                        {
+                            int sourcetypechildcount = loadPartIthChild->getChildCount(loadPartIthChild);
+                            if (sourcetypechildcount != 2)
+                                throw MakeStringException(-1, "Error detected in CREATE and LOAD: LOAD Landing Zone clause requires IP and Directory.");
+
+                            pANTLR3_BASE_TREE lzinfo = (pANTLR3_BASE_TREE)(loadPartIthChild->getChild(loadPartIthChild, 0));
+                            landingZoneIP.set((char *)lzinfo->toString(lzinfo)->chars);
+                            trimSingleQuotes(landingZoneIP);
+
+                            lzinfo = (pANTLR3_BASE_TREE)(loadPartIthChild->getChild(loadPartIthChild, 1));
+                            landingZonePath.set((char *)lzinfo->toString(lzinfo)->chars);
+                            trimSingleQuotes(landingZonePath);
+                        }
+                        else if (loadPartIthChildType == TYPE_SYM)
+                        {
+                            pANTLR3_BASE_TREE typeDeclaration = (pANTLR3_BASE_TREE)(loadPartIthChild->getChild(loadPartIthChild, 0));
+                            sourceDataType.set((char *)typeDeclaration->toString(typeDeclaration)->chars);
+
+                            int sourcetypechildcount = typeDeclaration->getChildCount(typeDeclaration);
+                            if (sourcetypechildcount > 0)
+                            {
+                                sourceDataType.append('(');
+
+                                for (int sourcetypechildindex = 0; sourcetypechildindex < sourcetypechildcount; sourcetypechildindex++)
+                                {
+                                    pANTLR3_BASE_TREE sourcetypechild = (pANTLR3_BASE_TREE)(loadPartIthChild->getChild(loadPartIthChild, sourcetypechildindex));
+                                    sourceDataType.append((char *)sourcetypechild->toString(sourcetypechild)->chars);
+                                    sourceDataType.append(" = ");
+                                    sourcetypechild = (pANTLR3_BASE_TREE)(loadPartIthChild->getChild(loadPartIthChild, ++sourcetypechildindex));
+                                    StringBuffer value = (char *)sourcetypechild->toString(sourcetypechild)->chars;
+                                    trimSingleQuotes(value);
+                                    sourceDataType.append(value.str());
+
+                                    if (sourcetypechildindex < sourcetypechildcount - 1)
+                                        sourceDataType.append(", ");
+                                }
+
+                                sourceDataType.append(" )");
+                            }
+                        }
+                        else if (loadPartIthChildType == TOKEN_VARIABLE_FILE)
+                        {
+                            sourceDataType.setf("CSV");
+                            pANTLR3_BASE_TREE typeDeclaration = (pANTLR3_BASE_TREE)(loadPartIthChild->getChild(loadPartIthChild, 0));
+
+                            int sourcetypechildcount = typeDeclaration->getChildCount(typeDeclaration);
+                            if (sourcetypechildcount > 0)
+                            {
+                                sourceDataType.append('(');
+
+                                for (int sourcetypechildindex = 0; sourcetypechildindex < sourcetypechildcount; sourcetypechildindex++)
+                                {
+                                    pANTLR3_BASE_TREE sourcetypechild = (pANTLR3_BASE_TREE)(loadPartIthChild->getChild(loadPartIthChild, sourcetypechildindex));
+                                    ANTLR3_UINT32 csvoption = sourcetypechild->getType(sourcetypechild);
+
+                                    if (csvoption == TOKEN_VAR_SEPERATOR)
+                                    {
+                                        sourceDataType.append("SEPARATOR( ");
+                                    }
+                                    else if (csvoption == TOKEN_VAR_ESCAPED)
+                                    {
+                                        sourceDataType.append("ESCAPE( ");
+                                    }
+                                    else if (csvoption == TOKEN_VAR_ENCLOSED)
+                                    {
+                                        sourceDataType.append("QUOTE( ");
+                                    }
+                                    else if (csvoption == TOKEN_VAR_TERMINATOR)
+                                    {
+                                        sourceDataType.append("TERMINATOR( ");
+                                    }
+                                    else
+                                        throw MakeStringException(-1, "Unknown variable file data type option encountered.");
+
+                                    sourcetypechild = (pANTLR3_BASE_TREE)(sourcetypechild->getChild(sourcetypechild, 0));
+                                    sourceDataType.append((char *)sourcetypechild->toString(sourcetypechild)->chars);
+                                    sourceDataType.append(" )");
+
+                                    if (sourcetypechildindex < sourcetypechildcount - 1)
+                                        sourceDataType.append(", ");
+
+                                }
+
+                                sourceDataType.append(" )");
+                            }
+                        }
+                    }
+                }
+            }
+            else
+                throw MakeStringException(-1, "Error detected in CREATE and LOAD: LOAD clause not found.");
+        }
+        else
+            throw MakeStringException(-1, "Error detected in CREATE and LOAD: CREATE clause not found.");
+    }
 }
 
 void HPCCSQLTreeWalker::callStatementTreeWalker(pANTLR3_BASE_TREE callsqlAST)
@@ -647,6 +1021,10 @@ void HPCCSQLTreeWalker::sqlTreeWalker(pANTLR3_BASE_TREE sqlAST)
                 setSqlType(SQLTypeCall);
                 callStatementTreeWalker(firstchild);
                 break;
+            case TOKEN_CREATE_LOAD_TABLE_STATEMENT:
+                setSqlType(SQLTypeCreateAndLoad);
+                createAndLoadStatementTreeWalker(firstchild);
+                break;
             default:
                 setSqlType(SQLTypeUnknown);
                 throw MakeStringException(-1, "Invalid sql tree root node found: %s\n", (char *)firstchild->toString(firstchild)->chars);
@@ -684,6 +1062,8 @@ HPCCSQLTreeWalker::HPCCSQLTreeWalker(pANTLR3_BASE_TREE ast, IEspContext &context
     setLimit(-1);
     setOffset(-1);
     selectDistinct = false;
+    overwrite = true;
+    sourceDataType.set("FLAT");
 
     StringBuffer username;
     StringBuffer password;
@@ -1001,6 +1381,11 @@ bool HPCCSQLTreeWalker::normalizeSQL()
                         normalizedSQL.append(", ");
                     paramList.item(idparams).toString(normalizedSQL, true);
                 }
+            }
+            if (sqlType == SQLTypeCreateAndLoad)
+            {
+                normalizedSQL.appendf("CREATE %s TABLE %s \n( %s )\n%s;\n", isOverwrite() ? "" : "IF NOT EXISTS", tableName.str(), recordDefinition.str(), comment.length() ? comment.str() : "");
+                normalizedSQL.appendf("LOAD DATA INFILE %s %s %s %s INTO TABLE %s", sourceDataTableName.str(), landingZoneIP.length() ? landingZoneIP.str() : "", landingZonePath.length() ? landingZonePath.str() : "", sourceDataType.str(), tableName.str());
             }
             else
                 success = false;

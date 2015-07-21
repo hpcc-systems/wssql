@@ -13,6 +13,12 @@ tokens
     TOKEN_ROOT;
     TOKEN_SELECT_STATEMENT;
     TOKEN_CALL_STATEMENT;
+    TOKEN_CREATE_LOAD_TABLE_STATEMENT;
+    TOKEN_CREATE_INDEX_STATEMENT;
+    TOKEN_CREATE_TABLE;
+    TOKEN_DONOT_OVERWRITE;
+    TOKEN_OVERWRITE;
+    TOKEN_LOAD_TABLE;
     TOKEN_FROM_LIST;
     TOKEN_FROM_TABLE;
     TOKEN_PROC_NAME;
@@ -28,6 +34,14 @@ tokens
     TOKEN_PARAMPLACEHOLDER;
     TOKEN_COLUMNWILDCARD;
     TOKEN_TABLE_SCHEMA;
+    TOKEN_COLUMN_DEF_LIST;
+    TOKEN_COLUMN_DEF;
+    TOKEN_LANDING_ZONE;
+    TOKEN_VARIABLE_FILE;
+    TOKEN_VAR_SEPERATOR;
+    TOKEN_VAR_TERMINATOR;
+    TOKEN_VAR_ENCLOSED;
+    TOKEN_VAR_ESCAPED;
 }
 
 @header
@@ -84,24 +98,37 @@ ALL         : Ai Li Li  ;
 ANY         : Ai Ni Yi ;
 AS_SYM      : Ai Si  ;
 ASC         : Ai Si Ci  ;
+ASCII_SYM   : Ai Si Ii Ii ;
 AT_SYM      : Ai Ti  ;
-AVG         : Ai Vi Gi;
+AVG         : Ai Vi Gi ;
 BETWEEN     : Bi Ei Ti Wi Ei Ei Ni  ;
+BINARY_SYM  : Bi Ii Ni Ai Ri Yi ;
+BIT_SYM     : Bi Ii Ti ;
 BOOL_SYM    : Bi Oi Oi Li  ;
 BOOLEAN_SYM : Bi Oi Oi Li Ei Ai Ni  ;
 BY_SYM      : Bi Yi ;
 CALL_SYM    : Ci Ai Li Li  ;
+CREATE_SYM  : Ci Ri Ei Ai Ti Ei ;
 COLUMN_SYM  : Ci Oi Li Ui Mi Ni  ;
+COMMENT_SYM : Ci Oi Mi Mi Ei Ni Ti ;
 CONTAINS_SYM : Ci Oi Ni Ti Ai Ii Ni Si  ;
 COUNT       : Ci Oi Ui Ni Ti  ;
+DATA_SYM    : Di Ai Ti Ai ;
 DESC        : Di Ei Si Ci  ;
 DISTINCT    : Di Ii Si Ti Ii Ni Ci Ti ;
+EXISTS_SYM  : Ei Xi Ii Si Ti Si ;
 FALSE_SYM   : Fi Ai Li Si Ei ;
-FOR_SYM     : Fi Oi Ri  ;
+FOR_SYM     : Fi Oi Ri ;
 FROM        : Fi Ri Oi Mi  ;
 GROUP_SYM   : Gi Ri Oi Ui Pi  ;
 HAVING      : Hi Ai Vi Ii Ni Gi  ;
-IN_SYM      : Ii Ni  ;
+IF_SYM      : Ii Fi ;
+IGNORE_SYM  : Ii Gi Ni Oi Ri Ei ;
+IN_SYM      : Ii Ni ;
+INFILE_SYM  : Ii Ni Fi Ii Li Ei ;
+INTO_SYM    : Ii Ni Ti Oi ;
+INT_SYM     : Ii Ni Ti ;
+INTEGER_SYM : Ii Ni Ti Ei Gi Ei Ri ;
 INDEX_SYM   : Ii Ni Di Ei Xi  ;
 INNER_SYM   : Ii Ni Ni Ei Ri  ;
 IS_SYM      : Ii Si  ;
@@ -111,8 +138,11 @@ KEYS        : Ki Ei Yi Si  ;
 LAST_SYM    : Li Ai Si Ti  ;
 LEFT        : Li Ei Fi Ti  ;
 LIMIT       : Li Ii Mi Ii Ti  ;
+LOAD_SYM    : Li Oi Ai Di ;
+LOCAL_SYM   : Li Oi Ci Ai Li ;
 LOWER       : (Li Oi Wi Ei Ri) | (Li Ci Ai Si Ei) ;
 MAX_SYM     : Mi Ai Xi  ;
+MEDIUMINT   : Mi Ei Di Ii Ui Mi Ii Ni Ti ;
 MIN_SYM     : Mi Ii Ni  ;
 MOD         : Mi Oi Di  ;
 NOT_SYM     : (UNDERSCORE Ni Oi Ti) | (Ni Oi Ti) | ('!') ;
@@ -123,15 +153,62 @@ ORDER_SYM   : Oi Ri Di Ei Ri  ;
 OUT_SYM     : Oi Ui Ti  ;
 OUTER       : Oi Ui Ti Ei Ri  ;
 POWER       : Pi Oi Wi Ei Ri  ;
+REPLACE_SYM : Ri Ei Pi Li Ai Ci Ei ;
 SELECT      : Si Ei Li Ei Ci Ti ;
+SMALLINT    : Si Mi Ai Li Li Ii Ni Ti ;
 SUM         : Si Ui Mi  ;
-TABLE       : Ti Ai Bi Li Ei ;
-TRUE_SYM    : Ti Ri Ui Ei;
+TABLE_SYM   : Ti Ai Bi Li Ei ;
+TINYINT     : Ti Ii Ni Yi Ii Ni Ti ;
+TRUE_SYM    : Ti Ri Ui Ei ;
+TYPE_SYM    : Ti Yi Pi Ei ;
 UPPER       : Ui Pi Pi Ei Ri ;
 USE_SYM     : Ui Si Ei  ;
+UTF8_SYM    : Ui Ti Fi '8' ;
+UNSIGNED_SYM : Ui Ni Si Ii Gi Ni Ei Di ;
 WHERE       : Wi Hi Ei Ri Ei  ;
 XOR         : Xi Oi Ri  ;
 
+BIGINT_SYM  : Bi Ii Gi Ii Ni Ti ;
+REAL_SYM    : Ri Ei Ai Li ;
+DOUBLE_SYM  : Di Oi Ui Bi Li Ei ;
+FLOAT_SYM   : Fi Li Oi Ai Ti ;
+DECIMAL_SYM : Di Ei Ci Ii Mi Ai Li ;
+NUMERIC_SYM : Ni Ui Mi Ei Ri Ii Ci ;
+DATE_SYM    : Di Ai Ti Ei ;
+TIME_SYM    : Ti Ii Mi Ei ;
+TIMESTAMP_SYM  : Ti Ii Mi Ei Si Ti Ai Mi Pi ;
+DATETIME_SYM   : Di Ai Ti Ei Ti Ii Mi Ei ;
+YEAR_SYM       : Yi Ei Ai Ri ;
+CHAR_SYM       : Ci Hi Ai Ri ;
+VARCHAR_SYM    : Vi Ai Ri Ci Hi Ai Ri ;
+VARBINARY_SYM  : Vi Ai Ri Bi Ii Ni Ai Ri Yi ;
+TINYBLOB_SYM   : Ti Ii Ni Yi Bi Li Oi Bi ;
+BLOB_SYM       : Bi Li Oi Bi ;
+MEDIUMBLOB_SYM : Mi Ei Di Ii Ui Mi Bi Li Oi Bi ;
+LONGBLOB_SYM   : Li Oi Ni Gi Bi Li Oi Bi ;
+TINYTEXT_SYM   : Ti Ii Ni Yi Ti Ei Xi Ti ;
+TEXT_SYM       : Ti Ei Xi Ti ;
+MEDIUMTEXT_SYM : Mi Ei Di Ii Ui Mi Ti Ei Xi Ti ;
+LONGTEXT_SYM   : Li Oi Ni Gi Ti Ei Xi Ti ;
+ENUM_SYM       : Ei Ni Ui Mi ;
+SET_SYM        : Si Ei Ti ;
+FLAT_SYM       : Fi Li Ai Ti ;
+XML_SYM        : Xi Mi Li ;
+CSV_SYM        : Ci Si Vi ;
+JSON_SYM       : Ji Si Oi Ni ;
+CONNECTION_SYM : Ci Oi Ni Ni Ei Ci Ti Ii Oi Ni ;
+DIRECTORY_SYM  : Di Ii Ri Ei Ci Ti Oi Ri Yi ;
+ENCLOSED_SYM   : Ei Ni Ci Li Oi Si Ei Di ;
+LINES_SYM      : Li Ii Ni Ei Si ;
+ESCAPED_SYM    : Ei Si Ci Ai Pi Ei Di ;
+TERMINATED_SYM : Ti Ei Ri Mi Ii Ni Ai Ti Ei Di ;
+OPTIONALLY_SYM : Oi Pi Ti Ii Oi Ni Ai Li Li Yi ;
+EBCDIC_SYM     : Ei Bi Ci Di Ii Ci ;
+FIELDS_SYM     : Fi Ii Ei Li Di Si ;
+COLUMNS_SYM    : Ci Oi Li Ui Mi Ni Si ;
+
+CHARACTER_SET : ('CHARACTER SET' | 'character set');
+IFNOTEXISTS : ('IF NOT EXISTS' | 'if not exists');
 ISNOTNULL   : ('IS NOT NULL' | 'is not null');
 ISNULL      : ('IS NULL' | 'is null');
 NOT_IN      : ('NOT IN' | 'not in');
@@ -580,6 +657,187 @@ data_manipulation_statements
 :
     select_statement -> ^( TOKEN_SELECT_STATEMENT select_statement)
   | call_statement -> ^( TOKEN_CALL_STATEMENT call_statement)
+  | create_load_table_statement -> ^( TOKEN_CREATE_LOAD_TABLE_STATEMENT create_load_table_statement)
+  //| create_index_statement -> ^( TOKEN_CREATE_INDEX_STATEMENT create_index_statement)
+;
+
+create_index_statement
+:
+    CREATE_SYM INDEX_SYM index_name ON table_spec column_list
+;
+
+create_load_table_statement
+:
+    create_table_statement
+    (SEMI?)!
+    load_table_statement
+    -> create_table_statement load_table_statement
+;
+
+table_options
+:
+    table_option (( COMMA )? table_option)*
+;
+
+table_option:
+     (  COMMENT_SYM^ (EQ_SYM?)! string_literal  )
+;
+
+create_table_statement
+:
+    CREATE_SYM TABLE_SYM noov=IFNOTEXISTS? table_name create_table_columns_definition
+    (table_options)?
+    -> {$noov != NULL}? ^( TOKEN_CREATE_TABLE table_name TOKEN_DONOT_OVERWRITE table_options? create_table_columns_definition)
+    -> ^( TOKEN_CREATE_TABLE table_name TOKEN_OVERWRITE table_options? create_table_columns_definition)
+;
+
+create_table_columns_definition
+:
+    LPAREN create_definition (COMMA create_definition)* RPAREN -> {$COMMA != NULL}? ^(TOKEN_COLUMN_DEF_LIST create_definition+)
+                                                               -> ^(TOKEN_COLUMN_DEF_LIST create_definition)
+;
+
+create_definition
+:
+       column_name column_definition -> ^(TOKEN_COLUMN_DEF column_name column_definition)
+;
+
+length_and_or_precision_definition
+:
+    LPAREN length ( COMMA number_literal)? RPAREN -> ^(length number_literal?)
+;
+
+length_and_precision_definition
+:
+    LPAREN length COMMA number_literal RPAREN -> ^(length number_literal)
+;
+
+length_definition
+:
+    LPAREN length RPAREN -> ^(length)
+;
+
+text_params
+:
+    LPAREN string_literal (COMMA string_literal)* RPAREN -> ^( TOKEN_PROC_PARAMS string_literal+ )
+;
+column_definition
+:
+   BIT_SYM       length_definition?                                -> ^(BIT_SYM)
+   | TINYINT     length_definition? UNSIGNED_SYM?                  -> ^(TINYINT UNSIGNED_SYM? length_definition?)
+   | SMALLINT    length_definition? UNSIGNED_SYM?                  -> ^(SMALLINT UNSIGNED_SYM? length_definition?)
+   | MEDIUMINT   length_definition? UNSIGNED_SYM?                  -> ^(MEDIUMINT UNSIGNED_SYM? length_definition?)
+   | INT_SYM     length_definition? UNSIGNED_SYM?                  -> ^(INTEGER_SYM UNSIGNED_SYM? length_definition?)
+   | INTEGER_SYM length_definition? UNSIGNED_SYM?                  -> ^(INTEGER_SYM UNSIGNED_SYM? length_definition?)
+   | BIGINT_SYM  length_definition? UNSIGNED_SYM?                  -> ^(BIGINT_SYM UNSIGNED_SYM? length_definition?)
+   | REAL_SYM    length_and_precision_definition?    UNSIGNED_SYM? -> ^(REAL_SYM UNSIGNED_SYM? length_and_precision_definition?)
+   | DOUBLE_SYM  length_and_precision_definition?    UNSIGNED_SYM? -> ^(DOUBLE_SYM UNSIGNED_SYM? length_and_precision_definition?)
+   | FLOAT_SYM   length_and_precision_definition?    UNSIGNED_SYM? -> ^(FLOAT_SYM UNSIGNED_SYM? length_and_precision_definition?)
+   | DECIMAL_SYM length_and_or_precision_definition? UNSIGNED_SYM? -> ^(DECIMAL_SYM UNSIGNED_SYM? length_and_or_precision_definition?)
+   | NUMERIC_SYM length_and_or_precision_definition? UNSIGNED_SYM? -> ^(NUMERIC_SYM UNSIGNED_SYM? length_and_or_precision_definition?)
+   | DATE_SYM
+   | TIME_SYM
+   | TIMESTAMP_SYM
+   | DATETIME_SYM
+   | YEAR_SYM
+   | CHAR_SYM      length_definition? charset_declaration?  -> ^(CHAR_SYM length_definition? charset_declaration?)
+   | VARCHAR_SYM   length_definition  charset_declaration?  -> ^(VARCHAR_SYM length_definition charset_declaration?)
+   | BINARY_SYM    length_definition?                       -> ^(BINARY_SYM length_definition?)
+   | VARBINARY_SYM length_definition                        -> ^(VARBINARY_SYM length_definition)
+   | TINYBLOB_SYM
+   | BLOB_SYM
+   | MEDIUMBLOB_SYM
+   | LONGBLOB_SYM
+   | TINYTEXT_SYM   BINARY_SYM?                      -> ^(TINYTEXT_SYM BINARY_SYM?)
+   | TEXT_SYM       BINARY_SYM? charset_declaration? -> ^(TEXT_SYM BINARY_SYM? charset_declaration?)
+   | MEDIUMTEXT_SYM BINARY_SYM? charset_declaration? -> ^(MEDIUMTEXT_SYM BINARY_SYM? charset_declaration?)
+   | LONGTEXT_SYM   BINARY_SYM? charset_declaration? -> ^(LONGTEXT_SYM BINARY_SYM? charset_declaration?)
+   | ENUM_SYM       text_params charset_declaration? -> ^(ENUM_SYM text_params charset_declaration?)
+   | SET_SYM        text_params charset_declaration? -> ^(SET_SYM text_params charset_declaration?)
+;
+
+charset_declaration
+:
+    CHARACTER_SET^ charset_name
+;
+charset_name
+:
+    ASCII_SYM
+    | UTF8_SYM
+;
+
+file_data_format_type_options
+:
+    LPAREN! (ID EQ_SYM! string_literal) (COMMA! (ID EQ_SYM! string_literal))* RPAREN!
+;
+
+file_data_format_type
+:
+    FLAT_SYM
+    | XML_SYM
+    | CSV_SYM
+    | JSON_SYM
+;
+
+file_data_format_declaration
+:
+    TYPE_SYM file_data_format_type file_data_format_type_options? -> ^(TYPE_SYM file_data_format_type file_data_format_type_options?)
+;
+
+variable_data_line_terminator
+:
+    TERMINATED_SYM BY_SYM t=TEXT_STRING -> ^(TOKEN_VAR_TERMINATOR $t)
+;
+
+variable_data_field_terminator
+:
+    TERMINATED_SYM BY_SYM t=TEXT_STRING -> ^(TOKEN_VAR_SEPERATOR $t)
+;
+
+variable_data_escaped
+:
+    ESCAPED_SYM BY_SYM t=TEXT_STRING -> ^(TOKEN_VAR_ESCAPED $t)
+;
+
+variable_data_enclosed
+:
+    (OPTIONALLY_SYM)? ENCLOSED_SYM BY_SYM t=TEXT_STRING -> ^(TOKEN_VAR_ENCLOSED $t)
+;
+
+variable_data_format_declaration_field
+:
+    (FIELDS_SYM | COLUMNS_SYM)
+    variable_data_field_terminator?
+    variable_data_enclosed?
+    variable_data_escaped?
+
+    -> ^(TOKEN_VARIABLE_FILE variable_data_field_terminator? variable_data_enclosed? variable_data_escaped?)
+;
+
+variable_data_format_declaration_line
+:
+    LINES_SYM
+    //(STARTING BY_SYM TEXT_STRING)?
+    variable_data_line_terminator?
+    -> ^(TOKEN_VARIABLE_FILE variable_data_line_terminator?)
+;
+
+landing_zone_information
+:
+    CONNECTION_SYM EQ_SYM? conn=string_literal
+    DIRECTORY_SYM EQ_SYM? dir=string_literal
+    -> ^(TOKEN_LANDING_ZONE $conn $dir)
+;
+
+load_table_statement
+:
+    LOAD_SYM DATA_SYM
+    landing_zone_information?
+    INFILE_SYM ff=string_literal landing_zone_information? file_data_format_declaration?
+    INTO_SYM TABLE_SYM table_spec
+    variable_data_format_declaration_field?
+    variable_data_format_declaration_line?
+    -> ^( TOKEN_LOAD_TABLE table_spec $ff landing_zone_information? file_data_format_declaration? variable_data_format_declaration_field? variable_data_format_declaration_line?)
 ;
 
 select_statement
@@ -634,6 +892,12 @@ limit_clause
 :
   LIMIT^ row_count (OFFSET_SYM! offset)?
 ;
+
+length
+:
+  INTEGER_NUM
+;
+
 offset
 :
   INTEGER_NUM
@@ -677,7 +941,7 @@ table_spec
 
 schema_spec
 :
-    (ID|quoted_id) DOT -> ^(TOKEN_TABLE_SCHEMA ID? quoted_id?) 
+    (ID|quoted_id) DOT -> ^(TOKEN_TABLE_SCHEMA ID? quoted_id?)
 ;
 
 column_wildcard

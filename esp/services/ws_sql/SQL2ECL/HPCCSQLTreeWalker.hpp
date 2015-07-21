@@ -47,7 +47,8 @@ typedef enum _SQLQueryType
 {
     SQLTypeUnknown=-1,
     SQLTypeSelect,
-    SQLTypeCall
+    SQLTypeCall,
+    SQLTypeCreateAndLoad
 } SQLQueryType;
 
 class HPCCSQLTreeWalker: public CInterface, public IInterface
@@ -75,9 +76,19 @@ private:
     StringBuffer querySetName;
     IArrayOf<ISQLExpression> paramList;
 
+    bool overwrite;
+    StringBuffer tableName;
+    StringBuffer sourceDataTableName;
+    StringBuffer comment;
+    StringBuffer sourceDataType;
+    StringBuffer landingZoneIP;
+    StringBuffer landingZonePath;
+    StringBuffer recordDefinition;
+
     void sqlTreeWalker(pANTLR3_BASE_TREE sqlAST);
     void selectStatementTreeWalker(pANTLR3_BASE_TREE selectsqlAST);
     void callStatementTreeWalker(pANTLR3_BASE_TREE callsqlAST);
+    void createAndLoadStatementTreeWalker(pANTLR3_BASE_TREE clsqlAST);
     void columnListTreeWalker(pANTLR3_BASE_TREE columnsAST, IArrayOf<SQLColumn>& collist);
     ISQLExpression* expressionTreeWalker(pANTLR3_BASE_TREE exprAST, pANTLR3_BASE_TREE parent);
     void fromTreeWalker(pANTLR3_BASE_TREE fromsqlAST);
@@ -158,19 +169,19 @@ public:
         return offset;
     }
 
-    void setOffset(int offset)
+    void setOffset(int _offset)
     {
-        this->offset = offset;
+        offset = _offset;
     }
 
     void setSqlType(SQLQueryType type)
     {
-        this->sqlType = type;
+        sqlType = type;
     }
 
     SQLQueryType getSqlType()
     {
-        return this->sqlType;
+        return sqlType;
     }
 
     bool hasGroupByColumns()
@@ -245,8 +256,87 @@ public:
         return tmpHPCCFileCache.get();
     }
 
-    //unsigned getQueryHash();
-    const char * getNormalizedSQL();
+    const char* getNormalizedSQL();
+
+    const char * getRecordDefinition()
+    {
+        return recordDefinition.str();
+    }
+
+    void setRecordDefinition(const char * _recordDefinition)
+    {
+        recordDefinition.set(_recordDefinition);
+    }
+
+    const char *  getComment() const
+    {
+        return comment.str();
+    }
+
+    void setComment(const char * _comment)
+    {
+        comment.set(_comment);
+    }
+
+    const char * getLandingZoneIp() const
+    {
+        return landingZoneIP.str();
+    }
+
+    void setLandingZoneIp(const char * _landingZoneIp)
+    {
+        landingZoneIP.set(_landingZoneIp);
+    }
+
+    const char * getLandingZonePath() const
+    {
+        return landingZonePath.str();
+    }
+
+    void setLandingZonePath(const char * _landingZonePath)
+    {
+        landingZonePath.set(_landingZonePath);
+    }
+
+    const char * getSourceDataType() const
+    {
+        return sourceDataType.str();
+    }
+
+    void setSourceDataType(const char * _sourceDataType)
+    {
+        sourceDataType.set(_sourceDataType);
+    }
+
+    bool isOverwrite() const
+    {
+        return overwrite;
+    }
+
+    void setOverwrite(bool _overwrite)
+    {
+        overwrite = _overwrite;
+    }
+
+    const char * getSourceDataTableName() const
+    {
+        return sourceDataTableName.str();
+    }
+
+    void setSourceDataTableName(const char * _sourceDataTableName)
+    {
+        sourceDataTableName.set(_sourceDataTableName);
+    }
+
+    const char * getTableName() const
+    {
+        return tableName.str();
+    }
+
+    void setTableName(const char * _tableName)
+    {
+        tableName.set(_tableName);
+    }
 
 private:
 

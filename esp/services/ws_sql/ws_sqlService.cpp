@@ -833,6 +833,7 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
            throw MakeStringException(-1,"Invalid result window value");
 
         bool clonable = false;
+        bool cacheeligible = true;
 
         Owned<HPCCSQLTreeWalker> parsedSQL;
         ESPLOG(LogNormal, "WsSQL: Parsing sql query...");
@@ -850,6 +851,10 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
                    parsedSQL->setQuerySetName(req.getTargetQuerySet());
             }
         }
+        else if (querytype == SQLTypeCreateAndLoad)
+        {
+            cacheeligible = false;
+        }
 
         StringBuffer xmlparams;
         StringBuffer normalizedSQL = parsedSQL->getNormalizedSQL();
@@ -866,7 +871,7 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
         Owned<IWorkUnitFactory> factory = getWorkUnitFactory(context.querySecManager(), context.queryUser());
 
         ESPLOG(LogMax, "WsSQL: checking query cache...");
-        if(getCachedQuery(normalizedSQL.str(), compiledwuid.s))
+        if(cacheeligible && getCachedQuery(normalizedSQL.str(), compiledwuid.s))
         {
             ESPLOG(LogMax, "WsSQL: cache hit opening wuid %s...", compiledwuid.str());
             Owned<IConstWorkUnit> cw = factory->openWorkUnit(compiledwuid.str(), false);
@@ -901,17 +906,21 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
                 if (!isValidCluster(cluster))
                     throw MakeStringException(-1, "Invalid cluster name: %s", cluster);
 
+                if (querytype == SQLTypeCreateAndLoad)
+                    clonable = false;
+
                 ESPLOG(LogNormal, "WsSQL: generating ECL...");
                 ECLEngine::generateECL(parsedSQL,ecltext);
                 ESPLOG(LogNormal, "WsSQL: Finished generating ECL...");
-                //ecltext.appendf("\n\n/****************************************************\nOriginal SQL:     \"%s\"\nNormalized SQL: \"%s\"\n****************************************************/\n", sqltext.str(), normalizedSQL.str());
+
+                if (isEmpty(ecltext))
+                   throw MakeStringException(1,"Could not generate ECL from SQL.");
+
                 ecltext.appendf(EMBEDDEDSQLQUERYCOMMENT, sqltext.str(), normalizedSQL.str());
 
 #if defined _DEBUG
                 fprintf(stderr, "GENERATED ECL:\n%s\n", ecltext.toCharArray());
 #endif
-                if (isEmpty(ecltext))
-                   throw MakeStringException(1,"Could not generate ECL from SQL.");
 
                 ESPLOG(LogMax, "WsSQL: creating new WU...");
                 NewWsWorkunit wu(context);
@@ -969,7 +978,7 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
             {
                 ESPLOG(LogMax, "WsSQL: cloning and executing WU...");
                 cloneAndExecuteWU(context, compiledwuid.str(), runningwuid, xmlparams.str(), NULL, NULL, cluster);
-                if(!isQueryCached(normalizedSQL.str()))
+                if(cacheeligible && !isQueryCached(normalizedSQL.str()))
                     addQueryToCache(normalizedSQL.str(), compiledwuid.str());
             }
             else
@@ -977,7 +986,8 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
                 ESPLOG(LogMax, "WsSQL: executing WU(%s)...", compiledwuid.str());
                 WsWuHelpers::submitWsWorkunit(context, compiledwuid.str(), cluster, NULL, 0, false, true, true, NULL, NULL, NULL);
                 runningwuid.set(compiledwuid.str());
-                addQueryToCache(normalizedSQL.str(), runningwuid.str());
+                if (cacheeligible)
+                    addQueryToCache(normalizedSQL.str(), runningwuid.str());
             }
 
             int timeToWait = req.getWait();
@@ -995,7 +1005,7 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
             resp.setResultWindowCount( (unsigned)resultWindowCount);
             resp.setResultWindowStart( (unsigned)resultWindowStart);
 
-            if (!req.getSuppressResults())
+            if (!req.getSuppressResults() && querytype != SQLTypeCreateAndLoad)
             {
                 StringBuffer result;
                 if (getWUResult(context, runningwuid.str(), result, (unsigned)resultWindowStart, (unsigned)resultWindowCount, 0, WSSQLRESULT, req.getSuppressXmlSchema() ? NULL : WSSQLRESULTSCHEMA))
