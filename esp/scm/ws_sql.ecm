@@ -249,6 +249,7 @@ ESPenum HPCCFieldType : string
     xUNSIGNED("UNSIGNED"),
     REAL("REAL"),
     DECIMAL("DECIMAL"),
+    UDECIMAL("UDECIMAL"),
     xSTRING("STRING"),
     QSTRING("QSTRING"),
     UNICODE("UNICODE"),
