@@ -331,7 +331,7 @@ public:
 
     const char* getTable() const
     {
-        return this->table.toCharArray();
+        return this->table.str();
     }
 
     void setTable(const char* table)
@@ -735,7 +735,7 @@ public:
                     bool funcParam,
                     bool countFuncParam)
     {
-        eclStr.append( value.toCharArray() );
+        eclStr.append( value.str() );
     }
 
     SQLExpressionType getExpType()

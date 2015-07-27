@@ -908,14 +908,14 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
                 ecltext.appendf(EMBEDDEDSQLQUERYCOMMENT, sqltext.str(), normalizedSQL.str());
 
 #if defined _DEBUG
-                fprintf(stderr, "GENERATED ECL:\n%s\n", ecltext.toCharArray());
+                fprintf(stderr, "GENERATED ECL:\n%s\n", ecltext.str());
 #endif
                 if (isEmpty(ecltext))
                    throw MakeStringException(1,"Could not generate ECL from SQL.");
 
                 ESPLOG(LogMax, "WsSQL: creating new WU...");
                 NewWsWorkunit wu(context);
-                wu->getWuid(compiledwuid);
+                compiledwuid.set(wu->queryWuid());
 
                 wu->setJobName("WsSQL Job");
 
@@ -1339,7 +1339,7 @@ bool CwssqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, IE
 
                 ECLEngine::generateECL(parsedSQL,ecltext);
 #if defined _DEBUG
-                fprintf(stderr, "GENERATED ECL:\n%s\n", ecltext.toCharArray());
+                fprintf(stderr, "GENERATED ECL:\n%s\n", ecltext.str());
 #endif
 
                 if (isEmpty(ecltext))
@@ -1349,7 +1349,7 @@ bool CwssqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, IE
                 ecltext.appendf(EMBEDDEDSQLQUERYCOMMENT, sqltext.str(), normalizedSQL.str());
 
                 NewWsWorkunit wu(context);
-                wu->getWuid(wuid);
+                wuid.set(wu->queryWuid());
                 wu->setClusterName(cluster);
                 wu->setCloneable(true);
                 wu->setAction(WUActionCompile);
@@ -1747,7 +1747,7 @@ bool CwssqlEx::onCreateTableAndLoad(IEspContext &context, IEspCreateTableAndLoad
 
     NewWsWorkunit wu(context);
     SCMStringBuffer compiledwuid;
-    wu->getWuid(compiledwuid);
+    compiledwuid.set(wu->queryWuid());
 
     wu->setJobName("WsSQL Create table");
     wu.setQueryText(ecl.str());
@@ -1897,7 +1897,7 @@ bool CwssqlEx::publishWorkunit(IEspContext &context, const char * queryname, con
     if (notEmpty(queryname))
         queryName.set(queryname);
     else
-        cw->getJobName(queryName).str();
+        queryName.set(cw->queryJobName());
 
     if (!queryName.length())
         throw MakeStringException(ECLWATCH_MISSING_PARAMS, "Query/Job name not defined for publishing workunit %s", wuid);
@@ -1906,7 +1906,7 @@ bool CwssqlEx::publishWorkunit(IEspContext &context, const char * queryname, con
     if (notEmpty(targetcluster))
         target.set(targetcluster);
     else
-        cw->getClusterName(target);
+        target.set(cw->queryClusterName());
 
     if (!target.length())
         throw MakeStringException(ECLWATCH_MISSING_PARAMS, "Cluster name not defined for publishing workunit %s", wuid);
