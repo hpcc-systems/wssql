@@ -472,7 +472,7 @@ void ECLEngine::generateConstSelectDataset(HPCCSQLTreeWalker * selectsqlobj, IPr
 
     datasetStructSB.append("}],SelectStruct)");
 
-    eclEntities->setProp("CONSTDATASETSTRUCT", datasetStructSB.toCharArray());
+    eclEntities->setProp("CONSTDATASETSTRUCT", datasetStructSB.str());
 }
 
 void ECLEngine::generateSelectStruct(HPCCSQLTreeWalker * selectsqlobj, IProperties* eclEntities,  const IArrayOf<ISQLExpression> & expectedcolumns, const char * datasource)
@@ -619,7 +619,7 @@ void ECLEngine::generateSelectStruct(HPCCSQLTreeWalker * selectsqlobj, IProperti
     }
     selectStructSB.append("END;\n");
 
-    eclEntities->setProp("SELECTSTRUCT", selectStructSB.toCharArray());
+    eclEntities->setProp("SELECTSTRUCT", selectStructSB.str());
 }
 
 bool containsPayload(const HPCCFile * indexfiletotest, const HPCCSQLTreeWalker * selectsqlobj)

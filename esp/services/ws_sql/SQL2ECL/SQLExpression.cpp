@@ -491,11 +491,11 @@ bool SQLBinaryExpression::isEqualityCondition(IProperties * map, const char * fi
         return false;
 
     return (
-                strcmp(operand1Translate.toCharArray(), operand2Translate.toCharArray()) != 0 &&
+                strcmp(operand1Translate.str(), operand2Translate.str()) != 0 &&
                 (
-                        (strcmp(operand1Translate.toCharArray(), first)==0 || strcmp(operand2Translate.toCharArray(), first)==0)
+                        (strcmp(operand1Translate.str(), first)==0 || strcmp(operand2Translate.str(), first)==0)
                         &&
-                        (strcmp(operand1Translate.toCharArray(), second)==0 || strcmp(operand2Translate.toCharArray(), second)==0)
+                        (strcmp(operand1Translate.str(), second)==0 || strcmp(operand2Translate.str(), second)==0)
                 )
             );
 }
