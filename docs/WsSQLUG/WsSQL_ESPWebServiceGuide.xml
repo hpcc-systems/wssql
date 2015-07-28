@@ -128,10 +128,11 @@
             HPCC Distributed File System (DFS). Sprayed data files typically
             undergo some processing and an OUTPUT of the transformed data to
             disk before use, so this should not interfere with the service’s
-            usefulness. You can use the CreateTableAndLoad method to produce a
-            usable file from a sprayed file or one on a landing zone. See
-            <link linkend="CreateTableAndLoad">CreateTableAndLoad</link> for
-            details. </para>
+            usefulness. You can use the
+            <emphasis>CreateTableAndLoad</emphasis> method to produce a usable
+            file from a sprayed file or one on a landing zone. See <link
+            linkend="CreateTableAndLoad">CreateTableAndLoad</link> for
+            details.</para>
           </listitem>
         </itemizedlist></para>
     </sect1>
@@ -396,10 +397,11 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
             HPCC Distributed File System (DFS). Sprayed data files typically
             undergo some processing and an OUTPUT of the transformed data to
             disk before use, so this should not interfere with the service’s
-            usefulness. You can use the CreateTableAndLoad method to produce a
-            usable file from a sprayed file or one on a landing zone. See
-            <link linkend="CreateTableAndLoad">CreateTableAndLoad</link> for
-            details. </para>
+            usefulness. You can use the
+            <emphasis>CreateTableAndLoad</emphasis> method to produce a usable
+            file from a sprayed file or one on a landing zone. See <link
+            linkend="CreateTableAndLoad">CreateTableAndLoad</link> for
+            details.</para>
           </listitem>
         </varlistentry>
       </variablelist></para>
@@ -544,7 +546,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
         <para><emphasis role="bold">GetRelatedIndexes</emphasis></para>
 
         <para>This method retrieves information from a logical file's
-        description about related indexes..</para>
+        description about related indexes.</para>
       </listitem>
 
       <listitem>
@@ -2414,8 +2416,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
 
                   <entry>N</entry>
 
-                  <entry>Structure containing DataSource Type details.
-                  </entry>
+                  <entry>Structure containing DataSource Type details.</entry>
                 </row>
 
                 <row>
@@ -2722,7 +2723,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
 
       <para>This function retrieves information from logical file descriptions
       about annotations indicating an index file which is related to a data
-      file. </para>
+      file.</para>
 
       <para></para>
 
