@@ -55,9 +55,8 @@
 
     <para>The WsSQL Web service is an add-on service that provides an SQL
     interface into HPCC Systems. The Web service accepts a subset of prepared
-    and standard SQL read-only queries. This provides access to most HPCC data
-    and published queries over HTTP or HTTPS using SOAP or REST
-    interfaces.</para>
+    and standard SQL queries. This provides access to most HPCC data and
+    published queries over HTTP or HTTPS using SOAP or REST interfaces.</para>
 
     <para>The WsSQL service maps HPCC logical files to RDBMS tables. HPCC
     Published Queries are exposed as RDBMS Stored Procedures.</para>
@@ -91,10 +90,6 @@
 
         <listitem>
           <para>Supports subset of SQL syntax</para>
-        </listitem>
-
-        <listitem>
-          <para>Read only operations supported</para>
         </listitem>
 
         <listitem>
@@ -133,7 +128,11 @@
             HPCC Distributed File System (DFS). Sprayed data files typically
             undergo some processing and an OUTPUT of the transformed data to
             disk before use, so this should not interfere with the service’s
-            usefulness.</para>
+            usefulness. You can use the
+            <emphasis>CreateTableAndLoad</emphasis> method to produce a usable
+            file from a sprayed file or one on a landing zone. See <link
+            linkend="CreateTableAndLoad">CreateTableAndLoad</link> for
+            details.</para>
           </listitem>
         </itemizedlist></para>
     </sect1>
@@ -398,7 +397,11 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
             HPCC Distributed File System (DFS). Sprayed data files typically
             undergo some processing and an OUTPUT of the transformed data to
             disk before use, so this should not interfere with the service’s
-            usefulness.</para>
+            usefulness. You can use the
+            <emphasis>CreateTableAndLoad</emphasis> method to produce a usable
+            file from a sprayed file or one on a landing zone. See <link
+            linkend="CreateTableAndLoad">CreateTableAndLoad</link> for
+            details.</para>
           </listitem>
         </varlistentry>
       </variablelist></para>
@@ -459,7 +462,8 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
         <para>In this example, the source file has three indexes
         available.</para>
 
-        <para></para>
+        <para>You can add annotations using the <link
+        linkend="SetRelatedIndexes">SetRelatedIndexes</link> method.</para>
       </sect2>
 
       <sect2 role="brk">
@@ -533,9 +537,16 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
       <listitem>
         <para><emphasis role="bold">ExecuteSQL</emphasis></para>
 
-        <para>Use this method to submit standard (non-prepared) read-only SQL
-        queries. This method accepts free-hand SQL text (see supported grammar
+        <para>Use this method to submit standard (non-prepared) SQL queries.
+        This method accepts free-hand SQL text (see supported grammar
         below).</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">GetRelatedIndexes</emphasis></para>
+
+        <para>This method retrieves information from a logical file's
+        description about related indexes.</para>
       </listitem>
 
       <listitem>
@@ -564,6 +575,23 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
         returned from the PrepareSQL method. The caller can specify sequence
         of input parameters as key-value pairs, which are bound to the
         precompiled query.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">CreateTableAndLoad</emphasis></para>
+
+        <para>This method reads a logical file or a file on a landing zone and
+        creates a new table and loads the data from the source file creating a
+        table (logical file) that WsSQL can use. This function is intended to
+        use when you have a logical file without metadata or to import a new
+        file into an HPCC platform.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">SetRelatedIndexes</emphasis></para>
+
+        <para>This method adds information to a logical file's description
+        that WsSQL uses as an annotation of a related index.</para>
       </listitem>
     </itemizedlist>
 
@@ -754,8 +782,9 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 <row>
                   <entry><para role="wsig"> Exceptions</para></entry>
 
-                  <entry>Structure containing exceptions. See Exceptions
-                  Structure in Common Structures</entry>
+                  <entry>Structure containing exceptions. See <link
+                  linkend="ExceptionStructure">Exceptions Structure</link> in
+                  Common Structures</entry>
                 </row>
 
                 <row>
@@ -767,37 +796,73 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 <row>
                   <entry><para role="wsig"> FullVersion</para></entry>
 
-                  <entry>Full Version.</entry>
+                  <entry>Full Version of HPCC Platform</entry>
                 </row>
 
                 <row>
                   <entry><para role="wsig"> Major</para></entry>
 
-                  <entry>Major</entry>
+                  <entry>Major of HPCC Platform</entry>
                 </row>
 
                 <row>
                   <entry><para role="wsig"> Minor</para></entry>
 
-                  <entry>Minor</entry>
+                  <entry>Minor of HPCC Platform</entry>
                 </row>
 
                 <row>
                   <entry><para role="wsig"> Point</para></entry>
 
-                  <entry>Point</entry>
+                  <entry>Point of HPCC Platform</entry>
                 </row>
 
                 <row>
                   <entry><para role="wsig"> Project</para></entry>
 
-                  <entry>Project</entry>
+                  <entry>Project of HPCC Platform</entry>
                 </row>
 
                 <row>
                   <entry><para role="wsig"> Maturity</para></entry>
 
-                  <entry>Maturity</entry>
+                  <entry>Maturity of HPCC Platform</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig">WsSQLFullVersion</para></entry>
+
+                  <entry>Full Version of WsSQL</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig">WsSQLMajor </para></entry>
+
+                  <entry>Major of WsSQL</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig">WsSQLMinor </para></entry>
+
+                  <entry>Minor of WsSQL</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig">WsSQLPoint </para></entry>
+
+                  <entry>Point of WsSQL</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig">WsSQLProject </para></entry>
+
+                  <entry>Project of WsSQL</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig">WsSQLMaturity</para></entry>
+
+                  <entry>Maturity of WsSQL</entry>
                 </row>
               </tbody>
             </tgroup>
@@ -957,8 +1022,9 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 <row>
                   <entry><para role="wsig"> Exceptions</para></entry>
 
-                  <entry>Structure containing exceptions. See Exceptions
-                  Structure in Common Structures</entry>
+                  <entry>Structure containing exceptions. See <link
+                  linkend="ExceptionStructure">Exceptions Structure</link> in
+                  Common Structures</entry>
                 </row>
 
                 <row>
@@ -1267,9 +1333,9 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
     <sect1>
       <title>ExecuteSQL</title>
 
-      <para>Use this method to submit standard (non-prepared) read-only SQL
-      queries. The <emphasis role="bold">SqlText</emphasis> input tag accepts
-      free hand SQL text (see Supported SQL grammar below).</para>
+      <para>Use this method to submit standard (non-prepared) SQL queries. The
+      <emphasis role="bold">SqlText</emphasis> input tag accepts free hand SQL
+      text (see Supported SQL grammar below).</para>
 
       <para>If you are executing SQL using a SELECT or SELECT JOIN, you must
       specify the <emphasis role="bold">TargetCluster</emphasis>.</para>
@@ -1460,8 +1526,9 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 <row>
                   <entry><para role="wsig"> Exceptions</para></entry>
 
-                  <entry>Structure containing exceptions. See Exceptions
-                  Structure in Common Structures</entry>
+                  <entry>Structure containing exceptions. See <link
+                  linkend="ExceptionStructure">Exceptions Structure</link> in
+                  Common Structures</entry>
                 </row>
 
                 <row>
@@ -1480,8 +1547,9 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 <row>
                   <entry><para role="wsig"> Workunit</para></entry>
 
-                  <entry>Structure containing Workunit details. See Workunit
-                  Structure in Common Structures</entry>
+                  <entry>Structure containing Workunit details. See <link
+                  linkend="WUStructure">Workunit Structure</link> in Common
+                  Structures</entry>
                 </row>
               </tbody>
             </tgroup>
@@ -1605,8 +1673,9 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 <row>
                   <entry><para role="wsig"> Exceptions</para></entry>
 
-                  <entry>Structure containing exceptions. See Exceptions
-                  Structure in Common Structures</entry>
+                  <entry>Structure containing exceptions. See <link
+                  linkend="ExceptionStructure">Exceptions Structure</link> in
+                  Common Structures</entry>
                 </row>
 
                 <row>
@@ -1630,8 +1699,9 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 <row>
                   <entry><para role="wsig"> Workunit</para></entry>
 
-                  <entry>Structure containing Workunit details. See Workunit
-                  Structure in Common Structures</entry>
+                  <entry>Structure containing Workunit details. See <link
+                  linkend="WUStructure">Workunit Structure</link> in Common
+                  Structures</entry>
                 </row>
               </tbody>
             </tgroup>
@@ -1800,68 +1870,17 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 <row>
                   <entry><para role="wsig"> Exceptions</para></entry>
 
-                  <entry>Structure containing exceptions. See Exceptions
-                  Structure in Common Structures</entry>
+                  <entry>Structure containing exceptions. See <link
+                  linkend="ExceptionStructure">Exceptions Structure</link> in
+                  Common Structures</entry>
                 </row>
 
                 <row>
                   <entry><para role="wsig"> Workunit</para></entry>
 
-                  <entry>Structure containing Workunit details</entry>
-                </row>
-
-                <row>
-                  <entry><para role="wsig"> Wuid</para></entry>
-
-                  <entry>Workunit Id (WUID)</entry>
-                </row>
-
-                <row>
-                  <entry><para role="wsig"> Owner</para></entry>
-
-                  <entry>Job Owner</entry>
-                </row>
-
-                <row>
-                  <entry><para role="wsig"> Cluster</para></entry>
-
-                  <entry>Target Cluster</entry>
-                </row>
-
-                <row>
-                  <entry><para role="wsig"> Jobname</para></entry>
-
-                  <entry>Job Name (If any)</entry>
-                </row>
-
-                <row>
-                  <entry><para role="wsig"> StateID</para></entry>
-
-                  <entry>State ID</entry>
-                </row>
-
-                <row>
-                  <entry><para role="wsig"> State</para></entry>
-
-                  <entry>State (compiled, failed, etc)</entry>
-                </row>
-
-                <row>
-                  <entry><para role="wsig"> Protected</para></entry>
-
-                  <entry>Boolean indicator: Is Workunit protected?</entry>
-                </row>
-
-                <row>
-                  <entry><para role="wsig"> Snapshot</para></entry>
-
-                  <entry>Snapshot</entry>
-                </row>
-
-                <row>
-                  <entry><para role="wsig"> Query</para></entry>
-
-                  <entry>Query</entry>
+                  <entry>Structure containing Workunit details. See <link
+                  linkend="WUStructure">Workunit Structure</link> in Common
+                  Structures</entry>
                 </row>
 
                 <row>
@@ -2101,8 +2120,9 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 <row>
                   <entry><para role="wsig"> Exceptions</para></entry>
 
-                  <entry>Structure containing exceptions. See Exceptions
-                  Structure in Common Structures</entry>
+                  <entry>Structure containing exceptions. See <link
+                  linkend="ExceptionStructure">Exceptions Structure</link> in
+                  Common Structures</entry>
                 </row>
 
                 <row>
@@ -2139,8 +2159,707 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 <row>
                   <entry><para role="wsig"> Workunit</para></entry>
 
-                  <entry>Structure containing Workunit details. See Workunit
-                  Structure in Common Structures</entry>
+                  <entry>Structure containing Workunit details. See <link
+                  linkend="WUStructure">Workunit Structure</link> in Common
+                  Structures</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable></para>
+      </sect2>
+    </sect1>
+
+    <sect1 id="CreateTableAndLoad">
+      <title>CreateTableAndLoad</title>
+
+      <para>This method creates a table (HPCC logical file) which can
+      subsequently be accessed using WsSQL. The table is assigned the layout
+      as specified in the request ECLFields section. The table is then
+      populated with data from an existing file. The source data file can
+      either reside on the HPCC Landing Zone after being uploaded, or it can
+      already have been sprayed on to the system.</para>
+
+      <sect2>
+        <title>Sample Input XML</title>
+
+        <para><programlisting>&lt;CreateTableAndLoadRequest&gt;
+  &lt;TableName&gt;<emphasis role="bluebold">JIM::MyNewTable</emphasis>&lt;/TableName&gt;
+  &lt;TableDescription&gt;<emphasis role="bluebold">My Description of the new table</emphasis>&lt;/TableDescription&gt;
+  &lt;Overwrite&gt;1&lt;/Overwrite&gt;
+  &lt;EclFields&gt;
+    &lt;EclField&gt;
+      &lt;FieldName&gt;<emphasis role="bluebold">PersonName</emphasis>&lt;/FieldName&gt;
+      &lt;EclFieldType&gt;
+<emphasis role="greenbold">&lt;!-- Valid types are: BOOLEAN, INTEGER,</emphasis> <emphasis
+              role="greenbold">UNSIGNED, REAL, DECIMAL, STRING, --&gt; 
+&lt;!--                  QSTRING, UNICODE, DATA, VARSTRING, or VARUNICODE  --&gt;
+</emphasis>        &lt;Type&gt;<emphasis role="bluebold">STRING</emphasis>&lt;/Type&gt;
+        &lt;Locale&gt;&lt;/Locale&gt;
+        &lt;Length&gt;<emphasis role="bluebold">20</emphasis>&lt;/Length&gt;
+        &lt;Precision&gt;&lt;/Precision&gt;
+      &lt;/EclFieldType&gt;
+    &lt;/EclField&gt;
+    &lt;EclField&gt;
+      &lt;FieldName&gt;<emphasis role="bluebold">PersonID</emphasis>&lt;/FieldName&gt;
+      &lt;EclFieldType&gt;
+        &lt;Type&gt;<emphasis role="bluebold">INTEGER</emphasis>&lt;/Type&gt;
+        &lt;Locale&gt;&lt;/Locale&gt;
+        &lt;Length&gt;<emphasis role="bluebold">2</emphasis>&lt;/Length&gt;
+        &lt;Precision&gt;&lt;/Precision&gt;
+      &lt;/EclFieldType&gt;
+    &lt;/EclField&gt;
+  &lt;/EclFields&gt;
+  &lt;TargetCluster&gt;<emphasis role="bluebold">thor</emphasis>&lt;/TargetCluster&gt;
+  &lt;Owner&gt;<emphasis role="bluebold">Jimmy</emphasis>&lt;/Owner&gt;
+  &lt;DataSource&gt;
+<emphasis role="greenbold">&lt;!-- Use either SprayedFileName --&gt;</emphasis>
+    &lt;SprayedFileName&gt;<emphasis role="bluebold">Tutorial::JD::OriginalPerson</emphasis>&lt;/SprayedFileName&gt;
+<emphasis role="greenbold">&lt;!-- or full Landing Zone details, not both --&gt;</emphasis>    
+    &lt;LandingZoneIP&gt;<emphasis role="bluebold">127.0.0.1</emphasis>&lt;/LandingZoneIP&gt;
+    &lt;LandingZonePath&gt;<emphasis role="bluebold">/var/lib/HPCCSystems/mydropzone</emphasis>&lt;/LandingZonePath&gt;
+    &lt;LandingZoneFileName&gt;<emphasis role="bluebold">OriginalPerson</emphasis>&lt;/LandingZoneFileName&gt;
+  &lt;/DataSource&gt;
+  &lt;DataSourceType&gt;
+<emphasis role="greenbold">&lt;!-- Valid types are: FLAT, CSV, JSON, or XML<emphasis
+                role="greenbold"> --&gt; </emphasis></emphasis>
+    &lt;Type&gt;<emphasis role="bluebold">FLAT</emphasis>&lt;/Type&gt;
+    &lt;Params&gt;
+      &lt;Param&gt;
+        &lt;Name&gt;&lt;/Name&gt;
+        &lt;Values&gt;
+          &lt;Value&gt;&lt;/Value&gt;
+          &lt;Value&gt;&lt;/Value&gt;
+        &lt;/Values&gt;
+      &lt;/Param&gt;
+    &lt;/Params&gt;
+  &lt;/DataSourceType&gt;
+  &lt;Wait&gt;-1&lt;/Wait&gt;
+&lt;/CreateTableAndLoadRequest&gt;
+</programlisting></para>
+      </sect2>
+
+      <sect2>
+        <title>Request Tag Descriptions</title>
+
+        <para><informaltable colsep="1" frame="all" rowsep="1">
+            <tgroup cols="3">
+              <colspec colwidth="200pt" />
+
+              <colspec colwidth="40 pt" />
+
+              <colspec />
+
+              <tbody>
+                <row>
+                  <entry><?dbfo bgcolor="LightCyan"?>Tag Name</entry>
+
+                  <entry><?dbfo bgcolor="LightCyan"?>Req?</entry>
+
+                  <entry><?dbfo bgcolor="LightCyan"?>Description</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig">TableName</para></entry>
+
+                  <entry>Y</entry>
+
+                  <entry>The name of the table to create in the HPCC
+                  Platform's distributed file system.</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> TableDescription</para></entry>
+
+                  <entry>N</entry>
+
+                  <entry>Your description of the file.</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Overwrite</para></entry>
+
+                  <entry>N</entry>
+
+                  <entry>Boolean indicator to specify whether to allow the new
+                  file to overwrite an existing file of the same name.</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> EclFields</para></entry>
+
+                  <entry>Y</entry>
+
+                  <entry>Structure containing details for the file's record
+                  layout. This must match layout of the source data
+                  file</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> EclField</para></entry>
+
+                  <entry>Y</entry>
+
+                  <entry>Structure containing details for one field</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> FieldName </para></entry>
+
+                  <entry>Y</entry>
+
+                  <entry>Field Name</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> EclFieldType</para></entry>
+
+                  <entry>Y</entry>
+
+                  <entry>Structure containing Data Type details</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Type</para></entry>
+
+                  <entry>Y</entry>
+
+                  <entry>Field type. Valid types are: BOOLEAN, INTEGER,
+                  UNSIGNED, REAL, DECIMAL, STRING, QSTRING, UNICODE, DATA,
+                  VARSTRING, or VARUNICODE</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Locale </para></entry>
+
+                  <entry>N</entry>
+
+                  <entry>Locale</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Length</para></entry>
+
+                  <entry>Y*</entry>
+
+                  <entry>Field length</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Precision</para></entry>
+
+                  <entry>N</entry>
+
+                  <entry>Field precision (decimal places)</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> TargetCluster</para></entry>
+
+                  <entry>Y</entry>
+
+                  <entry>The Target cluster where the job will run.</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Owner</para></entry>
+
+                  <entry>N</entry>
+
+                  <entry>Owner name for the file</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> DataSource</para></entry>
+
+                  <entry>Y</entry>
+
+                  <entry>Structure containing Data Source details. Either
+                  SprayedFileName or LandingZone File details must be
+                  provided, not both.</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> SprayedFileName</para></entry>
+
+                  <entry>Y**</entry>
+
+                  <entry>Logical filename of sprayed data file</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> LandingZoneIP</para></entry>
+
+                  <entry>Y**</entry>
+
+                  <entry>IP address or hostname of the HPCC Landing
+                  Zone</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> LandingZonePath</para></entry>
+
+                  <entry>Y**</entry>
+
+                  <entry>Path to the datafile on the Landing Zone</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> LandingZoneFileName</para></entry>
+
+                  <entry>Y**</entry>
+
+                  <entry>Physical filename</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> DataSourceType</para></entry>
+
+                  <entry>N</entry>
+
+                  <entry>Structure containing DataSource Type details.</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Type</para></entry>
+
+                  <entry>Y</entry>
+
+                  <entry>Valid types are: FLAT, CSV, JSON, or XML</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Params</para></entry>
+
+                  <entry>N</entry>
+
+                  <entry>Structure containing one or more type parameters that
+                  describe the DataSource. For example, CSV Terminator =
+                  \n</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Param</para></entry>
+
+                  <entry>N</entry>
+
+                  <entry>Structure containing one type parameter.</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Name</para></entry>
+
+                  <entry>N</entry>
+
+                  <entry>Name</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Values</para></entry>
+
+                  <entry>N</entry>
+
+                  <entry>Structure containing one or more values.</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Value</para></entry>
+
+                  <entry>N</entry>
+
+                  <entry>Value</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Wait</para></entry>
+
+                  <entry>N</entry>
+
+                  <entry>Timeout value in milliseconds. Use -1 for no
+                  timeout</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable></para>
+
+        <para>* <emphasis role="bold">Field length is only required for fixed
+        width fields (FLAT files)</emphasis></para>
+
+        <para>** <emphasis role="bold">Either SprayedFileName or LandingZone
+        File details must be provided, not both</emphasis></para>
+      </sect2>
+
+      <sect2>
+        <title>Response Tag Descriptions</title>
+
+        <para>The response structure contains many tags which provide useful
+        information for development and debugging of ECL code. Most of them
+        are outside of the scope of this document. Only those that are useful
+        when using the WsSQL service are listed below.</para>
+
+        <para><informaltable colsep="1" frame="all" rowsep="1">
+            <tgroup cols="2">
+              <colspec colwidth="200 pt" />
+
+              <colspec />
+
+              <tbody>
+                <row>
+                  <entry><?dbfo bgcolor="LightCyan"?>Tag Name</entry>
+
+                  <entry><?dbfo bgcolor="LightCyan"?>Description</entry>
+                </row>
+
+                <row>
+                  <entry><para
+                  role="wsig">CreateTableAndLoadResponse</para></entry>
+
+                  <entry>Structure containing response</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> TableName</para></entry>
+
+                  <entry>Name of the created table</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Success</para></entry>
+
+                  <entry>Boolean indicator of success [1 = success]</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> EclRecordDefinition</para></entry>
+
+                  <entry>Supplied record definition in ECL format</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Workunit</para></entry>
+
+                  <entry>Structure containing Workunit details. See <link
+                  linkend="WUStructure">Workunit Structure</link> in Common
+                  Structures</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Exceptions</para></entry>
+
+                  <entry>Structure containing exceptions. See <link
+                  linkend="ExceptionStructure">Exceptions Structure</link> in
+                  Common Structures</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable></para>
+      </sect2>
+    </sect1>
+
+    <sect1 id="SetRelatedIndexes">
+      <title>SetRelatedIndexes</title>
+
+      <para>This function adds a description to a logical file to be used as
+      an annotation indicating an index file which is related to a data file.
+      This makes it available to WsSQL for use in an indexed fetch.</para>
+
+      <para></para>
+
+      <sect2>
+        <title>Sample Input XML</title>
+
+        <para><programlisting>&lt;SetRelatedIndexesRequest&gt;
+  &lt;RelatedIndexSets&gt;
+    &lt;RelatedIndexSet&gt;
+      &lt;FileName&gt;<emphasis role="bluebold">Tutorial::JD::TutorialPerson</emphasis>&lt;/FileName&gt;
+      &lt;Indexes&gt;
+        &lt;Index&gt;<emphasis role="bluebold">Tutorial::JD::TutorialPersonByName</emphasis>&lt;/Index&gt;
+        &lt;Index&gt;<emphasis role="bluebold">Tutorial::JD::TutorialPersonByZIP</emphasis>&lt;/Index&gt;
+      &lt;/Indexes&gt;
+    &lt;/RelatedIndexSet&gt;
+  &lt;RelatedIndexSet&gt;
+&lt;/SetRelatedIndexesRequest&gt;
+</programlisting></para>
+      </sect2>
+
+      <sect2>
+        <title>Request Tag Descriptions</title>
+
+        <para><informaltable colsep="1" frame="all" rowsep="1">
+            <tgroup cols="3">
+              <colspec colwidth="200pt" />
+
+              <colspec colwidth="40 pt" />
+
+              <colspec />
+
+              <tbody>
+                <row>
+                  <entry><?dbfo bgcolor="LightCyan"?>Tag Name</entry>
+
+                  <entry><?dbfo bgcolor="LightCyan"?>Req?</entry>
+
+                  <entry><?dbfo bgcolor="LightCyan"?>Description</entry>
+                </row>
+
+                <row>
+                  <entry><para
+                  role="wsig">SetRelatedIndexesRequest</para></entry>
+
+                  <entry></entry>
+
+                  <entry>Structure containing request</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> RelatedIndexSets</para></entry>
+
+                  <entry>Y</entry>
+
+                  <entry>Structure containing one or more related index
+                  sets</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> RelatedIndexSet</para></entry>
+
+                  <entry>Y</entry>
+
+                  <entry>Structure containing one related index set</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> FileName</para></entry>
+
+                  <entry>Y</entry>
+
+                  <entry>Logical filename to which the annotation is
+                  added</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Indexes</para></entry>
+
+                  <entry>Y</entry>
+
+                  <entry>Structure containing one or more indexes to add to
+                  annotation</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Index</para></entry>
+
+                  <entry>Y</entry>
+
+                  <entry>Index to add to annotation</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable></para>
+      </sect2>
+
+      <sect2>
+        <title>Response Tag Descriptions</title>
+
+        <para><informaltable colsep="1" frame="all" rowsep="1">
+            <tgroup cols="2">
+              <colspec colwidth="200 pt" />
+
+              <colspec />
+
+              <tbody>
+                <row>
+                  <entry><?dbfo bgcolor="LightCyan"?>Tag Name</entry>
+
+                  <entry><?dbfo bgcolor="LightCyan"?>Description</entry>
+                </row>
+
+                <row>
+                  <entry><para
+                  role="wsig">SetRelatedIndexesResponse</para></entry>
+
+                  <entry>Structure containing response</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> RelatedIndexSets</para></entry>
+
+                  <entry>Structure containing one or more related index
+                  sets</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> RelatedIndexSet</para></entry>
+
+                  <entry>Structure containing one related index set</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> FileName</para></entry>
+
+                  <entry>Logical filename to which the annotation was
+                  added</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Indexes</para></entry>
+
+                  <entry>Structure containing one or more indexes added to
+                  annotation</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Index</para></entry>
+
+                  <entry>Index added to annotation</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable></para>
+      </sect2>
+    </sect1>
+
+    <sect1 id="GetRelatedIndexes">
+      <title>GetRelatedIndexes</title>
+
+      <para>This function retrieves information from logical file descriptions
+      about annotations indicating an index file which is related to a data
+      file.</para>
+
+      <para></para>
+
+      <sect2>
+        <title>Sample Input XML</title>
+
+        <para><programlisting>&lt;GetRelatedIndexesRequest&gt;
+  &lt;FileNames&gt;
+      &lt;FileName&gt;<emphasis role="bluebold">Tutorial::JD::TutorialPerson</emphasis>&lt;/FileName&gt;
+  &lt;/FileNames&gt;
+&lt;/SetRelatedIndexesRequest&gt;
+</programlisting></para>
+      </sect2>
+
+      <sect2>
+        <title>Request Tag Descriptions</title>
+
+        <para><informaltable colsep="1" frame="all" rowsep="1">
+            <tgroup cols="3">
+              <colspec colwidth="200pt" />
+
+              <colspec colwidth="40 pt" />
+
+              <colspec />
+
+              <tbody>
+                <row>
+                  <entry><?dbfo bgcolor="LightCyan"?>Tag Name</entry>
+
+                  <entry><?dbfo bgcolor="LightCyan"?>Req?</entry>
+
+                  <entry><?dbfo bgcolor="LightCyan"?>Description</entry>
+                </row>
+
+                <row>
+                  <entry><para
+                  role="wsig">SetRelatedIndexesRequest</para></entry>
+
+                  <entry></entry>
+
+                  <entry>Structure containing request</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> FileNames</para></entry>
+
+                  <entry>Y</entry>
+
+                  <entry>Structure containing one or more related index
+                  sets</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> FileName</para></entry>
+
+                  <entry>Y</entry>
+
+                  <entry>Logical filename to which the annotation is
+                  added</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Indexes</para></entry>
+
+                  <entry>Y</entry>
+
+                  <entry>Structure containing one or more indexes to add to
+                  annotation</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Index</para></entry>
+
+                  <entry>Y</entry>
+
+                  <entry>Index to add to annotation</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable></para>
+      </sect2>
+
+      <sect2>
+        <title>Response Tag Descriptions</title>
+
+        <para><informaltable colsep="1" frame="all" rowsep="1">
+            <tgroup cols="2">
+              <colspec colwidth="200 pt" />
+
+              <colspec />
+
+              <tbody>
+                <row>
+                  <entry><?dbfo bgcolor="LightCyan"?>Tag Name</entry>
+
+                  <entry><?dbfo bgcolor="LightCyan"?>Description</entry>
+                </row>
+
+                <row>
+                  <entry><para
+                  role="wsig">GetRelatedIndexesResponse</para></entry>
+
+                  <entry>Structure containing response</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> RelatedIndexSets</para></entry>
+
+                  <entry>Structure containing one or more related index
+                  sets</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> RelatedIndexSet</para></entry>
+
+                  <entry>Structure containing one related index set</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> FileName</para></entry>
+
+                  <entry>Logical filename to which the annotation was
+                  added</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Indexes</para></entry>
+
+                  <entry>Structure containing one or more indexes added to
+                  annotation</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> Index</para></entry>
+
+                  <entry>Index added to annotation</entry>
                 </row>
               </tbody>
             </tgroup>
@@ -2153,7 +2872,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
 
       <para>These structures are returned in several methods.</para>
 
-      <sect2>
+      <sect2 id="ExceptionStructure">
         <title>Exceptions Structure</title>
 
         <para><informaltable colsep="1" frame="all" rowsep="1">
@@ -2209,7 +2928,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
           </informaltable></para>
       </sect2>
 
-      <sect2>
+      <sect2 id="WUStructure">
         <title>Workunit Structure</title>
 
         <para>The workunit structure contains many tags which provide useful
@@ -2282,6 +3001,30 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                   <entry><para role="wsig"> Snapshot</para></entry>
 
                   <entry>Snapshot</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> IsPausing</para></entry>
+
+                  <entry>Boolean indicator of pause state</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> ThorLCR</para></entry>
+
+                  <entry>Boolean indicator</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> EventSchedule</para></entry>
+
+                  <entry>Boolean indicator</entry>
+                </row>
+
+                <row>
+                  <entry><para role="wsig"> TotalCLusterTime</para></entry>
+
+                  <entry>Time taken to process on cluster</entry>
                 </row>
 
                 <row>
@@ -2642,7 +3385,7 @@ Jane Row FL 33024
 
       <para>A Select query returns two dataset outputs per request. The second
       dataset (named WsSQLCount) provides the total result count. This is
-      useful when paging results. </para>
+      useful when paging results.</para>
 
       <para>Example:</para>
 
