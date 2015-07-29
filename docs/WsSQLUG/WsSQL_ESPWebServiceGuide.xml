@@ -643,7 +643,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig">EchoRequest</para></entry>
+                  <entry><programlisting role="wsig">EchoRequest</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -651,7 +651,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Request</para></entry>
+                  <entry><programlisting role="wsig">  Request</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -679,7 +679,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig">EchoResponse</para></entry>
+                  <entry><programlisting role="wsig">EchoResponse</programlisting></entry>
 
                   <entry>Structure containing response</entry>
                 </row>
@@ -931,7 +931,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig">GetDBMetaDataRequest</para></entry>
+                  <entry><programlisting role="wsig">GetDBMetaDataRequest</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -939,7 +939,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> IncludeTables</para></entry>
+                  <entry><programlisting role="wsig">  IncludeTables</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -948,7 +948,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> TableFilter</para></entry>
+                  <entry><programlisting role="wsig">  TableFilter</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -956,8 +956,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig">
-                  IncludeStoredProcedures</para></entry>
+                  <entry><programlisting role="wsig">  IncludeStoredProcedures</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -966,7 +965,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> QuerySet</para></entry>
+                  <entry><programlisting role="wsig">  QuerySet</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -975,8 +974,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig">
-                  IncludeTargetClusters</para></entry>
+                  <entry><programlisting role="wsig">  IncludeTargetClusters</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -985,7 +983,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> ClusterType</para></entry>
+                  <entry><programlisting role="wsig">  ClusterType</programlisting></entry>
 
                   <entry>N</entry>
 
