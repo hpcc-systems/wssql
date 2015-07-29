@@ -3094,7 +3094,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
       role="bold">]</emphasis> <emphasis>colummList</emphasis> <emphasis
       role="bold">from</emphasis> <emphasis>tableList </emphasis><emphasis>
       </emphasis><emphasis role="bold">[</emphasis>USE
-      INDEX<emphasis>(indexFileName</emphasis> | 0
+      INDEX<emphasis>(indexFileName</emphasis> | NONE
       <emphasis>)</emphasis><emphasis role="bold">]</emphasis></para>
 
       <para><emphasis role="bold">[where</emphasis>
@@ -3322,7 +3322,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 <entry><emphasis>limitNumber</emphasis></entry>
 
                 <entry>The number of rows to return. This overrides the
-                defalut configuration attribute (EclResultLimit ) but cannot
+                default configuration attribute (EclResultLimit ) but cannot
                 be set to ALL</entry>
               </row>
             </tbody>
@@ -3341,7 +3341,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
       <para>Examples:</para>
 
       <programlisting>Select * from tableList where Sum(F1 &gt; 100) /* is NOT SUPPORTED */
-Select * from tableList Group byF1 Haveing Sum (F1 &gt; 100) /* IS SUPPORTED */</programlisting>
+Select * from tableList Group by F1 Having Sum (F1 &gt; 100) /* IS SUPPORTED */</programlisting>
 
       <para>Example:</para>
 
@@ -3422,7 +3422,7 @@ Jane Row FL 33024
       </emphasis><emphasis>joinCondition</emphasis><emphasis
       role="bold">]</emphasis></para>
 
-      <para>[USE INDEX<emphasis>(</emphasis>indexFileName | 0
+      <para>[USE INDEX<emphasis>(</emphasis>indexFileName | NONE
       <emphasis>)</emphasis>]</para>
 
       <para>[<emphasis role="bold">where</emphasis>
@@ -3653,7 +3653,7 @@ Jane Row FL 33024
       <para>Examples:</para>
 
       <programlisting>Select * from tableList where Sum(F1 &gt; 100) /* is NOT SUPPORTED */
-Select * from tableList Group byF1 Haveing Sum (F1 &gt; 100) /* IS SUPPORTED */</programlisting>
+Select * from tableList Group by F1 Having Sum (F1 &gt; 100) /* IS SUPPORTED */</programlisting>
 
       <para>Example:</para>
 
