@@ -171,11 +171,13 @@ void ECLEngine::generateCreateAndLoad(HPCCSQLTreeWalker * sqlobj, StringBuffer &
 
         out.appendf("import std;\nTABLERECORDDEF := RECORD\n%s\nEND;\n", sqlobj->getRecordDefinition());
         out.appendf("FILEDATASET := DATASET('~%s', TABLERECORDDEF, %s);\n",sourceFileName.str(), sqlobj->getSourceDataType());
-        out.appendf("OUTPUT(FILEDATASET, ,'~%s'%s);", targetTableName, sqlobj->isOverwrite() ? ", OVERWRITE" : "");
+        out.appendf("OUTPUT(true, NAMED(\'%s\'));\n",  SELECTOUTPUTNAME); //THOR= WU results written to file
+        out.appendf("OUTPUT(COUNT(FILEDATASET), NAMED(\'%sCount\'));\n", SELECTOUTPUTNAME);
+        out.appendf("OUTPUT(FILEDATASET, ,'~%s'%s);\n", targetTableName, sqlobj->isOverwrite() ? ", OVERWRITE" : "");
 
         const char * description = sqlobj->getComment();
         if (description && * description)
-            out.appendf("\nStd.file.setfiledescription('~%s','%s')", targetTableName, description);
+            out.appendf("Std.file.setfiledescription('~%s','%s')\n", targetTableName, description);
 }
 
 void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer & out)

@@ -1005,7 +1005,7 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
             resp.setResultWindowCount( (unsigned)resultWindowCount);
             resp.setResultWindowStart( (unsigned)resultWindowStart);
 
-            if (!req.getSuppressResults() && querytype != SQLTypeCreateAndLoad)
+            if (!req.getSuppressResults())
             {
                 StringBuffer result;
                 if (getWUResult(context, runningwuid.str(), result, (unsigned)resultWindowStart, (unsigned)resultWindowCount, 0, WSSQLRESULT, req.getSuppressXmlSchema() ? NULL : WSSQLRESULTSCHEMA))
