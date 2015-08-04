@@ -936,7 +936,12 @@ subquery
 
 table_spec
 :
-  schema_spec ? (table_name | quoted_table_name)^
+  schema_spec? table_fork ->  ^(table_fork  schema_spec?)
+;
+
+table_fork
+:
+    (table_name | quoted_table_name)^
 ;
 
 schema_spec
