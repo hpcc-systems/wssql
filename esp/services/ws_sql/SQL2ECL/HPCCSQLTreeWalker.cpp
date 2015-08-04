@@ -1315,6 +1315,9 @@ bool HPCCSQLTreeWalker::normalizeSQL()
             if (sqlType == SQLTypeSelect)
             {
                 normalizedSQL.append("SELECT ");
+                if (isSelectDistinct())
+                    normalizedSQL.append("DISTINCT ");
+
                 ForEachItemIn(idx1, selectList)
                 {
                     if (idx1 > 0)
