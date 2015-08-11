@@ -643,7 +643,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig">EchoRequest</para></entry>
+                  <entry><programlisting role="wsig">EchoRequest</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -651,7 +651,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Request</para></entry>
+                  <entry><programlisting role="wsig">  Request</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -679,13 +679,13 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig">EchoResponse</para></entry>
+                  <entry><programlisting role="wsig">EchoResponse</programlisting></entry>
 
                   <entry>Structure containing response</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Response</para></entry>
+                  <entry><programlisting role="wsig">  Response</programlisting></entry>
 
                   <entry>Response</entry>
                 </row>
@@ -735,8 +735,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para
-                  role="wsig">GetDBSystemInfoRequest</para></entry>
+                  <entry><programlisting role="wsig">GetDBSystemInfoRequest</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -744,7 +743,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> IncludeAll</para></entry>
+                  <entry><programlisting role="wsig">  IncludeAll</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -773,14 +772,13 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para
-                  role="wsig">GetDBSystemInfoResponse</para></entry>
+                  <entry><programlisting role="wsig">GetDBSystemInfoResponse</programlisting></entry>
 
                   <entry>Structure containing response</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Exceptions</para></entry>
+                  <entry><programlisting role="wsig">  Exceptions</programlisting></entry>
 
                   <entry>Structure containing exceptions. See <link
                   linkend="ExceptionStructure">Exceptions Structure</link> in
@@ -788,79 +786,79 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Name</para></entry>
+                  <entry><programlisting role="wsig">  Name</programlisting></entry>
 
                   <entry>Name.</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> FullVersion</para></entry>
+                  <entry><programlisting role="wsig">  FullVersion</programlisting></entry>
 
                   <entry>Full Version of HPCC Platform</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Major</para></entry>
+                  <entry><programlisting role="wsig">  Major</programlisting></entry>
 
                   <entry>Major of HPCC Platform</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Minor</para></entry>
+                  <entry><programlisting role="wsig">  Minor</programlisting></entry>
 
                   <entry>Minor of HPCC Platform</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Point</para></entry>
+                  <entry><programlisting role="wsig">  Point</programlisting></entry>
 
                   <entry>Point of HPCC Platform</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Project</para></entry>
+                  <entry><programlisting role="wsig">  Project</programlisting></entry>
 
                   <entry>Project of HPCC Platform</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Maturity</para></entry>
+                  <entry><programlisting role="wsig">  Maturity</programlisting></entry>
 
                   <entry>Maturity of HPCC Platform</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig">WsSQLFullVersion</para></entry>
+                  <entry><programlisting role="wsig">  WsSQLFullVersion</programlisting></entry>
 
                   <entry>Full Version of WsSQL</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig">WsSQLMajor </para></entry>
+                  <entry><programlisting role="wsig">  WsSQLMajor </programlisting></entry>
 
                   <entry>Major of WsSQL</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig">WsSQLMinor </para></entry>
+                  <entry><programlisting role="wsig">  WsSQLMinor </programlisting></entry>
 
                   <entry>Minor of WsSQL</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig">WsSQLPoint </para></entry>
+                  <entry><programlisting role="wsig">  WsSQLPoint </programlisting></entry>
 
                   <entry>Point of WsSQL</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig">WsSQLProject </para></entry>
+                  <entry><programlisting role="wsig">  WsSQLProject </programlisting></entry>
 
                   <entry>Project of WsSQL</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig">WsSQLMaturity</para></entry>
+                  <entry><programlisting role="wsig">  WsSQLMaturity</programlisting></entry>
 
                   <entry>Maturity of WsSQL</entry>
                 </row>
@@ -931,7 +929,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig">GetDBMetaDataRequest</para></entry>
+                  <entry><programlisting role="wsig">GetDBMetaDataRequest</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -939,7 +937,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> IncludeTables</para></entry>
+                  <entry><programlisting role="wsig">  IncludeTables</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -948,7 +946,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> TableFilter</para></entry>
+                  <entry><programlisting role="wsig">  TableFilter</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -956,8 +954,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig">
-                  IncludeStoredProcedures</para></entry>
+                  <entry><programlisting role="wsig">  IncludeStoredProcedures</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -966,7 +963,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> QuerySet</para></entry>
+                  <entry><programlisting role="wsig">  QuerySet</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -975,8 +972,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig">
-                  IncludeTargetClusters</para></entry>
+                  <entry><programlisting role="wsig">  IncludeTargetClusters</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -985,7 +981,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> ClusterType</para></entry>
+                  <entry><programlisting role="wsig">  ClusterType</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -1013,14 +1009,13 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para
-                  role="wsig">GetDBMetaDataResponse</para></entry>
+                  <entry><programlisting role="wsig">GetDBMetaDataResponse</programlisting></entry>
 
                   <entry>Structure containing response</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Exceptions</para></entry>
+                  <entry><programlisting role="wsig">  Exceptions</programlisting></entry>
 
                   <entry>Structure containing exceptions. See <link
                   linkend="ExceptionStructure">Exceptions Structure</link> in
@@ -1028,222 +1023,228 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> TableCount</para></entry>
+                  <entry><programlisting role="wsig">  TableCount</programlisting></entry>
 
                   <entry>Count of available tables</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Tables</para></entry>
+                  <entry><programlisting role="wsig">  Tables</programlisting></entry>
 
                   <entry>Structure containing one or more tables</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Table</para></entry>
+                  <entry><programlisting role="wsig">    Table</programlisting></entry>
 
                   <entry>Structure containing one table</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Name</para></entry>
+                  <entry><programlisting role="wsig">      Name</programlisting></entry>
 
                   <entry>Table name</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Columns</para></entry>
+                  <entry><programlisting role="wsig">      Columns</programlisting></entry>
 
                   <entry>Structure containing one or more columns</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Column</para></entry>
+                  <entry><programlisting role="wsig">        Column</programlisting></entry>
 
                   <entry>Column</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Name</para></entry>
+                  <entry><programlisting role="wsig">          Name</programlisting></entry>
 
                   <entry>Column name</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Type</para></entry>
+                  <entry><programlisting role="wsig">          Type</programlisting></entry>
 
                   <entry>Column data type (e.g., unsigned8, string3)</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> ECL</para></entry>
+                  <entry><programlisting role="wsig">      ECL</programlisting></entry>
 
                   <entry>ECL Definition for the table</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Format</para></entry>
+                  <entry><programlisting role="wsig">      Format</programlisting></entry>
 
                   <entry>Table format (e.g., FLAT, KEYED, etc)</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> ContentType</para></entry>
+                  <entry><programlisting role="wsig">      ContentType</programlisting></entry>
 
                   <entry>Content Type</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Description</para></entry>
+                  <entry><programlisting role="wsig">      Description</programlisting></entry>
 
                   <entry>Description</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> IsKeyed</para></entry>
+                  <entry><programlisting role="wsig">      IsKeyed</programlisting></entry>
 
                   <entry>Boolean indicator: Is this an index?</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> IsSuper</para></entry>
+                  <entry><programlisting role="wsig">      IsSuper</programlisting></entry>
 
                   <entry>Boolean indicator: Is this a superfile?</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> CsvQuote</para></entry>
+                  <entry><programlisting role="wsig">      CsvQuote</programlisting></entry>
 
                   <entry>Quote character (only valid for CSV files)</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> CsvSeparate</para></entry>
+                  <entry><programlisting role="wsig">      CsvSeparate</programlisting></entry>
 
                   <entry>Separator character (only valid for CSV
                   files)</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> CsvTerminate</para></entry>
+                  <entry><programlisting role="wsig">      CsvTerminate</programlisting></entry>
 
                   <entry>Record terminator character (only valid for CSV
                   files)</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Group</para></entry>
+                  <entry><programlisting role="wsig">      Group</programlisting></entry>
 
                   <entry>Group</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> MaxRecordSize</para></entry>
+                  <entry><programlisting role="wsig">      MaxRecordSize</programlisting></entry>
 
                   <entry>Maximum record size</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Modified</para></entry>
+                  <entry><programlisting role="wsig">      Modified</programlisting></entry>
 
                   <entry>Date modified</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> NumParts</para></entry>
+                  <entry><programlisting role="wsig">      NumParts</programlisting></entry>
 
                   <entry>Number of file parts</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Owner</para></entry>
+                  <entry><programlisting role="wsig">      Owner</programlisting></entry>
 
                   <entry>Owner name</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> QuerySets</para></entry>
+                  <entry><programlisting role="wsig">  QuerySets</programlisting></entry>
 
                   <entry>Structure containing one or more Query Sets</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> QuerySet</para></entry>
+                  <entry><programlisting role="wsig">    QuerySet</programlisting></entry>
 
                   <entry>Structure containing one Query Set</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> QuerySetQueries</para></entry>
+                  <entry><programlisting role="wsig">      Name</programlisting></entry>
+
+                  <entry>Query Name</entry>
+                </row>
+
+                <row>
+                  <entry><programlisting role="wsig">      QuerySetQueries</programlisting></entry>
 
                   <entry>Structure containing one or more
                   QuerySetQueries</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> QuerySetQuery</para></entry>
+                  <entry><programlisting role="wsig">        QuerySetQuery</programlisting></entry>
 
                   <entry>Structure containing one QuerySetQuery</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Name</para></entry>
+                  <entry><programlisting role="wsig">          Name</programlisting></entry>
 
                   <entry>Query Name</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Id</para></entry>
+                  <entry><programlisting role="wsig">          Id</programlisting></entry>
 
                   <entry>Query ID (for internal use and informational purposes
                   only)</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Wuid</para></entry>
+                  <entry><programlisting role="wsig">          Wuid</programlisting></entry>
 
                   <entry>Workunit ID</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Suspended</para></entry>
+                  <entry><programlisting role="wsig">          Suspended</programlisting></entry>
 
                   <entry>Boolean indicator: Is the query suspended?</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Signature</para></entry>
+                  <entry><programlisting role="wsig">          Signature</programlisting></entry>
 
                   <entry>Query Signature</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> InParams</para></entry>
+                  <entry><programlisting role="wsig">            InParams</programlisting></entry>
 
                   <entry>Structure containing one or more Input
                   parameters</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> InParam</para></entry>
+                  <entry><programlisting role="wsig">              InParam</programlisting></entry>
 
                   <entry>Structure containing one Input parameter</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Name</para></entry>
+                  <entry><programlisting role="wsig">                Name</programlisting></entry>
 
                   <entry>Parameter name</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Type</para></entry>
+                  <entry><programlisting role="wsig">                Type</programlisting></entry>
 
                   <entry>Parameter data type (e.g., string)</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> ResultSets</para></entry>
+                  <entry><programlisting role="wsig">            ResultSets</programlisting></entry>
 
                   <entry>Structure containing one or more Result Sets (Only
                   the first result set is returned from a WsSQL service
@@ -1251,76 +1252,76 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> ResultSet</para></entry>
+                  <entry><programlisting role="wsig">              ResultSet</programlisting></entry>
 
                   <entry>Structure containing one Result Set</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Name</para></entry>
+                  <entry><programlisting role="wsig">                Name</programlisting></entry>
 
                   <entry>Result set name</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> OutParams</para></entry>
+                  <entry><programlisting role="wsig">                OutParams</programlisting></entry>
 
                   <entry>Structure containing one or more output
                   parameters</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> OutParam</para></entry>
+                  <entry><programlisting role="wsig">                  OutParam</programlisting></entry>
 
                   <entry>Structure containing one output parameter</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Name</para></entry>
+                  <entry><programlisting role="wsig">                  Name</programlisting></entry>
 
                   <entry>Parameter name</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Type</para></entry>
+                  <entry><programlisting role="wsig">                  Type</programlisting></entry>
 
                   <entry>Parameter data type (e.g., string)</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> QuerySetAliases</para></entry>
+                  <entry><programlisting role="wsig">      QuerySetAliases</programlisting></entry>
 
                   <entry>Structure containing one or more
                   QuerySetAliases</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> QuerySetAlias</para></entry>
+                  <entry><programlisting role="wsig">        QuerySetAlias</programlisting></entry>
 
                   <entry>Structure containing one QuerySetAlias</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Name</para></entry>
+                  <entry><programlisting role="wsig">          Name</programlisting></entry>
 
                   <entry>Query name</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Id</para></entry>
+                  <entry><programlisting role="wsig">          Id</programlisting></entry>
 
                   <entry>Query Id</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> ClusterNames</para></entry>
+                  <entry><programlisting role="wsig">  ClusterNames</programlisting></entry>
 
                   <entry>Structure containing one or more
                   TargetClusters</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> ClusterName</para></entry>
+                  <entry><programlisting role="wsig">    ClusterName</programlisting></entry>
 
                   <entry>Structure containing one TargetCluster</entry>
                 </row>
@@ -1396,7 +1397,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig">ExecuteSQLRequest</para></entry>
+                  <entry><programlisting role="wsig">ExecuteSQLRequest</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -1404,7 +1405,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> SqlText</para></entry>
+                  <entry><programlisting role="wsig">  SqlText</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -1413,7 +1414,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> UserName</para></entry>
+                  <entry><programlisting role="wsig">  UserName</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -1422,7 +1423,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> TargetCluster</para></entry>
+                  <entry><programlisting role="wsig">  TargetCluster</programlisting></entry>
 
                   <entry>Y *</entry>
 
@@ -1431,7 +1432,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> TargetQuerySet</para></entry>
+                  <entry><programlisting role="wsig">  TargetQuerySet</programlisting></entry>
 
                   <entry>Y *</entry>
 
@@ -1443,7 +1444,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> SuppressResults</para></entry>
+                  <entry><programlisting role="wsig">  SuppressResults</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -1452,7 +1453,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> SuppressXmlSchema</para></entry>
+                  <entry><programlisting role="wsig">  SuppressXmlSchema</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -1461,7 +1462,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Wait</para></entry>
+                  <entry><programlisting role="wsig">  Wait</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -1470,7 +1471,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> resultLimit</para></entry>
+                  <entry><programlisting role="wsig">  resultLimit</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -1479,7 +1480,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> ResultWindowStart</para></entry>
+                  <entry><programlisting role="wsig">  ResultWindowStart</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -1488,7 +1489,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> ResultWindowCount</para></entry>
+                  <entry><programlisting role="wsig">  ResultWindowCount</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -1518,13 +1519,13 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig">ExecuteSQLResponse</para></entry>
+                  <entry><programlisting role="wsig">ExecuteSQLResponse</programlisting></entry>
 
                   <entry>Structure containing response</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Exceptions</para></entry>
+                  <entry><programlisting role="wsig">  Exceptions</programlisting></entry>
 
                   <entry>Structure containing exceptions. See <link
                   linkend="ExceptionStructure">Exceptions Structure</link> in
@@ -1532,24 +1533,42 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> ParentWuId</para></entry>
+                  <entry><programlisting role="wsig">  ParentWuId</programlisting></entry>
 
                   <entry>The Workunit Id for the parent workunit (the one with
                   the prepared SQL)</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Result</para></entry>
+                  <entry><programlisting role="wsig">  Result</programlisting></entry>
 
                   <entry>The query result</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Workunit</para></entry>
+                  <entry><programlisting role="wsig">  Workunit</programlisting></entry>
 
                   <entry>Structure containing Workunit details. See <link
                   linkend="WUStructure">Workunit Structure</link> in Common
                   Structures</entry>
+                </row>
+
+                <row>
+                  <entry><programlisting role="wsig">  resultLimit</programlisting></entry>
+
+                  <entry>The submitted resultLimit</entry>
+                </row>
+
+                <row>
+                  <entry><programlisting role="wsig">  ResultWindowStart</programlisting></entry>
+
+                  <entry>The submitted ReslutWindowStart</entry>
+                </row>
+
+                <row>
+                  <entry><programlisting role="wsig">  ResultWindowCount</programlisting></entry>
+
+                  <entry>The submitted ResultWindowCount</entry>
                 </row>
               </tbody>
             </tgroup>
@@ -1602,7 +1621,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig">GetResultsRequest</para></entry>
+                  <entry><programlisting role="wsig">GetResultsRequest</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -1610,7 +1629,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> WuId</para></entry>
+                  <entry><programlisting role="wsig">  WuId</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -1618,7 +1637,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> SuppressXmlSchema</para></entry>
+                  <entry><programlisting role="wsig">  SuppressXmlSchema</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -1627,7 +1646,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> ResultWindowStart</para></entry>
+                  <entry><programlisting role="wsig">  ResultWindowStart</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -1636,7 +1655,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> ResultWindowCount</para></entry>
+                  <entry><programlisting role="wsig">  ResultWindowCount</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -1665,13 +1684,13 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig">GetResultsResponse</para></entry>
+                  <entry><programlisting role="wsig">GetResultsResponse</programlisting></entry>
 
                   <entry>Structure containing response</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Exceptions</para></entry>
+                  <entry><programlisting role="wsig">  Exceptions</programlisting></entry>
 
                   <entry>Structure containing exceptions. See <link
                   linkend="ExceptionStructure">Exceptions Structure</link> in
@@ -1679,25 +1698,25 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Result</para></entry>
+                  <entry><programlisting role="wsig">  Result</programlisting></entry>
 
                   <entry>The query result</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> ResultWindowStart</para></entry>
+                  <entry><programlisting role="wsig">  ResultWindowStart</programlisting></entry>
 
                   <entry>The submitted starting record</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> ResultWindowCount</para></entry>
+                  <entry><programlisting role="wsig">  ResultWindowCount</programlisting></entry>
 
                   <entry>The submitted record count</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Workunit</para></entry>
+                  <entry><programlisting role="wsig">  Workunit</programlisting></entry>
 
                   <entry>Structure containing Workunit details. See <link
                   linkend="WUStructure">Workunit Structure</link> in Common
@@ -1794,7 +1813,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig">PrepareSQLRequest</para></entry>
+                  <entry><programlisting role="wsig">PrepareSQLRequest</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -1802,7 +1821,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> SqlText</para></entry>
+                  <entry><programlisting role="wsig">  SqlText</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -1811,7 +1830,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> TargetCluster</para></entry>
+                  <entry><programlisting role="wsig">  TargetCluster</programlisting></entry>
 
                   <entry>Y *</entry>
 
@@ -1820,7 +1839,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> TargetQuerySet</para></entry>
+                  <entry><programlisting role="wsig">  TargetQuerySet</programlisting></entry>
 
                   <entry>Y *</entry>
 
@@ -1832,7 +1851,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Wait</para></entry>
+                  <entry><programlisting role="wsig">  Wait</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -1862,13 +1881,13 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig">PrepareSQLResponse</para></entry>
+                  <entry><programlisting role="wsig">PrepareSQLResponse</programlisting></entry>
 
                   <entry>Structure containing response</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Exceptions</para></entry>
+                  <entry><programlisting role="wsig">  Exceptions</programlisting></entry>
 
                   <entry>Structure containing exceptions. See <link
                   linkend="ExceptionStructure">Exceptions Structure</link> in
@@ -1876,7 +1895,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Workunit</para></entry>
+                  <entry><programlisting role="wsig">  Workunit</programlisting></entry>
 
                   <entry>Structure containing Workunit details. See <link
                   linkend="WUStructure">Workunit Structure</link> in Common
@@ -1884,7 +1903,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Result</para></entry>
+                  <entry><programlisting role="wsig">  Result</programlisting></entry>
 
                   <entry>Structure containing result (if any)</entry>
                 </row>
@@ -1977,8 +1996,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para
-                  role="wsig">ExecutePreparedSQLRequest</para></entry>
+                  <entry><programlisting role="wsig">ExecutePreparedSQLRequest</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -1986,7 +2004,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> WuId</para></entry>
+                  <entry><programlisting role="wsig">  WuId</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -1994,7 +2012,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> UserName</para></entry>
+                  <entry><programlisting role="wsig">  UserName</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -2003,7 +2021,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> TargetCluster</para></entry>
+                  <entry><programlisting role="wsig">  TargetCluster</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -2013,7 +2031,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> SuppressResults</para></entry>
+                  <entry><programlisting role="wsig">  SuppressResults</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -2022,7 +2040,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> SuppressXmlSchema</para></entry>
+                  <entry><programlisting role="wsig">  SuppressXmlSchema</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -2031,7 +2049,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Wait</para></entry>
+                  <entry><programlisting role="wsig">  Wait</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -2040,7 +2058,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> ResultWindowStart</para></entry>
+                  <entry><programlisting role="wsig">  ResultWindowStart</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -2049,7 +2067,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> ResultWindowCount</para></entry>
+                  <entry><programlisting role="wsig">  ResultWindowCount</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -2058,7 +2076,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Variables</para></entry>
+                  <entry><programlisting role="wsig">  Variables</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -2067,7 +2085,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> NamedValue</para></entry>
+                  <entry><programlisting role="wsig">    NamedValue</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -2075,7 +2093,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Name</para></entry>
+                  <entry><programlisting role="wsig">      Name</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -2083,7 +2101,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Value</para></entry>
+                  <entry><programlisting role="wsig">      Value</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -2111,14 +2129,13 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para
-                  role="wsig">ExecutePreparedSQLResponse</para></entry>
+                  <entry><programlisting role="wsig">ExecutePreparedSQLResponse</programlisting></entry>
 
                   <entry>Structure containing response</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Exceptions</para></entry>
+                  <entry><programlisting role="wsig">  Exceptions</programlisting></entry>
 
                   <entry>Structure containing exceptions. See <link
                   linkend="ExceptionStructure">Exceptions Structure</link> in
@@ -2126,38 +2143,32 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> ParentWuId</para></entry>
+                  <entry><programlisting role="wsig">  ParentWuId</programlisting></entry>
 
                   <entry>The Workunit ID for the parent workunit (the one with
                   the prepared SQL)</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Result</para></entry>
+                  <entry><programlisting role="wsig">  Result</programlisting></entry>
 
                   <entry>The query result</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> resultLimit</para></entry>
-
-                  <entry>The submitted result limit</entry>
-                </row>
-
-                <row>
-                  <entry><para role="wsig"> ResultWindowStart</para></entry>
+                  <entry><programlisting role="wsig">  ResultWindowStart</programlisting></entry>
 
                   <entry>The submitted starting record</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> ResultWindowCount</para></entry>
+                  <entry><programlisting role="wsig">  ResultWindowCount</programlisting></entry>
 
                   <entry>The submitted record count</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Workunit</para></entry>
+                  <entry><programlisting role="wsig">  Workunit</programlisting></entry>
 
                   <entry>Structure containing Workunit details. See <link
                   linkend="WUStructure">Workunit Structure</link> in Common
@@ -2259,7 +2270,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig">TableName</para></entry>
+                  <entry><programlisting role="wsig">TableName</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -2268,7 +2279,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> TableDescription</para></entry>
+                  <entry><programlisting role="wsig">  TableDescription</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -2276,7 +2287,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Overwrite</para></entry>
+                  <entry><programlisting role="wsig">  Overwrite</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -2285,7 +2296,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> EclFields</para></entry>
+                  <entry><programlisting role="wsig">  EclFields</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -2295,7 +2306,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> EclField</para></entry>
+                  <entry><programlisting role="wsig">    EclField</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -2303,7 +2314,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> FieldName </para></entry>
+                  <entry><programlisting role="wsig">      FieldName </programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -2311,7 +2322,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> EclFieldType</para></entry>
+                  <entry><programlisting role="wsig">      EclFieldType</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -2319,7 +2330,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Type</para></entry>
+                  <entry><programlisting role="wsig">      Type</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -2329,7 +2340,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Locale </para></entry>
+                  <entry><programlisting role="wsig">      Locale </programlisting></entry>
 
                   <entry>N</entry>
 
@@ -2337,7 +2348,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Length</para></entry>
+                  <entry><programlisting role="wsig">      Length</programlisting></entry>
 
                   <entry>Y*</entry>
 
@@ -2345,7 +2356,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Precision</para></entry>
+                  <entry><programlisting role="wsig">      Precision</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -2353,7 +2364,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> TargetCluster</para></entry>
+                  <entry><programlisting role="wsig">  TargetCluster</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -2361,7 +2372,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Owner</para></entry>
+                  <entry><programlisting role="wsig">  Owner</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -2369,7 +2380,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> DataSource</para></entry>
+                  <entry><programlisting role="wsig">  DataSource</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -2379,7 +2390,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> SprayedFileName</para></entry>
+                  <entry><programlisting role="wsig">    SprayedFileName</programlisting></entry>
 
                   <entry>Y**</entry>
 
@@ -2387,7 +2398,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> LandingZoneIP</para></entry>
+                  <entry><programlisting role="wsig">    LandingZoneIP</programlisting></entry>
 
                   <entry>Y**</entry>
 
@@ -2396,7 +2407,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> LandingZonePath</para></entry>
+                  <entry><programlisting role="wsig">    LandingZonePath</programlisting></entry>
 
                   <entry>Y**</entry>
 
@@ -2404,7 +2415,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> LandingZoneFileName</para></entry>
+                  <entry><programlisting role="wsig">    LandingZoneFileName</programlisting></entry>
 
                   <entry>Y**</entry>
 
@@ -2412,7 +2423,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> DataSourceType</para></entry>
+                  <entry><programlisting role="wsig">  DataSourceType</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -2420,7 +2431,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Type</para></entry>
+                  <entry><programlisting role="wsig">    Type</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -2428,7 +2439,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Params</para></entry>
+                  <entry><programlisting role="wsig">    Params</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -2438,7 +2449,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Param</para></entry>
+                  <entry><programlisting role="wsig">      Param</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -2446,7 +2457,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Name</para></entry>
+                  <entry><programlisting role="wsig">        Name</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -2454,7 +2465,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Values</para></entry>
+                  <entry><programlisting role="wsig">        Values</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -2462,7 +2473,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Value</para></entry>
+                  <entry><programlisting role="wsig">          Value</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -2470,7 +2481,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Wait</para></entry>
+                  <entry><programlisting role="wsig">  Wait</programlisting></entry>
 
                   <entry>N</entry>
 
@@ -2510,44 +2521,35 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para
-                  role="wsig">CreateTableAndLoadResponse</para></entry>
+                  <entry><programlisting role="wsig">CreateTableAndLoadResponse</programlisting></entry>
 
                   <entry>Structure containing response</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> TableName</para></entry>
+                  <entry><programlisting role="wsig">  TableName</programlisting></entry>
 
                   <entry>Name of the created table</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Success</para></entry>
+                  <entry><programlisting role="wsig">  Success</programlisting></entry>
 
                   <entry>Boolean indicator of success [1 = success]</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> EclRecordDefinition</para></entry>
+                  <entry><programlisting role="wsig">  EclRecordDefinition</programlisting></entry>
 
                   <entry>Supplied record definition in ECL format</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Workunit</para></entry>
+                  <entry><programlisting role="wsig">  Workunit</programlisting></entry>
 
                   <entry>Structure containing Workunit details. See <link
                   linkend="WUStructure">Workunit Structure</link> in Common
                   Structures</entry>
-                </row>
-
-                <row>
-                  <entry><para role="wsig"> Exceptions</para></entry>
-
-                  <entry>Structure containing exceptions. See <link
-                  linkend="ExceptionStructure">Exceptions Structure</link> in
-                  Common Structures</entry>
                 </row>
               </tbody>
             </tgroup>
@@ -2602,8 +2604,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para
-                  role="wsig">SetRelatedIndexesRequest</para></entry>
+                  <entry><programlisting role="wsig">SetRelatedIndexesRequest</programlisting></entry>
 
                   <entry></entry>
 
@@ -2611,7 +2612,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> RelatedIndexSets</para></entry>
+                  <entry><programlisting role="wsig">  RelatedIndexSets</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -2620,7 +2621,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> RelatedIndexSet</para></entry>
+                  <entry><programlisting role="wsig">    RelatedIndexSet</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -2628,7 +2629,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> FileName</para></entry>
+                  <entry><programlisting role="wsig">      FileName</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -2637,7 +2638,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Indexes</para></entry>
+                  <entry><programlisting role="wsig">      Indexes</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -2646,7 +2647,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Index</para></entry>
+                  <entry><programlisting role="wsig">        Index</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -2674,41 +2675,40 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para
-                  role="wsig">SetRelatedIndexesResponse</para></entry>
+                  <entry><programlisting role="wsig">SetRelatedIndexesResponse</programlisting></entry>
 
                   <entry>Structure containing response</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> RelatedIndexSets</para></entry>
+                  <entry><programlisting role="wsig">  RelatedIndexSets</programlisting></entry>
 
                   <entry>Structure containing one or more related index
                   sets</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> RelatedIndexSet</para></entry>
+                  <entry><programlisting role="wsig">    RelatedIndexSet</programlisting></entry>
 
                   <entry>Structure containing one related index set</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> FileName</para></entry>
+                  <entry><programlisting role="wsig">      FileName</programlisting></entry>
 
                   <entry>Logical filename to which the annotation was
                   added</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Indexes</para></entry>
+                  <entry><programlisting role="wsig">      Indexes</programlisting></entry>
 
                   <entry>Structure containing one or more indexes added to
                   annotation</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Index</para></entry>
+                  <entry><programlisting role="wsig">        Index</programlisting></entry>
 
                   <entry>Index added to annotation</entry>
                 </row>
@@ -2759,8 +2759,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para
-                  role="wsig">SetRelatedIndexesRequest</para></entry>
+                  <entry><programlisting role="wsig">SetRelatedIndexesRequest</programlisting></entry>
 
                   <entry></entry>
 
@@ -2768,7 +2767,7 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> FileNames</para></entry>
+                  <entry><programlisting role="wsig">  FileNames</programlisting></entry>
 
                   <entry>Y</entry>
 
@@ -2777,29 +2776,12 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> FileName</para></entry>
+                  <entry><programlisting role="wsig">    FileName</programlisting></entry>
 
                   <entry>Y</entry>
 
                   <entry>Logical filename to which the annotation is
                   added</entry>
-                </row>
-
-                <row>
-                  <entry><para role="wsig"> Indexes</para></entry>
-
-                  <entry>Y</entry>
-
-                  <entry>Structure containing one or more indexes to add to
-                  annotation</entry>
-                </row>
-
-                <row>
-                  <entry><para role="wsig"> Index</para></entry>
-
-                  <entry>Y</entry>
-
-                  <entry>Index to add to annotation</entry>
                 </row>
               </tbody>
             </tgroup>
@@ -2823,41 +2805,40 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para
-                  role="wsig">GetRelatedIndexesResponse</para></entry>
+                  <entry><programlisting role="wsig">GetRelatedIndexesResponse</programlisting></entry>
 
                   <entry>Structure containing response</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> RelatedIndexSets</para></entry>
+                  <entry><programlisting role="wsig">  RelatedIndexSets</programlisting></entry>
 
                   <entry>Structure containing one or more related index
                   sets</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> RelatedIndexSet</para></entry>
+                  <entry><programlisting role="wsig">    RelatedIndexSet</programlisting></entry>
 
                   <entry>Structure containing one related index set</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> FileName</para></entry>
+                  <entry><programlisting role="wsig">      FileName</programlisting></entry>
 
                   <entry>Logical filename to which the annotation was
                   added</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Indexes</para></entry>
+                  <entry><programlisting role="wsig">      Indexes</programlisting></entry>
 
                   <entry>Structure containing one or more indexes added to
                   annotation</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Index</para></entry>
+                  <entry><programlisting role="wsig">        Index</programlisting></entry>
 
                   <entry>Index added to annotation</entry>
                 </row>
@@ -2889,37 +2870,37 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig">Exceptions</para></entry>
+                  <entry><programlisting role="wsig">Exceptions</programlisting></entry>
 
                   <entry>Structure containing one or more exceptions</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Exception</para></entry>
+                  <entry><programlisting role="wsig">  Exception</programlisting></entry>
 
                   <entry>Structure containing one exception</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Code</para></entry>
+                  <entry><programlisting role="wsig">    Code</programlisting></entry>
 
                   <entry>Code</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Audience</para></entry>
+                  <entry><programlisting role="wsig">    Audience</programlisting></entry>
 
                   <entry>Audience</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Source</para></entry>
+                  <entry><programlisting role="wsig">    Source</programlisting></entry>
 
                   <entry>Source component</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Message</para></entry>
+                  <entry><programlisting role="wsig">    Message</programlisting></entry>
 
                   <entry>Error message</entry>
                 </row>
@@ -2950,91 +2931,91 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
-                  <entry><para role="wsig">Workunit</para></entry>
+                  <entry><programlisting role="wsig">Workunit</programlisting></entry>
 
                   <entry>Structure containing Workunit details</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Wuid</para></entry>
+                  <entry><programlisting role="wsig">  Wuid</programlisting></entry>
 
                   <entry>Workunit Id (WUID)</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Owner</para></entry>
+                  <entry><programlisting role="wsig">  Owner</programlisting></entry>
 
                   <entry>Job Owner (if any)</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Cluster</para></entry>
+                  <entry><programlisting role="wsig">  Cluster</programlisting></entry>
 
                   <entry>Target Cluster</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Jobname</para></entry>
+                  <entry><programlisting role="wsig">  Jobname</programlisting></entry>
 
                   <entry>Job Name (If any)</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> StateID</para></entry>
+                  <entry><programlisting role="wsig">  StateID</programlisting></entry>
 
                   <entry>State ID</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> State</para></entry>
+                  <entry><programlisting role="wsig">  State</programlisting></entry>
 
                   <entry>State (compiled, failed, etc)</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Protected</para></entry>
+                  <entry><programlisting role="wsig">  Protected</programlisting></entry>
 
                   <entry>Boolean indicator: Is Workunit protected?</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Snapshot</para></entry>
+                  <entry><programlisting role="wsig">  Snapshot</programlisting></entry>
 
                   <entry>Snapshot</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> IsPausing</para></entry>
+                  <entry><programlisting role="wsig">  IsPausing</programlisting></entry>
 
                   <entry>Boolean indicator of pause state</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> ThorLCR</para></entry>
+                  <entry><programlisting role="wsig">  ThorLCR</programlisting></entry>
 
                   <entry>Boolean indicator</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> EventSchedule</para></entry>
+                  <entry><programlisting role="wsig">  EventSchedule</programlisting></entry>
 
                   <entry>Boolean indicator</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> TotalCLusterTime</para></entry>
+                  <entry><programlisting role="wsig">  TotalCLusterTime</programlisting></entry>
 
                   <entry>Time taken to process on cluster</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Query</para></entry>
+                  <entry><programlisting role="wsig">  Query</programlisting></entry>
 
                   <entry>Query</entry>
                 </row>
 
                 <row>
-                  <entry><para role="wsig"> Result</para></entry>
+                  <entry><programlisting role="wsig">  Result</programlisting></entry>
 
                   <entry>Structure containing result (if any)</entry>
                 </row>
