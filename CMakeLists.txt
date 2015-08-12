@@ -69,19 +69,6 @@ IF ( NOT MAKE_DOCS_ONLY )
     ELSE()
         set(hpccstagever "${HPCC_MATURITY}${HPCC_SEQUENCE}")
     ENDIF()
-    #SET(HPCC_VERSION "${HPCC_MAJOR}.${HPCC_MINOR}.${HPCC_POINT}-${hpccstagever}")
-    #Due to unstandard HPCC versioning, we will only request versions up to the point value.
-    SET(HPCC_VERSION "${HPCC_MAJOR}.${HPCC_MINOR}.${HPCC_POINT}")
-
-    MATH( EXPR ceiling "${HPCC_MAJOR} + 1" )
-    SET(HPCC_VERSION_CEILING "${ceiling}.0.0")
-
-    MESSAGE("-- Minimum HPCC Platform version required: ${HPCC_MAJOR_REQ}.${HPCC_MINOR_REQ}")
-    MESSAGE("--- Building against HPCC Platform version: ${HPCC_MAJOR}.${HPCC_MINOR}.${HPCC_POINT}-${HPCC_MATURITY}${HPCC_SEQUENCE}")
-
-    IF (${HPCC_MAJOR_REQ} GREATER ${HPCC_MAJOR} OR ( ${HPCC_MAJOR_REQ} EQUAL ${HPCC_MAJOR} AND ${HPCC_MINOR_REQ} GREATER ${HPCC_MINOR} ))
-        MESSAGE(FATAL_ERROR "Project ${project} requires HPCC Platform version ${HPCC_MAJOR_REQ}.${HPCC_MINOR_REQ} or greater." )
-    ENDIF()
 
     SET ( VENDOR_NAME "HPCC SYSTEMS hpccsystems.com")
     SET ( PROJECT_DESCRIPTION "This package provides a read-only SQL interface into HPCC Systems. Requires build ${HPCC_VERSION} or above")
@@ -113,13 +100,17 @@ IF ( NOT MAKE_DOCS_ONLY )
     ###
     ## CPack install and packaging setup.
     ###
+    SET (VER_SEPARATOR "-")
+    IF ("${stagever}" MATCHES "^rc[0-9]+.*$")
+        SET (VER_SEPARATOR "~")
+    ENDIF ()
 
     SET(CPACK_PACKAGE_NAME ${CMAKE_PROJECT_NAME})
     SET(PACKAGE_FILE_NAME_PREFIX ${CMAKE_PROJECT_NAME})
 
     SET(CPACK_PACKAGE_VERSION_MAJOR ${majorver})
     SET(CPACK_PACKAGE_VERSION_MINOR ${minorver})
-    SET(CPACK_PACKAGE_VERSION_PATCH ${point}-${stagever})
+    SET(CPACK_PACKAGE_VERSION_PATCH ${point}${VER_SEPARATOR}${stagever})
 
     SET(CPACK_RPM_PACKAGE_VERSION "${version}")
     SET(CPACK_RPM_PACKAGE_RELEASE "${stagever}")
@@ -250,6 +241,24 @@ IF ( NOT MAKE_DOCS_ONLY )
             MESSAGE("WARNING: Unsupported package ${packageManagement}.")
         ENDIF()
     ENDIF ( UNIX )
+
+    #SET(HPCC_VERSION "${HPCC_MAJOR}.${HPCC_MINOR}.${HPCC_POINT}-${hpccstagever}")
+    #Due to unstandard HPCC versioning, we will only request versions up to the point value.
+    IF ( "${packageManagement}" STREQUAL "DEB" )
+        SET(HPCC_VERSION "${HPCC_MAJOR}.${HPCC_MINOR}.${HPCC_POINT}~")
+    ELSE()
+        SET(HPCC_VERSION "${HPCC_MAJOR}.${HPCC_MINOR}.${HPCC_POINT}")
+    ENDIF()
+
+    MATH( EXPR ceiling "${HPCC_MAJOR} + 1" )
+    SET(HPCC_VERSION_CEILING "${ceiling}.0.0")
+
+    MESSAGE("-- Minimum HPCC Platform version required: ${HPCC_MAJOR_REQ}.${HPCC_MINOR_REQ}")
+    MESSAGE("--- Building against HPCC Platform version: ${HPCC_MAJOR}.${HPCC_MINOR}.${HPCC_POINT}-${HPCC_MATURITY}${HPCC_SEQUENCE}")
+
+    IF (${HPCC_MAJOR_REQ} GREATER ${HPCC_MAJOR} OR ( ${HPCC_MAJOR_REQ} EQUAL ${HPCC_MAJOR} AND ${HPCC_MINOR_REQ} GREATER ${HPCC_MINOR} ))
+        MESSAGE(FATAL_ERROR "Project ${project} requires HPCC Platform version ${HPCC_MAJOR_REQ}.${HPCC_MINOR_REQ} or greater." )
+    ENDIF()
 
     IF ( EXISTS ${HPCC_WSSQL_SOURCE_DIR}/cmake_modules/dependencies/${packageRevision}.cmake.in )
         CONFIGURE_FILE(${HPCC_WSSQL_SOURCE_DIR}/cmake_modules/dependencies/${packageRevision}.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/dependencies/${packageRevision}.cmake)
