@@ -3667,6 +3667,158 @@ Select Firstname from persons where lastname = ‘Jones’ and zip &gt; ‘33445
     </sect1>
 
     <sect1>
+      <title>CREATE / LOAD</title>
+
+      <para><emphasis role="bold">create table</emphasis> <emphasis
+      role="bold">[if not exists]</emphasis> <emphasis>newtablename</emphasis>
+      <emphasis
+      role="bold">'('(</emphasis><emphasis>fieldname</emphasis><emphasis
+      role="bold">(</emphasis><emphasis>fieldtype</emphasis><emphasis
+      role="bold">[</emphasis><emphasis>fieldlen</emphasis><emphasis
+      role="bold">[</emphasis><emphasis>,precision</emphasis><emphasis
+      role="bold">]][</emphasis><emphasis
+      role="bold">UNSIGNED</emphasis><emphasis role="bold">]
+      ))+')'</emphasis></para>
+
+      <para><emphasis role="bold">[comment</emphasis> 'commenttext'<emphasis
+      role="bold">]<emphasis role="bold">[;]</emphasis></emphasis></para>
+
+      <para><emphasis role="bold">load data infile</emphasis>
+      '<emphasis>sourcetablename</emphasis>' <emphasis
+      role="bold">[connection</emphasis> '<emphasis>landingzoneIP</emphasis>'
+      <emphasis role="bold">directory</emphasis>
+      '<emphasis>landingzonepath</emphasis>'<emphasis
+      role="bold">]</emphasis></para>
+
+      <para><emphasis role="bold">into table</emphasis> <emphasis>newtablename
+      </emphasis></para>
+
+      <para><emphasis role="bold">[[fields | columns] [ terminated by
+      '</emphasis><emphasis>fieldDelimiter</emphasis>'<emphasis role="bold">]
+      [ enclosed by '</emphasis><emphasis>quoteChar</emphasis><emphasis
+      role="bold">']]</emphasis><emphasis role="bold">] [ escaped by
+      '</emphasis><emphasis>escapeChar</emphasis><emphasis
+      role="bold">']]</emphasis></para>
+
+      <para><emphasis role="bold">[lines [ terminated by
+      '</emphasis><emphasis>recordDelimiter</emphasis>'<emphasis
+      role="bold">]]<emphasis role="bold">[;]</emphasis></emphasis></para>
+
+      <para>The CREATE TABLE and LOAD DATA SQL statements allow you to create
+      a file in an HPCC Cluster that is accessible via WsSQL. You can populate
+      the new file from data in a logical file already on the HPCC cluster or
+      one that is on a landing zone.</para>
+
+      <para>All Create requests MUST be accompanied by a Load request. You
+      cannot create a table with the intention to load or insert data
+      later.</para>
+
+      <para><informaltable colsep="1" frame="all" rowsep="1">
+          <tgroup cols="2">
+            <colspec colwidth="123.45pt" />
+
+            <colspec />
+
+            <tbody>
+              <row>
+                <entry><emphasis>newtablename</emphasis></entry>
+
+                <entry>The logical filename to create on the HPCC cluster.
+                <emphasis role="bold">Note: </emphasis>Create and Load must
+                target the same file.</entry>
+              </row>
+
+              <row>
+                <entry><emphasis>commenttext</emphasis></entry>
+
+                <entry>A text comment to add to the logical file's
+                description</entry>
+              </row>
+
+              <row>
+                <entry><emphasis>sourcetablename</emphasis></entry>
+
+                <entry>The source file from which to extract data to load into
+                the new table. This can be a logical file on an HPCC cluster
+                or a physical file on a landing zone. For a landing zone file,
+                you MUST provide a <emphasis role="bold">connection</emphasis>
+                '<emphasis>landingzoneIP</emphasis>' and a <emphasis
+                role="bold">directory</emphasis>
+                '<emphasis>landingzonepath</emphasis>' (the path to the file).
+                For a landing zone file, be sure to use matching case for the
+                filename.</entry>
+              </row>
+
+              <row>
+                <entry><emphasis>landingzoneIP</emphasis></entry>
+
+                <entry>The IP Address or hostname of the HPCC Landing
+                Zone</entry>
+              </row>
+
+              <row>
+                <entry><emphasis>landingzonepath</emphasis></entry>
+
+                <entry>The path to the datafile on the Landing Zone</entry>
+              </row>
+
+              <row>
+                <entry><emphasis>fieldDelimiter</emphasis></entry>
+
+                <entry>String value for field delimiter</entry>
+              </row>
+
+              <row>
+                <entry><emphasis>quoteChar</emphasis></entry>
+
+                <entry>String Value for the quote character</entry>
+              </row>
+
+              <row>
+                <entry><emphasis>escapeChar</emphasis></entry>
+
+                <entry>String Value for the escape character</entry>
+              </row>
+
+              <row>
+                <entry><emphasis>recordDelimiter</emphasis></entry>
+
+                <entry>String value for record delimiter</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable></para>
+
+      <para>Examples:</para>
+
+      <programlisting>CREATE  TABLE newCustomerFile (id DECIMAL( 30, 5), mytint INT(9), 
+                               mydouble DOUBLE (5,3) UNSIGNED)
+COMMENT 'this file created via WsSQL and populated from file on lz';
+LOAD DATA INFILE 'CustomerData' CONNECTION '127.0.0.1' 
+                                DIRECTORY '/var/lib/HPCCSystems/mydropzone' 
+INTO TABLE newCustomerFile;
+
+CREATE  TABLE newCustomerFile2 (id DECIMAL( 30, 5), mytint INT(9), 
+                                mydouble DOUBLE (5,3) UNSIGNED)
+COMMENT 'this file created via WsSQL and populated from sprayed file';
+LOAD DATA INFILE 'thor::customerdata::customers' INTO TABLE newCustomerFile2
+
+CREATE  TABLE IF NOT EXISTS newCustomerFile3 (id DECIMAL( 30, 5), mytint INT(9), 
+                                              mydouble DOUBLE (5,3) UNSIGNED)
+COMMENT 'won’t overwrite';
+LOAD DATA INFILE 'thor::customerdata::customers' INTO TABLE newCustomerFile3
+
+CREATE  TABLE newCustomerFile4CSV (id DECIMAL( 30, 5), mytint INT(9), 
+                                   mydouble DOUBLE (5,3) UNSIGNED)
+COMMENT 'Loading CSV data';
+LOAD DATA INFILE 'somecsvfile.csv'  FIELDS TERMINATED BY ‘,’ ENCLOSED BY ‘”’ 
+                                    LINES TERMINATED BY ‘\n’ 
+INTO TABLE newCustomerFile4CSV
+
+</programlisting>
+    </sect1>
+
+    <sect1>
       <title>Supported Aggregate Functions</title>
 
       <para><emphasis
