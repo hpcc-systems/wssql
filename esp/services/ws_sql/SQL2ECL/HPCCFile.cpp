@@ -119,7 +119,7 @@ bool HPCCFile::getFileRecDef(StringBuffer & out, const char * structname, const 
         ForEachItemIn(rowindex, this->columns)
         {
            out.append(recordindent);
-           out.append(this->columns.item(rowindex).toEclRecString().toCharArray());
+           out.append(this->columns.item(rowindex).toEclRecString().str());
            out.append(";");
            out.append(linedelimiter);
         }
@@ -155,7 +155,7 @@ bool HPCCFile::getFileRecDefwithIndexpos(HPCCColumnMetaData * fieldMetaData, Str
         ForEachItemIn(rowindex, this->columns)
         {
            out.append("\t");
-           out.append(this->columns.item(rowindex).toEclRecString().toCharArray());
+           out.append(this->columns.item(rowindex).toEclRecString().str());
            out.append(";");
            out.append("\n");
         }
@@ -211,10 +211,10 @@ bool HPCCFile::setFileColumns(const char * eclString)
       colsize = fields->query().getPropInt("@size", -1);
       colindex = fields->query().getPropInt("@position", -1);
 
-      Owned<HPCCColumnMetaData> col = HPCCColumnMetaData::createHPCCColumnMetaData(colname.toCharArray());
-      col->setColumnType(ecltype.toCharArray());
+      Owned<HPCCColumnMetaData> col = HPCCColumnMetaData::createHPCCColumnMetaData(colname.str());
+      col->setColumnType(ecltype.str());
       col->setIndex(colindex);
-      col->setTableName(this->fullname.toCharArray());
+      col->setTableName(this->fullname.str());
 
       columns.append(*LINK(col));
     }

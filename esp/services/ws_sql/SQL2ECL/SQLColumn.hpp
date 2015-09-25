@@ -48,7 +48,7 @@ public:
 
     const char * getAlias() const
     {
-        return alias.toCharArray();
+        return alias.str();
     }
 
     void setAlias(const char * alias)
@@ -58,7 +58,7 @@ public:
 
     const char * getName()
     {
-        return name.toCharArray();
+        return name.str();
     }
 
     void setName(const char * name)
@@ -68,7 +68,7 @@ public:
 
     const char *  getParenttable() const
     {
-        return parenttable.toCharArray();
+        return parenttable.str();
     }
 
     void setParenttable(const char * parenttable)
@@ -92,14 +92,14 @@ public:
     const char * getColumnNameOrAlias()
     {
         if (alias.length() > 0)
-            return alias.toCharArray();
+            return alias.str();
         else
-            return name.toCharArray();
+            return name.str();
     }
 
     const char * getColumnType() const
     {
-       return columnType.toCharArray();
+       return columnType.str();
     }
 
     void setColumnType(const char* columnType)
@@ -156,9 +156,9 @@ public:
     StringBuffer toEclRecString()
     {
         StringBuffer result;
-        result.append(this->columnType.toCharArray());
+        result.append(this->columnType.str());
         result.append(" ");
-        result.append(this->columnName.toCharArray());
+        result.append(this->columnName.str());
 
         return result;
     }
