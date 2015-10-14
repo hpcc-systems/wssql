@@ -120,5 +120,5 @@ TARGET_LINK_LIBRARIES (
         securesocket
         dalibase
 
-        ${ANTLR3c_LIBRARIES}
+        ${libantlr3c}
     )
