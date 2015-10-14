@@ -99,7 +99,6 @@ IF (NOT ANTLR3c_FOUND)
     add_dependencies(libantlr3c_external DEPENDS libantlr3c-3.4-expand)
 
     add_library(libantlr3c UNKNOWN IMPORTED)
-    #add_library(libantlr3c STATIC IMPORTED)
     set_property(TARGET libantlr3c PROPERTY IMPORTED_LOCATION ${ANTLRcBUILDLOCATION_LIBRARY}/${ANTLR3c_lib})
 
     add_dependencies(libantlr3c libantlr3c_external)
