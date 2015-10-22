@@ -157,6 +157,11 @@ IF ( NOT MAKE_DOCS_ONLY )
             set(CPACK_PACKAGE_FILE_NAME "${PACKAGE_FILE_NAME_PREFIX}-${version}-${stagever}${packageRevisionArch}")
         ELSEIF ( "${packageManagement}" STREQUAL "RPM" )
             set(CPACK_PACKAGE_FILE_NAME "${PACKAGE_FILE_NAME_PREFIX}-${version}-${stagever}.${packageRevisionArch}")
+            set ( CPACK_RPM_SPEC_MORE_DEFINE
+"%define _use_internal_dependency_generator 0
+%define __getdeps() while read file; do /usr/lib/rpm/rpmdeps -%{1} ${file} | %{__grep} -v libantlr3c.so ; done | /bin/sort -u
+%define __find_provides /bin/sh -c '%{__getdeps P}'
+%define __find_requires /bin/sh -c '%{__getdeps R}'" )
         ELSE ()
             set(CPACK_PACKAGE_FILE_NAME "${PACKAGE_FILE_NAME_PREFIX}_${version}-${stagever}${CPACK_SYSTEM_NAME}")
         ENDIF ()
