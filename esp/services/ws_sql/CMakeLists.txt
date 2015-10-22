@@ -119,6 +119,5 @@ TARGET_LINK_LIBRARIES (
         esphttp
         securesocket
         dalibase
-
-        ${libantlr3c}
+        libantlr3c
     )
