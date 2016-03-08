@@ -96,7 +96,7 @@ bool HPCCFileCache::cacheAllHpccFiles(const char * filterby)
     else
         filter.append("*");
 
-    Owned<IDFAttributesIterator> fi = queryDistributedFileDirectory().getDFAttributesIterator(filter, userdesc.get(), true, false, NULL);
+    Owned<IDFAttributesIterator> fi = queryDistributedFileDirectory().getDFAttributesIterator(filter, userdesc.get(), true, true, NULL);
     if(!fi)
         throw MakeStringException(-1,"Cannot get information from file system.");
 
@@ -214,6 +214,11 @@ HPCCFile * HPCCFileCache::fetchHpccFileByName(const char * filename, const char 
             throw MakeStringException(-1,"File %s does not contain required ECL record layout.",filename);
 
         file->setOwner(properties.queryProp("@owner"));
+        IDistributedSuperFile *sf = df->querySuperFile();
+        if(sf)
+        {
+            file->setIsSuperfile(true);
+        }
 
         //unfortunately @format sometimes holds the file format, sometimes @kind does
         const char * kind = properties.queryProp("@kind");
