@@ -1245,12 +1245,12 @@ void HPCCSQLTreeWalker::verifyAndDisambiguateNameFromList(IArrayOf<ISQLExpressio
                            (selcolalias != NULL && stricmp (coltoverify->getName(), selcolalias)==0))
                         {
                             coltoverify->setName(selcolname);
-                            if (selcolexp->getAlias() != NULL)
+                            if (selcolalias && *selcolalias)
                             {
                                 coltoverify->setAlias(selcolalias);
-                                found = true;
-                                break;
                             }
+                            found = true;
+                            break;
                         }
                     }
                 }
@@ -1278,7 +1278,7 @@ void HPCCSQLTreeWalker::verifyColumn(SQLFieldValueExpression * col)
                     HPCCColumnMetaData * fcol = file->getColumn(selcolname);
                     if (fcol)
                         col->setECLType(fcol->getColumnType());
-                    else
+                    else //This exception doesn't allows us to validate direct references to aliases from select list
                         throw MakeStringException(-1, "INVALID COLUMN FOUND: %s.%s\n", selcolparent, selcolname );
                 }
                 else
