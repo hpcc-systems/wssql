@@ -1209,29 +1209,54 @@ void HPCCSQLTreeWalker::verifyAndDisambiguateNameFromList(IArrayOf<ISQLExpressio
             bool found = false;
             ISQLExpression * coltoverify =  &explist->item(i);
 
+            //we're trying to verify the list (groupby or sortby) contains only coloumns which appear in the select list
             ForEachItemIn(sellistidx, selectList)
             {
                 ISQLExpression * selcolexp = &selectList.item(sellistidx);
-                const char * selcolname = selcolexp->getName();
-                if (selcolname && *selcolname)
+                if (selcolexp && selcolexp->getExpType() == Function_ExpressionType)
                 {
-                    const char * selcolalias = selcolexp->getAlias();
+                    SQLFunctionExpression * currentfunccol = (SQLFunctionExpression *)selcolexp;
 
-                    if (stricmp (coltoverify->getName(), selcolname)==0 ||
-                       (selcolalias != NULL && stricmp (coltoverify->getName(), selcolalias)==0))
+                    IArrayOf<ISQLExpression> * funcparams = currentfunccol->getParams();
+                    ForEachItemIn(paramidx, *funcparams)
                     {
-                        coltoverify->setName(selcolname);
-                        if (selcolexp->getAlias() != NULL)
+                        ISQLExpression * param = &(funcparams->item(paramidx));
+                        if (param)
                         {
-                            coltoverify->setAlias(selcolalias);
-                            found = true;
-                            break;
+                            const char * paramname = param->getName();
+                            if (stricmp (coltoverify->getName(), paramname)==0)
+                            {
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                else if (selcolexp && selcolexp->getExpType() == Value_ExpressionType)
+                    continue;
+                else
+                {
+                    const char * selcolname = selcolexp->getName();
+                    if (selcolname && *selcolname)
+                    {
+                        const char * selcolalias = selcolexp->getAlias();
+
+                        if (stricmp (coltoverify->getName(), selcolname)==0 ||
+                           (selcolalias != NULL && stricmp (coltoverify->getName(), selcolalias)==0))
+                        {
+                            coltoverify->setName(selcolname);
+                            if (selcolexp->getAlias() != NULL)
+                            {
+                                coltoverify->setAlias(selcolalias);
+                                found = true;
+                                break;
+                            }
                         }
                     }
                 }
             }
             if (!found)
-                throw MakeStringException(-1, "Could not verify field: %s", coltoverify->getName());
+                throw MakeStringException(-1, "Could not verify field: %s. It does not appear in SELECT list.", coltoverify->getName());
         }
     }
 }
