@@ -100,7 +100,6 @@ bool HPCCFileCache::cacheAllHpccFiles(const char * filterby)
     if(!fi)
         throw MakeStringException(-1,"Cannot get information from file system.");
 
-
     success = true;
     ForEach(*fi)
     {
@@ -249,7 +248,6 @@ HPCCFile * HPCCFileCache::fetchHpccFileByName(const char * filename, const char 
                         int columnCount = meta.getColumnCount();
                         int keyedColumnCount = meta.getNumKeyedColumns();
 
-                        DBGLOG("Keyed file %s column count: %d, keyedcolumncount: %d", file->getFullname(), columnCount, keyedColumnCount);
                         for (int i = 0; i < keyedColumnCount; i++)
                         {
                             SCMStringBuffer columnLabel;

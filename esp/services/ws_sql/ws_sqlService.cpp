@@ -673,6 +673,7 @@ printTree(sqlAST, 0);
 
 bool CwssqlEx::getWUResult(IEspContext &context, const char * wuid, StringBuffer &result, unsigned start, unsigned count, int sequence, const char * dsname, const char * schemaname)
 {
+    context.addTraceSummaryTimeStamp("GettingResults");
     if (wuid && *wuid)
     {
         Owned<IWorkUnitFactory> factory = getWorkUnitFactory(context.querySecManager(), context.queryUser());
@@ -694,7 +695,11 @@ bool CwssqlEx::getWUResult(IEspContext &context, const char * wuid, StringBuffer
                Owned<IResultSetFactory> factory = getResultSetFactory(context.queryUserId(), context.queryPassword());
                Owned<INewResultSet> nr = factory->createNewResultSet(wuid, sequence, NULL);
                if (nr.get())
+               {
+                   context.addTraceSummaryTimeStamp("GettingXMLResults");
                    getResultXml(resultXML, nr.get(), dsname, start, count, schemaname);
+                   context.addTraceSummaryTimeStamp("ExitingXMLResults");
+               }
                else
                    return false;
                break;
@@ -702,6 +707,7 @@ bool CwssqlEx::getWUResult(IEspContext &context, const char * wuid, StringBuffer
            default:
                break;
         }
+        context.addTraceSummaryTimeStamp("ExitGettingResults");
         return true;
     }
     return false;
@@ -909,9 +915,11 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
                 if (querytype == SQLTypeCreateAndLoad)
                     clonable = false;
 
-                ESPLOG(LogNormal, "WsSQL: generating ECL...");
+                //ESPLOG(LogNormal, "WsSQL: generating ECL...");
+                context.addTraceSummaryTimeStamp("StartECLGenerate");
                 ECLEngine::generateECL(parsedSQL,ecltext);
-                ESPLOG(LogNormal, "WsSQL: Finished generating ECL...");
+                context.addTraceSummaryTimeStamp("EndECLGenerate");
+                //ESPLOG(LogNormal, "WsSQL: Finished generating ECL...");
 
                 if (isEmpty(ecltext))
                    throw MakeStringException(1,"Could not generate ECL from SQL.");
@@ -942,10 +950,10 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
                 wu->commit();
                 wu.clear();
 
-                ESPLOG(LogMax, "WsSQL: compiling WU...");
+                context.addTraceSummaryTimeStamp("StartWUCompile");
                 WsWuHelpers::submitWsWorkunit(context, compiledwuid.str(), cluster, NULL, 0, true, false, false, NULL, NULL, NULL);
                 waitForWorkUnitToCompile(compiledwuid.str(), req.getWait());
-                ESPLOG(LogMax, "WsSQL: finish compiling WU...");
+                context.addTraceSummaryTimeStamp("EndWUCompile");
             }
         }
 
@@ -976,15 +984,17 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
 
             if (clonable)
             {
-                ESPLOG(LogMax, "WsSQL: cloning and executing WU...");
+                context.addTraceSummaryTimeStamp("StartWUCloneExe");
                 cloneAndExecuteWU(context, compiledwuid.str(), runningwuid, xmlparams.str(), NULL, NULL, cluster);
+                context.addTraceSummaryTimeStamp("EndWUCloneExe");
                 if(cacheeligible && !isQueryCached(normalizedSQL.str()))
                     addQueryToCache(normalizedSQL.str(), compiledwuid.str());
             }
             else
             {
-                ESPLOG(LogMax, "WsSQL: executing WU(%s)...", compiledwuid.str());
+                context.addTraceSummaryTimeStamp("StartWUSubmit");
                 WsWuHelpers::submitWsWorkunit(context, compiledwuid.str(), cluster, NULL, 0, false, true, true, NULL, NULL, NULL);
+                context.addTraceSummaryTimeStamp("EndWUSubmit");
                 runningwuid.set(compiledwuid.str());
                 if (cacheeligible)
                     addQueryToCache(normalizedSQL.str(), runningwuid.str());
@@ -993,9 +1003,9 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
             int timeToWait = req.getWait();
             if (timeToWait != 0)
             {
-                ESPLOG(LogMax, "WsSQL: waiting on WU(%s)...", runningwuid.str());
+                context.addTraceSummaryTimeStamp("StartWUProcessWait");
                 waitForWorkUnitToComplete(runningwuid.str(), timeToWait);
-                ESPLOG(LogMax, "WsSQL: finished waiting on WU(%s)...", runningwuid.str());
+                context.addTraceSummaryTimeStamp("EndWUProcessWait");
             }
 
             if (strcmp(runningwuid.str(), compiledwuid.str())!=0)
@@ -1032,7 +1042,7 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
     //{
     //    me->append(*MakeStringException(0,"Unknown exception submitting %s",wuid.str()));
     //}
-
+    context.addTraceSummaryTimeStamp("OnExecuteSQL");
     return true;
 }
 
