@@ -36,11 +36,10 @@ HPCCFile::HPCCFile()
 HPCCFile::~HPCCFile()
 {
 #ifdef _DEBUG
-    fprintf(stderr, "Leaving HPCCFile");
+    fprintf(stderr, "\nLeaving HPCCFile\n\t");
 #endif
 
     columns.kill(false);
-
 }
 
 bool HPCCFile::validateFileName(const char * fullname)
