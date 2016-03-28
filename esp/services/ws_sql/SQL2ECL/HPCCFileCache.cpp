@@ -115,6 +115,7 @@ bool HPCCFileCache::cacheAllHpccFiles(const char * filterby)
        StringBuffer name(attr.queryProp("@name"));
 
        if (name.length()>0 && HPCCFile::validateFileName(name.str()))
+       //if (name.length()>0)
        {
            const char * cachedKey = cacheHpccFileByName(name.str(), true);
            success &= (cachedKey && *cachedKey);
@@ -287,8 +288,18 @@ HPCCFile * HPCCFileCache::fetchHpccFileByName(const char * filename, const char 
 
         if (file && ( file->containsNestedColumns() || strncmp(file->getFormat(), "XML", 3)==0))
             throw MakeStringException(-1,"Nested data files not supported: %s.",filename);
-
     }
+
+    catch (IException * se)
+    {
+        StringBuffer s;
+        se->errorMessage(s);
+        DBGLOG("Error fetching file %s info: %s", filename, s.str());
+        se->Release();
+        if (file)
+            file.clear();
+    }
+
     catch (...)
     {
         if (file)
