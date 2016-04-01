@@ -3,7 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <book lang="en_US" xml:base="../">
   <bookinfo>
-    <title>WsSQL ESP Web Service Guide (Technical Preview)</title>
+    <title>WsSQL ESP Web Service Guide </title>
 
     <mediaobject>
       <imageobject>
@@ -3759,8 +3759,7 @@ Select Firstname from persons where lastname = ‘Jones’ and zip &gt; ‘33445
               <row>
                 <entry><emphasis>landingzonepath</emphasis></entry>
 
-                <entry>The path to the datafile on the Landing Zonebut
-                </entry>
+                <entry>The path to the datafile on the Landing Zonebut</entry>
               </row>
 
               <row>
