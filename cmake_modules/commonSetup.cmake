@@ -22,8 +22,8 @@
 # sets up various cmake options.
 #########################################################
 
-IF ("${COMMONSETUP_DONE}" STREQUAL "")
-  SET (COMMONSETUP_DONE 1)
+IF ("${WSSQL_COMMONSETUP_DONE}" STREQUAL "")
+  SET (WSSQL_COMMONSETUP_DONE 1)
 
   MACRO (MACRO_ENSURE_OUT_OF_SOURCE_BUILD _errorMessage)
     STRING(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" insource)
@@ -551,4 +551,4 @@ IF ("${COMMONSETUP_DONE}" STREQUAL "")
     message(STATUS "Updated ${cpackvar} to ${${cpackvar}}")
   endfunction()
 
-endif ("${COMMONSETUP_DONE}" STREQUAL "")
+endif ("${WSSQL_COMMONSETUP_DONE}" STREQUAL "")
