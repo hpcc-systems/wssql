@@ -255,11 +255,12 @@ IF ( NOT MAKE_DOCS_ONLY )
         SET(HPCC_VERSION "${HPCC_MAJOR}.${HPCC_MINOR}.${HPCC_POINT}")
     ENDIF()
 
-    MATH( EXPR ceiling "${HPCC_MAJOR} + 1" )
-    SET(HPCC_VERSION_CEILING "${ceiling}.0.0")
+    MATH( EXPR minor_ceiling "${HPCC_MINOR} + 1")
+    SET(HPCC_VERSION_CEILING "${HPCC_MAJOR}.${minor_ceiling}.0")
 
-    MESSAGE("-- Minimum HPCC Platform version required: ${HPCC_MAJOR_REQ}.${HPCC_MINOR_REQ}")
-    MESSAGE("--- Building against HPCC Platform version: ${HPCC_MAJOR}.${HPCC_MINOR}.${HPCC_POINT}-${HPCC_MATURITY}${HPCC_SEQUENCE}")
+    MESSAGE("-- Building against HPCC Platform version: ${HPCC_MAJOR}.${HPCC_MINOR}.${HPCC_POINT}-${HPCC_MATURITY}${HPCC_SEQUENCE}")
+    MESSAGE("--- Minimum buildtime HPCC Platform version required: ${HPCC_MAJOR_REQ}.${HPCC_MINOR_REQ}")
+    MESSAGE("--- Maximum runtime HPCC Platform version allowed:  ${HPCC_VERSION_CEILING}")
 
     IF (${HPCC_MAJOR_REQ} GREATER ${HPCC_MAJOR} OR ( ${HPCC_MAJOR_REQ} EQUAL ${HPCC_MAJOR} AND ${HPCC_MINOR_REQ} GREATER ${HPCC_MINOR} ))
         MESSAGE(FATAL_ERROR "Project ${project} requires HPCC Platform version ${HPCC_MAJOR_REQ}.${HPCC_MINOR_REQ} or greater." )
