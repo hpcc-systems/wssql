@@ -3,9 +3,10 @@
 ## The WSSQL ESP plug-in must be built against an HPCC 
 ## source tree of at least this version: 
 ###
+
 set ( HPCC_PROJECT_REQ "community" )
-set ( HPCC_MAJOR_REQ 5 )
-set ( HPCC_MINOR_REQ 2 )
+set ( HPCC_MAJOR_REQ 6 )
+set ( HPCC_MINOR_REQ 0 )
 set ( HPCC_POINT_REQ 0 )
 set ( HPCC_MATURITY_REQ "trunk" )
 set ( HPCC_SEQUENCE_REQ 1 )
