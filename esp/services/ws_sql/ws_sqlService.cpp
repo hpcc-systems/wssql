@@ -811,6 +811,23 @@ bool CwssqlEx::onGetRelatedIndexes(IEspContext &context, IEspGetRelatedIndexesRe
     return true;
 }
 
+void CwssqlEx::processMultipleClusterOption(StringArray & clusters, const char  * targetcluster, StringBuffer & hashoptions)
+{
+	int clusterscount = clusters.length();
+	if (clusterscount > 0)
+	{
+		hashoptions.appendf("\n#OPTION('AllowedClusters', '%s,", targetcluster);
+		ForEachItemIn(i,clusters)
+		{
+			if (!isValidCluster(clusters.item(i)))
+				throw MakeStringException(-1, "Invalid alternate cluster name: %s", clusters.item(i));
+
+			hashoptions.appendf("%s%s", clusters.item(i), i + 1 == clusterscount ? "" : ",");
+		}
+		hashoptions.append("');\n#OPTION('AllowAutoQueueSwitch', TRUE);\n\n");
+	}
+}
+
 bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IEspExecuteSQLResponse &resp)
 {
     try
@@ -829,7 +846,14 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
         if (sqltext.length() <= 0)
             throw MakeStringException(1,"Empty SQL request.");
 
-        const char  *cluster = req.getTargetCluster();
+        const char * cluster = req.getTargetCluster();
+
+        StringArray & alternates = req.getAlternateClusters();
+
+        StringBuffer hashoptions;
+        if (alternates.length() > 0)
+            processMultipleClusterOption(alternates, cluster, hashoptions);
+
         SCMStringBuffer compiledwuid;
         int resultLimit = req.getResultLimit();
         __int64 resultWindowStart = req.getResultWindowStart();
@@ -896,6 +920,7 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
             if (querytype == SQLTypeCall)
             {
                 ESPLOG(LogMax, "WsSQL: Processing call query...");
+
                 if (!isEmpty(cluster))
                     ESPLOG(LogMax, "WsSQL: Target Cluster was provided on a query of type CALL but will be ignored.");
 
@@ -915,11 +940,12 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
                 if (querytype == SQLTypeCreateAndLoad)
                     clonable = false;
 
-                //ESPLOG(LogNormal, "WsSQL: generating ECL...");
                 context.addTraceSummaryTimeStamp("StartECLGenerate");
-                ECLEngine::generateECL(parsedSQL,ecltext);
+                ECLEngine::generateECL(parsedSQL, ecltext);
+                if (hashoptions.length() > 0)
+                    ecltext.insert(0, hashoptions.str());
+
                 context.addTraceSummaryTimeStamp("EndECLGenerate");
-                //ESPLOG(LogNormal, "WsSQL: Finished generating ECL...");
 
                 if (isEmpty(ecltext))
                    throw MakeStringException(1,"Could not generate ECL from SQL.");
@@ -1287,7 +1313,13 @@ bool CwssqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, IE
             }
         }
 
-        const char  *cluster = req.getTargetCluster();
+        const char * cluster = req.getTargetCluster();
+
+        StringBuffer hashoptions;
+        StringArray & alternates = req.getAlternateClusters();
+
+		if (alternates.length() > 0)
+			processMultipleClusterOption(alternates, cluster, hashoptions);
 
         StringBuffer xmlparams;
         StringBuffer normalizedSQL = parsedSQL->getNormalizedSQL();
@@ -1357,7 +1389,9 @@ bool CwssqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, IE
                 if (!isValidCluster(cluster))
                     throw MakeStringException(-1/*ECLWATCH_INVALID_CLUSTER_NAME*/, "Invalid cluster name: %s", cluster);
 
-                ECLEngine::generateECL(parsedSQL,ecltext);
+                ECLEngine::generateECL(parsedSQL, ecltext);
+                if (hashoptions.length() > 0)
+                    ecltext.insert(0, hashoptions.str());
 #if defined _DEBUG
                 fprintf(stderr, "GENERATED ECL:\n%s\n", ecltext.str());
 #endif
