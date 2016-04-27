@@ -813,19 +813,19 @@ bool CwssqlEx::onGetRelatedIndexes(IEspContext &context, IEspGetRelatedIndexesRe
 
 void CwssqlEx::processMultipleClusterOption(StringArray & clusters, const char  * targetcluster, StringBuffer & hashoptions)
 {
-	int clusterscount = clusters.length();
-	if (clusterscount > 0)
-	{
-		hashoptions.appendf("\n#OPTION('AllowedClusters', '%s,", targetcluster);
-		ForEachItemIn(i,clusters)
-		{
-			if (!isValidCluster(clusters.item(i)))
-				throw MakeStringException(-1, "Invalid alternate cluster name: %s", clusters.item(i));
+    int clusterscount = clusters.length();
+    if (clusterscount > 0)
+    {
+        hashoptions.appendf("\n#OPTION('AllowedClusters', '%s", targetcluster);
+        ForEachItemIn(i,clusters)
+        {
+            if (!isValidCluster(clusters.item(i)))
+                throw MakeStringException(-1, "Invalid alternate cluster name: %s", clusters.item(i));
 
-			hashoptions.appendf("%s%s", clusters.item(i), i + 1 == clusterscount ? "" : ",");
-		}
-		hashoptions.append("');\n#OPTION('AllowAutoQueueSwitch', TRUE);\n\n");
-	}
+            hashoptions.appendf(",%s", clusters.item(i));
+        }
+        hashoptions.append("');\n#OPTION('AllowAutoQueueSwitch', TRUE);\n\n");
+    }
 }
 
 bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IEspExecuteSQLResponse &resp)
@@ -834,6 +834,8 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
     {
         if (!context.validateFeatureAccess(WSSQLACCESS, SecAccess_Write, false))
             throw MakeStringException(-1, "Failed to execute SQL. Permission denied.");
+
+        double version = context.getClientVersion();
 
         StringBuffer sqltext;
         StringBuffer ecltext;
@@ -848,11 +850,13 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
 
         const char * cluster = req.getTargetCluster();
 
-        StringArray & alternates = req.getAlternateClusters();
-
         StringBuffer hashoptions;
-        if (alternates.length() > 0)
-            processMultipleClusterOption(alternates, cluster, hashoptions);
+        if (version > 3.03)
+		{
+			StringArray & alternates = req.getAlternateClusters();
+			if (alternates.length() > 0)
+				processMultipleClusterOption(alternates, cluster, hashoptions);
+		}
 
         SCMStringBuffer compiledwuid;
         int resultLimit = req.getResultLimit();
@@ -888,6 +892,7 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
 
         StringBuffer xmlparams;
         StringBuffer normalizedSQL = parsedSQL->getNormalizedSQL();
+
         normalizedSQL.append(" | --TC=").append(cluster);
         if (username.length() > 0)
             normalizedSQL.append("--USER=").append(username.str());
@@ -896,6 +901,8 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
         const char * wuusername = req.getUserName();
         if (wuusername && *wuusername)
             normalizedSQL.append("--WUOWN=").append(wuusername);
+        if (hashoptions.length()>0)
+        	normalizedSQL.append("--HO=").append(hashoptions.str());
 
         ESPLOG(LogMax, "WsSQL: getWorkUnitFactory...");
         Owned<IWorkUnitFactory> factory = getWorkUnitFactory(context.querySecManager(), context.queryUser());
@@ -942,6 +949,7 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
 
                 context.addTraceSummaryTimeStamp("StartECLGenerate");
                 ECLEngine::generateECL(parsedSQL, ecltext);
+
                 if (hashoptions.length() > 0)
                     ecltext.insert(0, hashoptions.str());
 
@@ -1290,6 +1298,8 @@ bool CwssqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, IE
         if (!context.validateFeatureAccess(WSSQLACCESS, SecAccess_Write, false))
             throw MakeStringException(-1, "Failed to Prepare SQL. Permission denied.");
 
+        double version = context.getClientVersion();
+
         StringBuffer username;
         context.getUserID(username);
         const char* passwd = context.queryPassword();
@@ -1316,16 +1326,20 @@ bool CwssqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, IE
         const char * cluster = req.getTargetCluster();
 
         StringBuffer hashoptions;
-        StringArray & alternates = req.getAlternateClusters();
-
-		if (alternates.length() > 0)
-			processMultipleClusterOption(alternates, cluster, hashoptions);
+        if (version > 3.03)
+		{
+			StringArray & alternates = req.getAlternateClusters();
+			if (alternates.length() > 0)
+				processMultipleClusterOption(alternates, cluster, hashoptions);
+		}
 
         StringBuffer xmlparams;
         StringBuffer normalizedSQL = parsedSQL->getNormalizedSQL();
         normalizedSQL.append(" | --TC=").append(cluster);
         if (username.length() > 0)
             normalizedSQL.append("--USER=").append(username.str());
+        if (hashoptions.length()>0)
+        	normalizedSQL.append("--HO=").append(hashoptions.str());
 
         Owned<IWorkUnitFactory> factory = getWorkUnitFactory(context.querySecManager(), context.queryUser());
 
@@ -1392,6 +1406,7 @@ bool CwssqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, IE
                 ECLEngine::generateECL(parsedSQL, ecltext);
                 if (hashoptions.length() > 0)
                     ecltext.insert(0, hashoptions.str());
+
 #if defined _DEBUG
                 fprintf(stderr, "GENERATED ECL:\n%s\n", ecltext.str());
 #endif
