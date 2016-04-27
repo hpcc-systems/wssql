@@ -117,6 +117,7 @@ public:
 
     void refreshValidClusters();
     bool isValidCluster(const char *cluster);
+    void processMultipleClusterOption(StringArray & clusters, const char  * targetcluster, StringBuffer & hashoptions);
 
     void fetchRequiredHpccFiles(IArrayOf<SQLTable> * sqltables);
     static void fetchRequiredHpccFiles(IArrayOf<SQLTable> * sqltables, HpccFiles * hpccfilecache);

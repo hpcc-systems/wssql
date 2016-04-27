@@ -89,6 +89,7 @@ ESPrequest PrepareSQLRequest
 {
     [rows(28), cols(80)] string SqlText;
     string TargetCluster; //where should this be compiled
+    [min_ver("3.04")] ESParray<string, AlternateCluster> AlternateClusters; //Although this appears to be a runtime option, in ECL this is a compiletime option.
     string TargetQuerySet; //pertaining to Stored Proc calls
     int Wait(-1);
     //not so sure about this setting result limits in the prepare
@@ -106,6 +107,7 @@ ESPrequest ExecuteSQLRequest
     [rows(28), cols(80)] string SqlText;
     string UserName;
     string TargetCluster; //where should this compile and execute
+    [min_ver("3.04")] ESParray<string, AlternateCluster> AlternateClusters;
     string TargetQuerySet; //pertaining to Stored Proc calls
     boolean SuppressResults(false);
     boolean SuppressXmlSchema(true);
@@ -321,7 +323,7 @@ ESPresponse CreateTableAndLoadResponse
     ESPstruct ECLWorkunit Workunit;
 };
 
-ESPservice [version("3.03"), default_client_version("3.03"), exceptions_inline("./smc_xslt/exceptions.xslt")] wssql
+ESPservice [version("3.04"), default_client_version("3.04"), exceptions_inline("./smc_xslt/exceptions.xslt")] wssql
 {
     ESPmethod [min_ver("3.03")] CreateTableAndLoad(CreateTableAndLoadRequest, CreateTableAndLoadResponse);
     ESPmethod [min_ver("3.02")] SetRelatedIndexes(SetRelatedIndexesRequest, SetRelatedIndexesResponse);
