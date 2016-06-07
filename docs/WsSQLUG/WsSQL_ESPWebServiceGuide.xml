@@ -3,7 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <book lang="en_US" xml:base="../">
   <bookinfo>
-    <title>WsSQL ESP Web Service Guide </title>
+    <title>WsSQL ESP Web Service Guide</title>
 
     <mediaobject>
       <imageobject>
@@ -1364,6 +1364,10 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
 <emphasis role="greenbold">&lt;!-- Use either TargetCluster or TargetQuerySet, not both --&gt;</emphasis>
 <emphasis role="greenbold">&lt;!-- If stored procedure was fully qualified, you can omit TargetQuerySet --&gt;</emphasis>
     &lt;TargetCluster&gt;<emphasis role="bluebold">thor</emphasis>&lt;/TargetCluster&gt;
+    &lt;AlternateClusters&gt;
+      &lt;AlternateCluster&gt;thor2&lt;/AlternateCluster&gt;
+      &lt;AlternateCluster&gt;thor3&lt;/AlternateCluster&gt;
+    &lt;/AlternateClusters&gt;
     &lt;TargetQuerySet&gt;<emphasis role="bluebold"></emphasis>&lt;/TargetQuerySet&gt;
     &lt;SuppressResults&gt;<emphasis role="bluebold">1</emphasis>&lt;/SuppressResults&gt;
     &lt;SuppressXmlSchema&gt;<emphasis role="bluebold">0</emphasis>&lt;/SuppressXmlSchema&gt;
@@ -1429,6 +1433,26 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
 
                   <entry>If you are executing prepared SQL using a SELECT or
                   SELECT JOIN, you must specify the TargetCluster.</entry>
+                </row>
+
+                <row>
+                  <entry><programlisting role="wsig">  AlternateClusters</programlisting></entry>
+
+                  <entry>N **</entry>
+
+                  <entry>An array of one or more AlternateCluster tags.
+                  </entry>
+                </row>
+
+                <row>
+                  <entry><programlisting role="wsig">    AlternateCluster</programlisting></entry>
+
+                  <entry>N **</entry>
+
+                  <entry>If your system is configured to support multiple
+                  clusters, specify each allowed clusters inside the
+                  AlternateCluster tag. The generated code will specify to
+                  automatically switch to an available cluster.</entry>
                 </row>
 
                 <row>
@@ -1500,6 +1524,11 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
             </tgroup>
           </informaltable><parameter>* One or the other is
         required</parameter></para>
+
+        <para><parameter>** To utilize AlternateClusters, your HPCC system
+        must have more than one cluster and the Sasha server must be
+        configured with thorQMonSwitchMinTime set to a non-zero positive
+        value.</parameter></para>
       </sect2>
 
       <sect2>
@@ -1787,6 +1816,10 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
 <emphasis role="greenbold">&lt;!-- Use either TargetCluster or TargetQuerySet, not both --&gt;</emphasis>
 <emphasis role="greenbold">&lt;!-- If stored procedure is fully qualified, you can omit TargetQuerySet --&gt;</emphasis>
    &lt;TargetCluster&gt;<emphasis role="bluebold">thor</emphasis>&lt;/TargetCluster&gt;
+    &lt;AlternateClusters&gt;
+      &lt;AlternateCluster&gt;thor2&lt;/AlternateCluster&gt;
+      &lt;AlternateCluster&gt;thor3&lt;/AlternateCluster&gt;
+    &lt;/AlternateClusters&gt;
    &lt;/PrepareSQLRequest&gt;
  &lt;/soap:Body&gt;
 &lt;/soap:Envelope&gt;</programlisting></para>
@@ -1839,6 +1872,26 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
                 </row>
 
                 <row>
+                  <entry><programlisting role="wsig">  AlternateClusters</programlisting></entry>
+
+                  <entry>N **</entry>
+
+                  <entry>An array of one or more AlternateCluster
+                  tags.</entry>
+                </row>
+
+                <row>
+                  <entry><programlisting role="wsig">    AlternateCluster</programlisting></entry>
+
+                  <entry>N **</entry>
+
+                  <entry>If your system is configured to support multiple
+                  clusters, specify each allowed clusters inside the
+                  AlternateCluster tag. The generated code will specify to
+                  automatically switch to an available cluster.</entry>
+                </row>
+
+                <row>
                   <entry><programlisting role="wsig">  TargetQuerySet</programlisting></entry>
 
                   <entry>Y *</entry>
@@ -1862,6 +1915,11 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
             </tgroup>
           </informaltable><parameter>* One or the other is
         required</parameter></para>
+
+        <para><parameter>** To utilize AlternateClusters, your HPCC system
+        must have more than one cluster and the Sasha server must be
+        configured with thorQMonSwitchMinTime set to a non-zero positive
+        value.</parameter></para>
       </sect2>
 
       <sect2>
