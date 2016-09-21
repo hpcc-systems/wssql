@@ -42,7 +42,12 @@
 #########################################################
 
 PROJECT (hpccsystems-wssql)
-cmake_minimum_required (VERSION 2.8.3)
+
+if(UNIX AND NOT APPLE)
+    cmake_minimum_required(VERSION 3.3.2)
+else()
+    cmake_minimum_required(VERSION 2.8.11)
+endif()
 
 set ( CMAKE_PROJECT_NAME "hpccsystems-wssql")
 
