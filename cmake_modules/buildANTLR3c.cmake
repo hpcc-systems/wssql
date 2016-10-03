@@ -97,7 +97,7 @@ IF (NOT ANTLR3c_FOUND)
         BUILD_IN_SOURCE 1
     )
 
-    add_dependencies(libantlr3c_external DEPENDS ${ANTLRcPACKAGENAME}-expand)
+    add_dependencies(libantlr3c_external ${ANTLRcPACKAGENAME}-expand)
 
     add_library(libantlr3c SHARED IMPORTED GLOBAL)
     set_property(TARGET libantlr3c PROPERTY IMPORTED_LOCATION ${ANTLRcBUILDLOCATION_LIBRARY}/${ANTLR3c_lib})
