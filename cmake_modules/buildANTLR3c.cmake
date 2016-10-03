@@ -28,7 +28,7 @@ endif()
 
 MESSAGE("--- Target ANTLR3C Version: ${ANTLR3C_VER}")
 
-SET (ANTLRcCONFIGURE_COMMAND_PARAMS "--silent" "--disable-antlrdebug")
+SET (ANTLRcCONFIGURE_COMMAND_PARAMS "--silent" "--disable-antlrdebug" "--enable-64bit")
 
 IF (NOT ANTLR3c_FOUND)
     IF (WIN32)
@@ -39,7 +39,7 @@ IF (NOT ANTLR3c_FOUND)
 
     IF (UNIX)
         IF (${ARCH64BIT} EQUAL 1)
-            SET (ANTLRcCONFIGURE_COMMAND_PARAMS ${ANTLRcCONFIGURE_COMMAND_PARAMS} "--enable-64bit")
+            SET (ANTLRcCONFIGURE_COMMAND_PARAMS ${ANTLRcCONFIGURE_COMMAND_PARAMS})
             SET (osdir "x86_64-linux-gnu")
         ELSE()
             SET (osdir "i386-linux-gnu")
@@ -67,6 +67,7 @@ IF (NOT ANTLR3c_FOUND)
         COMMAND wget "${ANTLR3c_DOWNLOAD_URL}/${ANTLRcPACKAGE}"
         WORKING_DIRECTORY ${ANTLRcSOURCELOCATION}
     )
+
     ADD_CUSTOM_TARGET(${ANTLRcPACKAGENAME}-fetch DEPENDS ${ANTLRcSOURCELOCATION}/${ANTLRcPACKAGE} ${ANTLR_LICENSE_NAME})
 
     ADD_CUSTOM_COMMAND(
@@ -96,7 +97,7 @@ IF (NOT ANTLR3c_FOUND)
         BUILD_IN_SOURCE 1
     )
 
-    add_dependencies(libantlr3c_external DEPENDS libantlr3c-3.4-expand)
+    add_dependencies(libantlr3c_external DEPENDS ${ANTLRcPACKAGENAME}-expand)
 
     add_library(libantlr3c SHARED IMPORTED GLOBAL)
     set_property(TARGET libantlr3c PROPERTY IMPORTED_LOCATION ${ANTLRcBUILDLOCATION_LIBRARY}/${ANTLR3c_lib})
