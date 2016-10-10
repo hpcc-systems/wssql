@@ -28,7 +28,7 @@ endif()
 
 MESSAGE("--- Target ANTLR3C Version: ${ANTLR3C_VER}")
 
-SET (ANTLRcCONFIGURE_COMMAND_PARAMS "--silent" "--disable-antlrdebug" "--enable-64bit")
+SET (ANTLRcCONFIGURE_COMMAND_PARAMS "--silent" "--disable-antlrdebug")
 
 IF (NOT ANTLR3c_FOUND)
     IF (WIN32)
@@ -39,7 +39,7 @@ IF (NOT ANTLR3c_FOUND)
 
     IF (UNIX)
         IF (${ARCH64BIT} EQUAL 1)
-            SET (ANTLRcCONFIGURE_COMMAND_PARAMS ${ANTLRcCONFIGURE_COMMAND_PARAMS})
+            SET (ANTLRcCONFIGURE_COMMAND_PARAMS ${ANTLRcCONFIGURE_COMMAND_PARAMS} "--enable-64bit")
             SET (osdir "x86_64-linux-gnu")
         ELSE()
             SET (osdir "i386-linux-gnu")
