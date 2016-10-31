@@ -3,7 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <book lang="en_US" xml:base="../">
   <bookinfo>
-    <title>WsSQL ESP Web Service Guide </title>
+    <title>WsSQL ESP Web Service Guide</title>
 
     <mediaobject>
       <imageobject>
@@ -1344,7 +1344,9 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
       <para>If you are executing SQL that uses a CALL to a stored procedure,
       you must either fully qualify the procedure name (For example:
       Roxie.FindPeopleByZip) or specify the <emphasis
-      role="bold">TargetQuerySet</emphasis> here.</para>
+      role="bold">TargetQuerySet</emphasis> here. Parameters must be passed in
+      order, not by name. You can retrieve the order using
+      GetDBMetaData.</para>
 
       <para>To exclude the result schema in the result, set the <emphasis
       role="bold">SuppressXmlSchema</emphasis> option to 1 or true.</para>
@@ -1748,7 +1750,9 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
       <para>If you using a CALL to a stored procedure, you must either fully
       qualify the procedure name in the SQL (For example:
       Roxie.FindPeopleByZip) or specify the <emphasis
-      role="bold">TargetQuerySet</emphasis> here.</para>
+      role="bold">TargetQuerySet</emphasis> here. Parameters must be passed in
+      order, not by name. You can retrieve the order using
+      GetDBMetaData.</para>
 
       <para>Create parameters using a ? as a placeholder.</para>
 
