@@ -61,14 +61,14 @@ private:
     IArrayOf<ISQLExpression> selectList;
     IArrayOf<ISQLExpression> groupbyList;
     IArrayOf<ISQLExpression> orderbyList;
-    IArrayOf<SQLTable> tableList;
+    IArrayOf<SQLTable>       tableList;
 
     int limit;
     int offset;
     string indexhint;
     Owned<ISQLExpression> whereClause;
     Owned<ISQLExpression> havingClause;
-    Owned<HPCCFileCache> tmpHPCCFileCache;
+    Owned<HPCCFileCache>  tmpHPCCFileCache;
 
     bool selectDistinct;
 
@@ -152,6 +152,11 @@ public:
     const IArrayOf<ISQLExpression>* getSelectList() const
     {
         return const_cast <const IArrayOf<ISQLExpression>*> (&selectList);
+    }
+
+    const IArrayOf<ISQLExpression>* getParamList() const
+    {
+        return const_cast <const IArrayOf<ISQLExpression>*> (&paramList);
     }
 
     int getLimit() const

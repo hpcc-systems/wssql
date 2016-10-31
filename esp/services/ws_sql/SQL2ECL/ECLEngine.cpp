@@ -193,9 +193,10 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
 
     //Prepared statement parameters are handled by ECL STORED service workflow statements
     if (selectsqlobj->hasWhereClause())
-    {
         selectsqlobj->getWhereClause()->eclDeclarePlaceHolders(out, 0,0);
-    }
+
+    if (selectsqlobj->hasHavingClause())
+        selectsqlobj->getHavingClause()->eclDeclarePlaceHolders(out, 0,0);
 
     const IArrayOf<SQLTable> * tables = selectsqlobj->getTableList();
 

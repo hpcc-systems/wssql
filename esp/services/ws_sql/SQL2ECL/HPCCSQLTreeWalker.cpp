@@ -185,6 +185,9 @@ ISQLExpression * HPCCSQLTreeWalker::expressionTreeWalker(pANTLR3_BASE_TREE exprA
 
     if ( exprAST != NULL )
     {
+        Owned<ISQLExpression>  leftexp;
+        Owned<ISQLExpression>  rightexp;
+
         bool checkForAlias = false;
         switch (exptype)
         {
@@ -268,8 +271,13 @@ ISQLExpression * HPCCSQLTreeWalker::expressionTreeWalker(pANTLR3_BASE_TREE exprA
                 tmpexp->setECLType("BOOLEAN");
                 checkForAlias = true;
                 break;
-            case INTEGER_NUM:
             case REAL_NUMBER:
+                tmpexp.setown(new SQLValueExpression(exptype, (char *)exprAST->toString(exprAST)->chars));
+                tmpexp->setName("ConstNum");
+                tmpexp->setECLType("REAL");
+                checkForAlias = true;
+                break;
+            case INTEGER_NUM:
             case HEX_DIGIT:
                 tmpexp.setown(new SQLValueExpression(exptype, (char *)exprAST->toString(exprAST)->chars));
                 tmpexp->setName("ConstNum");
@@ -298,10 +306,21 @@ ISQLExpression * HPCCSQLTreeWalker::expressionTreeWalker(pANTLR3_BASE_TREE exprA
             case GET:
             case GTH:
             case LTH:
-                tmpexp.setown( new SQLBinaryExpression(exptype,
-                                expressionTreeWalker((pANTLR3_BASE_TREE)(exprAST->getChild(exprAST, 0)),exprAST),
-                                expressionTreeWalker((pANTLR3_BASE_TREE)(exprAST->getChild(exprAST, 1)),exprAST)
-                                ));
+                leftexp.set(expressionTreeWalker((pANTLR3_BASE_TREE)(exprAST->getChild(exprAST, 0)),exprAST));
+                rightexp.set(expressionTreeWalker((pANTLR3_BASE_TREE)(exprAST->getChild(exprAST, 1)),exprAST));
+
+                tmpexp.setown( new SQLBinaryExpression(exptype,leftexp, rightexp));
+
+                if ( leftexp->getExpType() == Value_ExpressionType && rightexp->getExpType() != Value_ExpressionType)
+                {
+                    leftexp->setValuePlaceHolderType(rightexp->getECLType());
+                    paramList.append(*leftexp.getLink());
+                }
+                else if ( rightexp->getExpType() == Value_ExpressionType && leftexp->getExpType() != Value_ExpressionType)
+                {
+                    rightexp->setValuePlaceHolderType(leftexp->getECLType());
+                    paramList.append(*rightexp.getLink());
+                }
                 break;
             case ISNOTNULL:
             case ISNULL:
@@ -1043,6 +1062,9 @@ void HPCCSQLTreeWalker::assignParameterIndexes()
     {
         if (whereClause != NULL)
             paramIndex = whereClause->setParameterizedNames(paramIndex);
+
+        if (havingClause != NULL)
+            paramIndex = havingClause->setParameterizedNames(paramIndex);
     }
     else if (sqlType == SQLTypeCall)
     {
@@ -1104,6 +1126,7 @@ HPCCSQLTreeWalker::~HPCCSQLTreeWalker()
             groupbyList.kill(false);
             orderbyList.kill(false);
             tableList.kill(false);
+            paramList.kill(false);
             break;
         case SQLTypeCall:
             paramList.kill(false);
