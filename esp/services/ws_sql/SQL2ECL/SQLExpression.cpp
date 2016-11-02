@@ -334,6 +334,18 @@ ISQLExpression* SQLParenthesisExpression::getInnerExp()
 /***********************SQLParenthesisExpression END**************************************************************************/
 
 /***********************SQLValueExpression START**************************************************************************/
+
+int SQLValueExpression::setParameterizedNames(int currentindex)
+{
+    if (hasPlaceHolder())
+    {
+        placeHolderName.setf("%sPlaceHolder%d", getPlaceHolderType(), currentindex);
+        return ++currentindex;
+    }
+    else
+        return currentindex;
+}
+
 void SQLValueExpression::toECLStringTranslateSource(
             StringBuffer & eclStr,
             IProperties * map,
@@ -342,7 +354,10 @@ void SQLValueExpression::toECLStringTranslateSource(
             bool funcParam,
             bool countFuncParam)
 {
-    eclStr.append( value.str() );
+     if (hasPlaceHolder())
+        eclStr.append(placeHolderName.str());
+    else
+        eclStr.append(value.str());
 }
 
 SQLValueExpression::SQLValueExpression()
@@ -381,7 +396,10 @@ void SQLValueExpression::trimTextQuotes()
 
 void SQLValueExpression::toString(StringBuffer & targetstr, bool fullOutput)
 {
-    targetstr.append(value.str());
+    if (hasPlaceHolder())
+        targetstr.append(placeHolderName.str());
+    else
+        targetstr.append(value.str());
 }
 
 const char * SQLValueExpression::getName()
@@ -592,6 +610,7 @@ bool SQLBinaryExpression::containsKey(const char * colname)
 {
     return operand1->containsKey(colname) || operand2->containsKey(colname);
 }
+
 void SQLBinaryExpression::toString(StringBuffer & targetstr, bool fullOutput)
 {
     operand1->toString(targetstr, fullOutput);

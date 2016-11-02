@@ -852,11 +852,11 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
 
         StringBuffer hashoptions;
         if (version > 3.03)
-		{
-			StringArray & alternates = req.getAlternateClusters();
-			if (alternates.length() > 0)
-				processMultipleClusterOption(alternates, cluster, hashoptions);
-		}
+        {
+            StringArray & alternates = req.getAlternateClusters();
+            if (alternates.length() > 0)
+                processMultipleClusterOption(alternates, cluster, hashoptions);
+        }
 
         SCMStringBuffer compiledwuid;
         int resultLimit = req.getResultLimit();
@@ -867,7 +867,7 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
            throw MakeStringException(-1,"Invalid result window value");
 
         bool clonable = false;
-        bool cacheeligible = true;
+        bool cacheeligible =  (version > 3.04 ) ? !req.getIgnoreCache() : true;
 
         Owned<HPCCSQLTreeWalker> parsedSQL;
         ESPLOG(LogNormal, "WsSQL: Parsing sql query...");
@@ -886,40 +886,43 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
             }
         }
         else if (querytype == SQLTypeCreateAndLoad)
-        {
             cacheeligible = false;
-        }
+
+        const char * wuusername = req.getUserName();
 
         StringBuffer xmlparams;
-        StringBuffer normalizedSQL = parsedSQL->getNormalizedSQL();
-
-        normalizedSQL.append(" | --TC=").append(cluster);
-        if (username.length() > 0)
-            normalizedSQL.append("--USER=").append(username.str());
-        if (resultLimit > 0)
-            normalizedSQL.append("--HARDLIMIT=").append(resultLimit);
-        const char * wuusername = req.getUserName();
-        if (wuusername && *wuusername)
-            normalizedSQL.append("--WUOWN=").append(wuusername);
-        if (hashoptions.length()>0)
-        	normalizedSQL.append("--HO=").append(hashoptions.str());
-
+        StringBuffer normalizedSQL;
         ESPLOG(LogMax, "WsSQL: getWorkUnitFactory...");
         Owned<IWorkUnitFactory> factory = getWorkUnitFactory(context.querySecManager(), context.queryUser());
 
-        ESPLOG(LogMax, "WsSQL: checking query cache...");
-        if(cacheeligible && getCachedQuery(normalizedSQL.str(), compiledwuid.s))
+        if(cacheeligible)
         {
-            ESPLOG(LogMax, "WsSQL: cache hit opening wuid %s...", compiledwuid.str());
-            Owned<IConstWorkUnit> cw = factory->openWorkUnit(compiledwuid.str(), false);
-            if (!cw)//cache hit but unavailable WU
+            normalizedSQL = parsedSQL->getNormalizedSQL();
+
+            normalizedSQL.append(" | --TC=").append(cluster);
+            if (username.length() > 0)
+                normalizedSQL.append("--USER=").append(username.str());
+            if (resultLimit > 0)
+                normalizedSQL.append("--HARDLIMIT=").append(resultLimit);
+            if (wuusername && *wuusername)
+                normalizedSQL.append("--WUOWN=").append(wuusername);
+            if (hashoptions.length()>0)
+                normalizedSQL.append("--HO=").append(hashoptions.str());
+
+            ESPLOG(LogMax, "WsSQL: checking query cache...");
+            if(cacheeligible && getCachedQuery(normalizedSQL.str(), compiledwuid.s))
             {
-                ESPLOG(LogMax, "WsSQL: cache hit but unavailable WU...");
-                removeQueryFromCache(normalizedSQL.str());
-                compiledwuid.clear();
+                ESPLOG(LogMax, "WsSQL: cache hit opening wuid %s...", compiledwuid.str());
+                Owned<IConstWorkUnit> cw = factory->openWorkUnit(compiledwuid.str(), false);
+                if (!cw)//cache hit but unavailable WU
+                {
+                    ESPLOG(LogMax, "WsSQL: cache hit but unavailable WU...");
+                    removeQueryFromCache(normalizedSQL.str());
+                    compiledwuid.clear();
+                }
+                else
+                    clonable = true;
             }
-            else
-                clonable = true;
         }
 
         if (compiledwuid.length()==0)
@@ -1007,11 +1010,13 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
         else
         {
             if (querytype == SQLTypeCall)
-                createXMLParams(xmlparams, parsedSQL, NULL, cw);
+                createWUXMLParams(xmlparams, parsedSQL, NULL, cw);
             else if (querytype == SQLTypeSelect)
             {
                 if (notEmpty(cluster) && !isValidCluster(cluster))
                     throw MakeStringException(ECLWATCH_INVALID_CLUSTER_NAME, "Invalid cluster name: %s", cluster);
+
+                createWUXMLParams(xmlparams, parsedSQL->getParamList());
             }
 
             StringBuffer runningwuid;
@@ -1080,8 +1085,27 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
     return true;
 }
 
+void CwssqlEx::createWUXMLParams(StringBuffer & xmlparams, const IArrayOf <ISQLExpression> * parameterlist)
+{
+    xmlparams.append("<root>");
+    for (int expindex = 0; expindex < parameterlist->length(); expindex++)
+    {
+        ISQLExpression * exp = &parameterlist->item(expindex);
+        if (exp->getExpType() == Value_ExpressionType)
+        {
+            SQLValueExpression * currentvalplaceholder = dynamic_cast<SQLValueExpression *>(exp);
+            xmlparams.appendf("<%s>", currentvalplaceholder->getPlaceHolderName());
+            encodeXML(currentvalplaceholder->getValue(), xmlparams);
+            xmlparams.appendf("</%s>", currentvalplaceholder->getPlaceHolderName());
+        }
+        else
+            ESPLOG(LogNormal, "WsSQL: attempted to create XML params from unexpected expression type.");
+    }
+    xmlparams.append("</root>");
+}
+
 //Integrates all "variables" into "param" based xml
-void CwssqlEx::createXMLParams(StringBuffer & xmlparams, HPCCSQLTreeWalker* parsedSQL, IArrayOf<IConstNamedValue> *variables, IConstWorkUnit * cw)
+void CwssqlEx::createWUXMLParams(StringBuffer & xmlparams, HPCCSQLTreeWalker* parsedSQL, IArrayOf<IConstNamedValue> *variables, IConstWorkUnit * cw)
 {
     IArrayOf<IConstWUResult> expectedparams;
 
@@ -1200,7 +1224,7 @@ bool CwssqlEx::onExecutePreparedSQL(IEspContext &context, IEspExecutePreparedSQL
         else
         {
            StringBuffer xmlparams;
-           createXMLParams(xmlparams, NULL, &req.getVariables(),cw);
+           createWUXMLParams(xmlparams, NULL, &req.getVariables(),cw);
 
            if (parentWuId && *parentWuId)
            {
@@ -1327,11 +1351,11 @@ bool CwssqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, IE
 
         StringBuffer hashoptions;
         if (version > 3.03)
-		{
-			StringArray & alternates = req.getAlternateClusters();
-			if (alternates.length() > 0)
-				processMultipleClusterOption(alternates, cluster, hashoptions);
-		}
+        {
+            StringArray & alternates = req.getAlternateClusters();
+            if (alternates.length() > 0)
+                processMultipleClusterOption(alternates, cluster, hashoptions);
+        }
 
         StringBuffer xmlparams;
         StringBuffer normalizedSQL = parsedSQL->getNormalizedSQL();
@@ -1339,7 +1363,7 @@ bool CwssqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, IE
         if (username.length() > 0)
             normalizedSQL.append("--USER=").append(username.str());
         if (hashoptions.length()>0)
-        	normalizedSQL.append("--HO=").append(hashoptions.str());
+            normalizedSQL.append("--HO=").append(hashoptions.str());
 
         Owned<IWorkUnitFactory> factory = getWorkUnitFactory(context.querySecManager(), context.queryUser());
 
@@ -1425,7 +1449,7 @@ bool CwssqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, IE
                 wu.setQueryText(ecltext.str());
 
                 StringBuffer xmlparams;
-                createXMLParams(xmlparams, parsedSQL, NULL, NULL);
+                createWUXMLParams(xmlparams, parsedSQL, NULL, NULL);
 
                 wu->commit();
                 wu.clear();

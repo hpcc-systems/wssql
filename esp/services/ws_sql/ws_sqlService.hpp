@@ -130,7 +130,8 @@ public:
     bool cloneAndExecuteWU(IEspContext &context, const char * originalwuid, StringBuffer &clonedwuid, const char *paramXml, IArrayOf<IConstNamedValue> *variables, IArrayOf<IConstNamedValue> *debugs, const char * targetcluster);
     bool publishWorkunit(IEspContext &context, const char * queryname, const char * wuid, const char * targetcluster);
 
-    void createXMLParams(StringBuffer & xmlparams, HPCCSQLTreeWalker* parsedSQL, IArrayOf<IConstNamedValue> *variables, IConstWorkUnit * cw);
+    static void createWUXMLParams(StringBuffer & xmlparams, HPCCSQLTreeWalker* parsedSQL, IArrayOf<IConstNamedValue> *variables, IConstWorkUnit * cw);
+    static void createWUXMLParams(StringBuffer & xmlparams, const IArrayOf <ISQLExpression> * parameterlist);
 
     const char* getWsSqlBuildVersion()
     {

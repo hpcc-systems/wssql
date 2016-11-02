@@ -135,18 +135,49 @@ public:
     virtual void appendField(ISQLExpression * field){}
 
     virtual void setECLType(const char * type) {UNIMPLEMENTED;}
-    virtual const char * getECLType() {UNIMPLEMENTED; return NULL;}
-    virtual const char * getName() {UNIMPLEMENTED;}
+    virtual const char * getECLType() {UNIMPLEMENTED; return nullptr;}
+    virtual const char * getName() {UNIMPLEMENTED; return nullptr;}
     virtual void   setName(const char * name) {UNIMPLEMENTED;}
-    virtual const char * getNameOrAlias() {UNIMPLEMENTED;}
+    virtual const char * getNameOrAlias() {UNIMPLEMENTED; return nullptr;}
     virtual void   setAlias(const char * alias) {UNIMPLEMENTED;}
-    virtual const char * getAlias() {UNIMPLEMENTED;}
+    virtual const char * getAlias() {UNIMPLEMENTED; return nullptr;}
     virtual SQLExpressionType getExpType()=0;
 
-    virtual SQLLogicType getLogicType(){UNIMPLEMENTED;};
+    virtual SQLLogicType getLogicType(){UNIMPLEMENTED; return Unknown_LogicType;};
     virtual void eclDeclarePlaceHolders(StringBuffer & eclstr, int op, int sibtype){UNIMPLEMENTED;};
     virtual void getUniqueExpressionColumnNames(StringArray & uniquenames)=0;
     virtual void getExpressionFromColumnName(const char * colname, StringBuffer & str)=0;
+
+    /*
+    * Instructs this expression to be replaced by a typed place holder.
+    *
+    * The purpose of this value placeholder replacement (parameterization)
+    * could be exploited for query normalization, query caching optimization,
+    * query publishing, etc.
+    */
+    virtual bool setValuePlaceHolderType(const char * ecltype){UNIMPLEMENTED; return false;};
+
+    /*
+    * Has this expression been provided a placeholder type?
+    *
+    * select * from t1 where f1 = 5; <- the right side of the binary expression f1 = 5 can be
+    *                                   parameterized as f1 = ${f1.ecltype}
+    */
+    virtual bool hasPlaceHolder(){return false;}
+
+    /*
+    * Get this placeholder inferred type
+    *
+    * select * from t1 where f1 = 5; <- the right side of the binary expression f1 = 5 can be
+    *                                   parameterized as f1 = ${f1.ecltype}
+    *                                   This allows caching of query structure
+    */
+    virtual const char * getPlaceHolderType(){UNIMPLEMENTED; return nullptr;}
+
+    /*
+    * Get this placeholder's generated name
+    */
+    virtual const char * getPlaceHolderName(){UNIMPLEMENTED; return nullptr;}
 };
 
 /*************************************************************************************************/
@@ -168,6 +199,11 @@ public:
     void toString(StringBuffer & targetstr, bool fullOutput);
     int getExpressionsCount();
     void appendEntry(ISQLExpression * entry);
+
+    bool setValuePlaceHolderType(const char * ecltype){return false;}
+    bool hasPlaceHolder(){ return false;}
+    const char * getPlaceHolderType() {return nullptr;}
+
 
 private:
     IArrayOf<ISQLExpression> entries;
@@ -227,6 +263,10 @@ public:
 
     int getExpressionsCount() { return operand1->getExpressionsCount();}
 
+    bool setValuePlaceHolderType(const char * ecltype){return false;}
+    bool hasPlaceHolder(){ return false;}
+    const char * getPlaceHolderType() {return nullptr;}
+
 private:
     ISQLExpression * operand1;
     int op;
@@ -282,6 +322,10 @@ public:
     {
         return &field;
     }
+
+    bool setValuePlaceHolderType(const char * ecltype){return false;}
+    bool hasPlaceHolder(){ return false;}
+    const char * getPlaceHolderType() {return nullptr;}
 
 private:
     SQLColumn field;
@@ -340,6 +384,10 @@ public:
     }
 
     bool needsColumnExpansion() { return !isExpanded; }
+
+    bool setValuePlaceHolderType(const char * ecltype){return false;}
+    bool hasPlaceHolder(){ return false;}
+    const char * getPlaceHolderType() {return nullptr;}
 
 private:
     StringBuffer table;
@@ -400,6 +448,10 @@ public:
     void toString(StringBuffer & targetstr, bool fullOutput);
     int getExpressionsCount() { return innerexpression->getExpressionsCount();}
 
+    bool setValuePlaceHolderType(const char * ecltype){return false;}
+    bool hasPlaceHolder(){ return false;}
+    const char * getPlaceHolderType() {return nullptr;}
+
 private:
     ISQLExpression* innerexpression;
 };
@@ -416,8 +468,6 @@ public:
     }
 
     void getUniqueExpressionColumnNames(StringArray & uniquenames) { return; }
-
-    void eclDeclarePlaceHolders(StringBuffer & eclstr, int op, int sibtype) {return;}
 
     virtual SQLLogicType getLogicType()
     {
@@ -445,11 +495,7 @@ public:
             return Unknown_LogicType;
     }
 
-    virtual int setParameterizedNames(int currentindex)
-    {
-        return currentindex;
-    }
-
+    virtual int setParameterizedNames(int currentindex);
     void toECLStringTranslateSource(
                 StringBuffer & eclStr,
                 IProperties * map,
@@ -500,10 +546,31 @@ public:
     virtual void         setAlias(const char * alias);
     virtual const char * getAlias();
 
+    bool setValuePlaceHolderType(const char * ecltype)
+    {
+        if (ecltype && *ecltype)
+        {
+            placeHolderType.set(ecltype);
+            return true;
+        }
+        return false;
+    }
+
+    bool hasPlaceHolder(){ return placeHolderType.length() > 0;}
+    const char * getPlaceHolderType() {return placeHolderType.str();}
+    const char * getPlaceHolderName() {return placeHolderName.str();}
+    void eclDeclarePlaceHolders(StringBuffer & eclstr, int op, int sibtype)
+    {
+        if(hasPlaceHolder())
+            eclstr.appendf("%s %s := %s : STORED('%s');\n", placeHolderType.str(), placeHolderName.str(), value.str(), placeHolderName.str());
+    }
+
 private:
     int type; //As defined in HPCCSQLParser.h
     StringBuffer value;
     SQLColumn field;
+    StringBuffer placeHolderName;
+    StringBuffer placeHolderType;
 };
 
 /*************************************************************************************************/
@@ -636,6 +703,10 @@ public:
         this->operand2 = operand2;
     }
 
+    bool setValuePlaceHolderType(const char * ecltype){return false;}
+    bool hasPlaceHolder(){ return false;}
+    const char * getPlaceHolderType() {return nullptr;}
+
 private:
     const char * getOpStr();
     ISQLExpression* operand1;
@@ -722,7 +793,6 @@ public:
         eclstr.append(" : STORED('");
         eclstr.append(value.str());
         eclstr.append("');\n");
-
     }
 
     virtual SQLLogicType getLogicType(){return Unknown_LogicType;}
@@ -749,8 +819,11 @@ public:
     bool containsKey(const char * colname) {return false;}
     void toString(StringBuffer & targetstr, bool fullOutput);
     int getExpressionsCount() {return 0;}
-private:
+    bool setValuePlaceHolderType(const char * ecltype){return false;}
+    bool hasPlaceHolder(){ return false;}
+    const char * getPlaceHolderType() {return nullptr;}
 
+private:
     int index;
     StringBuffer value;
 };
@@ -877,6 +950,10 @@ public:
 
     bool isDistinct() {return distinct;}
     void setDistinct(bool d) {distinct = d;}
+
+    bool setValuePlaceHolderType(const char * ecltype){return false;}
+    bool hasPlaceHolder(){ return false;}
+    const char * getPlaceHolderType() {return nullptr;}
 
 private:
     bool distinct;
