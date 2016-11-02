@@ -1094,15 +1094,14 @@ void CwssqlEx::createWUXMLParams(StringBuffer & xmlparams, const IArrayOf <ISQLE
         if (exp->getExpType() == Value_ExpressionType)
         {
             SQLValueExpression * currentvalplaceholder = dynamic_cast<SQLValueExpression *>(exp);
-            xmlparams.append("<").append(currentvalplaceholder->getPlaceHolderName()).append(">");
+            xmlparams.appendf("<%s>", currentvalplaceholder->getPlaceHolderName());
             encodeXML(currentvalplaceholder->getValue(), xmlparams);
-            xmlparams.append("</").append(currentvalplaceholder->getPlaceHolderName()).append(">");
+            xmlparams.appendf("</%s>", currentvalplaceholder->getPlaceHolderName());
         }
         else
             ESPLOG(LogNormal, "WsSQL: attempted to create XML params from unexpected expression type.");
     }
     xmlparams.append("</root>");
-    fprintf(stdout, "%s", xmlparams.str());
 }
 
 //Integrates all "variables" into "param" based xml

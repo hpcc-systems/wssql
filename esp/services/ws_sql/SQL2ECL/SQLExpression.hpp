@@ -135,15 +135,15 @@ public:
     virtual void appendField(ISQLExpression * field){}
 
     virtual void setECLType(const char * type) {UNIMPLEMENTED;}
-    virtual const char * getECLType() {UNIMPLEMENTED; return NULL;}
-    virtual const char * getName() {UNIMPLEMENTED;}
+    virtual const char * getECLType() {UNIMPLEMENTED; return nullptr;}
+    virtual const char * getName() {UNIMPLEMENTED; return nullptr;}
     virtual void   setName(const char * name) {UNIMPLEMENTED;}
-    virtual const char * getNameOrAlias() {UNIMPLEMENTED;}
+    virtual const char * getNameOrAlias() {UNIMPLEMENTED; return nullptr;}
     virtual void   setAlias(const char * alias) {UNIMPLEMENTED;}
-    virtual const char * getAlias() {UNIMPLEMENTED;}
+    virtual const char * getAlias() {UNIMPLEMENTED; return nullptr;}
     virtual SQLExpressionType getExpType()=0;
 
-    virtual SQLLogicType getLogicType(){UNIMPLEMENTED;};
+    virtual SQLLogicType getLogicType(){UNIMPLEMENTED; return Unknown_LogicType;};
     virtual void eclDeclarePlaceHolders(StringBuffer & eclstr, int op, int sibtype){UNIMPLEMENTED;};
     virtual void getUniqueExpressionColumnNames(StringArray & uniquenames)=0;
     virtual void getExpressionFromColumnName(const char * colname, StringBuffer & str)=0;
@@ -155,7 +155,7 @@ public:
     * could be exploited for query normalization, query caching optimization,
     * query publishing, etc.
     */
-    virtual bool setValuePlaceHolderType(const char * ecltype){UNIMPLEMENTED;};
+    virtual bool setValuePlaceHolderType(const char * ecltype){UNIMPLEMENTED; return false;};
 
     /*
     * Has this expression been provided a placeholder type?
@@ -172,12 +172,12 @@ public:
     *                                   parameterized as f1 = ${f1.ecltype}
     *                                   This allows caching of query structure
     */
-    virtual const char * getPlaceHolderType(){UNIMPLEMENTED;}
+    virtual const char * getPlaceHolderType(){UNIMPLEMENTED; return nullptr;}
 
     /*
     * Get this placeholder's generated name
     */
-    virtual const char * getPlaceHolderName(){UNIMPLEMENTED;}
+    virtual const char * getPlaceHolderName(){UNIMPLEMENTED; return nullptr;}
 };
 
 /*************************************************************************************************/
@@ -820,8 +820,8 @@ public:
     void toString(StringBuffer & targetstr, bool fullOutput);
     int getExpressionsCount() {return 0;}
     bool setValuePlaceHolderType(const char * ecltype){return false;}
-        bool hasPlaceHolder(){ return false;}
-        const char * getPlaceHolderType() {return nullptr;}
+    bool hasPlaceHolder(){ return false;}
+    const char * getPlaceHolderType() {return nullptr;}
 
 private:
     int index;
