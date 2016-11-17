@@ -880,66 +880,59 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
             if (strlen(parsedSQL->getQuerySetName())==0)
             {
                 if (strlen(req.getTargetQuerySet())==0)
-                   throw MakeStringException(-1,"Missing Target QuerySet.");
-               else
-                   parsedSQL->setQuerySetName(req.getTargetQuerySet());
+                    throw MakeStringException(-1,"Missing Target QuerySet.");
+                else
+                    parsedSQL->setQuerySetName(req.getTargetQuerySet());
             }
+            ESPLOG(LogMax, "WsSQL: Processing call query...");
+
+            WsEclWuInfo wsinfo("", parsedSQL->getQuerySetName(), parsedSQL->getStoredProcName(), username.str(), passwd);
+            compiledwuid.set(wsinfo.ensureWuid());
+
+            clonable = true;
         }
         else if (querytype == SQLTypeCreateAndLoad)
-            cacheeligible = false;
-
-        const char * wuusername = req.getUserName();
+        {
+           cacheeligible = false;
+        }
 
         StringBuffer xmlparams;
-        StringBuffer normalizedSQL;
+        StringBuffer normalizedSQL = parsedSQL->getNormalizedSQL();
+
+        normalizedSQL.append(" | --TC=").append(cluster);
+        if (username.length() > 0)
+           normalizedSQL.append("--USER=").append(username.str());
+        if (resultLimit > 0)
+           normalizedSQL.append("--HARDLIMIT=").append(resultLimit);
+        const char * wuusername = req.getUserName();
+        if (wuusername && *wuusername)
+           normalizedSQL.append("--WUOWN=").append(wuusername);
+        if (hashoptions.length()>0)
+           normalizedSQL.append("--HO=").append(hashoptions.str());
+
+        if (compiledwuid.length() != 0)
+           normalizedSQL.append("--PWUID=").append(compiledwuid.str());
+
         ESPLOG(LogMax, "WsSQL: getWorkUnitFactory...");
         Owned<IWorkUnitFactory> factory = getWorkUnitFactory(context.querySecManager(), context.queryUser());
 
-        if(cacheeligible)
+        ESPLOG(LogMax, "WsSQL: checking query cache...");
+        if(cacheeligible && getCachedQuery(normalizedSQL.str(), compiledwuid.s))
         {
-            normalizedSQL = parsedSQL->getNormalizedSQL();
-
-            normalizedSQL.append(" | --TC=").append(cluster);
-            if (username.length() > 0)
-                normalizedSQL.append("--USER=").append(username.str());
-            if (resultLimit > 0)
-                normalizedSQL.append("--HARDLIMIT=").append(resultLimit);
-            if (wuusername && *wuusername)
-                normalizedSQL.append("--WUOWN=").append(wuusername);
-            if (hashoptions.length()>0)
-                normalizedSQL.append("--HO=").append(hashoptions.str());
-
-            ESPLOG(LogMax, "WsSQL: checking query cache...");
-            if(cacheeligible && getCachedQuery(normalizedSQL.str(), compiledwuid.s))
-            {
-                ESPLOG(LogMax, "WsSQL: cache hit opening wuid %s...", compiledwuid.str());
-                Owned<IConstWorkUnit> cw = factory->openWorkUnit(compiledwuid.str(), false);
-                if (!cw)//cache hit but unavailable WU
-                {
-                    ESPLOG(LogMax, "WsSQL: cache hit but unavailable WU...");
-                    removeQueryFromCache(normalizedSQL.str());
-                    compiledwuid.clear();
-                }
-                else
-                    clonable = true;
-            }
+           ESPLOG(LogMax, "WsSQL: cache hit opening wuid %s...", compiledwuid.str());
+           Owned<IConstWorkUnit> cw = factory->openWorkUnit(compiledwuid.str(), false);
+           if (!cw)//cache hit but unavailable WU
+           {
+               ESPLOG(LogMax, "WsSQL: cache hit but unavailable WU...");
+               removeQueryFromCache(normalizedSQL.str());
+               compiledwuid.clear();
+           }
+           else
+               clonable = true;
         }
 
         if (compiledwuid.length()==0)
         {
-            if (querytype == SQLTypeCall)
-            {
-                ESPLOG(LogMax, "WsSQL: Processing call query...");
-
-                if (!isEmpty(cluster))
-                    ESPLOG(LogMax, "WsSQL: Target Cluster was provided on a query of type CALL but will be ignored.");
-
-                WsEclWuInfo wsinfo("", parsedSQL->getQuerySetName(), parsedSQL->getStoredProcName(), username.str(), passwd);
-                compiledwuid.set(wsinfo.ensureWuid());
-
-                clonable = true;
-            }
-            else
             {
                 if (isEmpty(cluster))
                     throw MakeStringException(-1,"Target cluster not set.");
