@@ -867,7 +867,8 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
            throw MakeStringException(-1,"Invalid result window value");
 
         bool clonable = false;
-        bool cacheeligible =  (version > 3.04 ) ? !req.getIgnoreCache() : true;
+        //bool cacheeligible =  (version > 3.04 ) ? !req.getIgnoreCache() : true;
+        bool cacheeligible = false; // cloning is not currently working
 
         Owned<HPCCSQLTreeWalker> parsedSQL;
         ESPLOG(LogNormal, "WsSQL: Parsing sql query...");
@@ -1095,6 +1096,7 @@ void CwssqlEx::createWUXMLParams(StringBuffer & xmlparams, const IArrayOf <ISQLE
             ESPLOG(LogNormal, "WsSQL: attempted to create XML params from unexpected expression type.");
     }
     xmlparams.append("</root>");
+    DBGLOG("XML PARAMS: %s", xmlparams.str());
 }
 
 //Integrates all "variables" into "param" based xml
