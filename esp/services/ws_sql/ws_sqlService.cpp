@@ -867,7 +867,8 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
            throw MakeStringException(-1,"Invalid result window value");
 
         bool clonable = false;
-        bool cacheeligible =  (version > 3.04 ) ? !req.getIgnoreCache() : true;
+        //bool cacheeligible =  (version > 3.04 ) ? !req.getIgnoreCache() : true;
+        bool cacheeligible = false; // cloning is not currently working
 
         Owned<HPCCSQLTreeWalker> parsedSQL;
         ESPLOG(LogNormal, "WsSQL: Parsing sql query...");
@@ -993,6 +994,8 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
         if (!cw)
             throw MakeStringException(ECLWATCH_CANNOT_UPDATE_WORKUNIT,"Cannot open workunit %s.", compiledwuid.str());
 
+        IArrayOf<IConstNamedValue> iespattributes;
+
         WsWUExceptions errors(*cw);
         if (errors.ErrCount()>0)
         {
@@ -1017,7 +1020,8 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
             if (clonable)
             {
                 context.addTraceSummaryTimeStamp("StartWUCloneExe");
-                cloneAndExecuteWU(context, compiledwuid.str(), runningwuid, xmlparams.str(), NULL, NULL, cluster);
+
+                cloneAndExecuteWU(context, compiledwuid.str(), runningwuid, xmlparams.str(), &iespattributes, NULL, cluster);
                 context.addTraceSummaryTimeStamp("EndWUCloneExe");
                 if(cacheeligible && !isQueryCached(normalizedSQL.str()))
                     addQueryToCache(normalizedSQL.str(), compiledwuid.str());
@@ -1095,6 +1099,7 @@ void CwssqlEx::createWUXMLParams(StringBuffer & xmlparams, const IArrayOf <ISQLE
             ESPLOG(LogNormal, "WsSQL: attempted to create XML params from unexpected expression type.");
     }
     xmlparams.append("</root>");
+    DBGLOG("XML PARAMS: %s", xmlparams.str());
 }
 
 //Integrates all "variables" into "param" based xml
