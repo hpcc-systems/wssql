@@ -994,6 +994,8 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
         if (!cw)
             throw MakeStringException(ECLWATCH_CANNOT_UPDATE_WORKUNIT,"Cannot open workunit %s.", compiledwuid.str());
 
+        IArrayOf<IConstNamedValue> iespattributes;
+
         WsWUExceptions errors(*cw);
         if (errors.ErrCount()>0)
         {
@@ -1018,7 +1020,8 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
             if (clonable)
             {
                 context.addTraceSummaryTimeStamp("StartWUCloneExe");
-                cloneAndExecuteWU(context, compiledwuid.str(), runningwuid, xmlparams.str(), NULL, NULL, cluster);
+
+                cloneAndExecuteWU(context, compiledwuid.str(), runningwuid, xmlparams.str(), &iespattributes, NULL, cluster);
                 context.addTraceSummaryTimeStamp("EndWUCloneExe");
                 if(cacheeligible && !isQueryCached(normalizedSQL.str()))
                     addQueryToCache(normalizedSQL.str(), compiledwuid.str());
