@@ -115,7 +115,7 @@ ESPrequest ExecuteSQLRequest
     int resultLimit(0);
     int ResultWindowStart(0);
     int ResultWindowCount(0);
-    //[min_ver(3.05)] boolean IgnoreCache(false);
+    [min_ver(3.05)] boolean IgnoreCache(false);
 };
 
 ESPresponse [exceptions_inline] ExecuteSQLResponse
@@ -324,7 +324,7 @@ ESPresponse CreateTableAndLoadResponse
     ESPstruct ECLWorkunit Workunit;
 };
 
-ESPservice [version("3.04"), default_client_version("3.04"), auth_feature("DEFERRED"), exceptions_inline("./smc_xslt/exceptions.xslt")] wssql
+ESPservice [version("3.05"), default_client_version("3.05"), auth_feature("DEFERRED"), exceptions_inline("./smc_xslt/exceptions.xslt")] wssql
 {
     ESPmethod [min_ver("3.03")] CreateTableAndLoad(CreateTableAndLoadRequest, CreateTableAndLoadResponse);
     ESPmethod [min_ver("3.02")] SetRelatedIndexes(SetRelatedIndexesRequest, SetRelatedIndexesResponse);
