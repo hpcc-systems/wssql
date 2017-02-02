@@ -867,8 +867,7 @@ bool CwssqlEx::onExecuteSQL(IEspContext &context, IEspExecuteSQLRequest &req, IE
            throw MakeStringException(-1,"Invalid result window value");
 
         bool clonable = false;
-        //bool cacheeligible =  (version > 3.04 ) ? !req.getIgnoreCache() : true;
-        bool cacheeligible = false; // cloning is not currently working
+        bool cacheeligible =  (version > 3.04 ) ? !req.getIgnoreCache() : true;
 
         Owned<HPCCSQLTreeWalker> parsedSQL;
         ESPLOG(LogNormal, "WsSQL: Parsing sql query...");
@@ -1088,6 +1087,7 @@ void CwssqlEx::createWUXMLParams(StringBuffer & xmlparams, const IArrayOf <ISQLE
         if (exp->getExpType() == Value_ExpressionType)
         {
             SQLValueExpression * currentvalplaceholder = dynamic_cast<SQLValueExpression *>(exp);
+            currentvalplaceholder->trimTextQuotes();
             xmlparams.appendf("<%s>", currentvalplaceholder->getPlaceHolderName());
             encodeXML(currentvalplaceholder->getValue(), xmlparams);
             xmlparams.appendf("</%s>", currentvalplaceholder->getPlaceHolderName());
