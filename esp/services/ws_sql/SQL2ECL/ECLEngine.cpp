@@ -268,7 +268,7 @@ void ECLEngine::generateSelectECL(HPCCSQLTreeWalker * selectsqlobj, StringBuffer
                 {
                     //Nth Join, previous DS is JndDS(N-1)
                     out.appendf("JndDS%d",tableidx-1);
-                    latestDS.appendf("JndDS%d",tableidx);
+                    latestDS.setf("JndDS%d",tableidx);
                 }
 
                 StringBuffer translatedAndFilteredOnClause;
