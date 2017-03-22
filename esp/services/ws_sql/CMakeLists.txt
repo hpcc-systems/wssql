@@ -30,6 +30,7 @@ FIND_PACKAGE(ANTLR REQUIRED)
 INCLUDE (${HPCC_WSSQL_SOURCE_DIR}/cmake_modules/buildANTLR3c.cmake)
 #INCLUDE (${CMAKE_MODULE_PATH}FindANTLR3c.cmake)
 INCLUDE(${HPCC_WSSQL_SOURCE_DIR}/esp/scm/additional.cmake)
+INCLUDE(${HPCC_SOURCE_DIR}/esp/scm/espscm.cmake)
 
 SET (HPCC_SQL_PARSER_LOCATION ${HPCC_WSSQL_SOURCE_DIR}/esp/services/ws_sql/SQL2ECL)
 SET (HPCC_SQL_PARSER_GRAMMAR_PATH ${HPCC_SQL_PARSER_LOCATION}/ANTLR3c)
@@ -52,9 +53,14 @@ ADD_CUSTOM_COMMAND(
 )
 
 SET(    SRCS
-        ${ESPSCM_GENERATED_DIR}/ws_sql_esp.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/ws_sqlPlugin.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/ws_sqlService.cpp
+        ${ESPSCM_GENERATED_DIR}/common_esp.cpp
+        ${ESPSCM_GENERATED_DIR}/ws_sql_esp.cpp
+        ${ESPSCM_GENERATED_DIR}/ws_workunits_esp.cpp
+        ${ESPSCM_GENERATED_DIR}/ws_topology_esp.cpp
+        ${HPCC_SOURCE_DIR}/esp/services/ws_ecl/ws_ecl_wuinfo.cpp
+        ${HPCC_SOURCE_DIR}/esp/services/ws_workunits/ws_workunitsHelpers.cpp
         ${HPCC_SQL_PARSER_LOCATION}/HPCCFileCache.cpp
         ${HPCC_SQL_PARSER_LOCATION}/HPCCFile.cpp
         ${HPCC_SQL_PARSER_LOCATION}/ECLFunction.cpp
@@ -88,6 +94,7 @@ INCLUDE_DIRECTORIES (
         ${HPCC_SOURCE_DIR}/system/security/shared
         ${HPCC_SOURCE_DIR}/system/security/securesocket
         ${HPCC_SOURCE_DIR}/system/security/zcrypt
+        ${HPCC_SOURCE_DIR}/system/security/LdapSecurity
         ${HPCC_SOURCE_DIR}/system/mp
         ${HPCC_SOURCE_DIR}/dali/dfu
         ${HPCC_SOURCE_DIR}/dali/base/
@@ -100,6 +107,7 @@ INCLUDE_DIRECTORIES (
         ${HPCC_SOURCE_DIR}/common/deftype
         ${HPCC_SOURCE_DIR}/ecl/hql
         ${ANTLR3c_INCLUDE_DIR}
+        ${ESPSCM_GENERATED_DIR}
     )
 
 ADD_DEFINITIONS( -D_USRDLL )
@@ -107,12 +115,10 @@ ADD_DEFINITIONS( -D_USRDLL )
 HPCC_ADD_LIBRARY( ws_sql SHARED ${SRCS} )
 INSTALL ( TARGETS ws_sql RUNTIME DESTINATION ${EXEC_DIR} LIBRARY DESTINATION ${LIB_DIR} COMPONENT Runtime)
 
-ADD_DEPENDENCIES (ws_sql wssqlespscm)
+ADD_DEPENDENCIES (ws_sql espscm wssqlespscm)
 
 TARGET_LINK_LIBRARIES (
         ws_sql
-        ws_workunits
-        ws_ecl
         ws_dfu
         jlib
         xmllib
@@ -120,4 +126,5 @@ TARGET_LINK_LIBRARIES (
         securesocket
         dalibase
         libantlr3c
-    )
+        wuwebview    
+)
