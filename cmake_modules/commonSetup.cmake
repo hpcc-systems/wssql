@@ -489,6 +489,18 @@ IF ("${WSSQL_COMMONSETUP_DONE}" STREQUAL "")
     set(CMAKE_INSTALL_RPATH "@loader_path/../${LIB_DIR}")
     set(CMAKE_INSTALL_NAME_DIR "@loader_path/../${LIB_DIR}")
   endif()
+
+  IF (USE_OPENLDAP)
+    FIND_PACKAGE(OPENLDAP)
+      IF (OPENLDAP_FOUND)
+        ADD_DEFINITIONS (-D_USE_OPENLDAP)
+      ELSE()
+        MESSAGE(FATAL_ERROR "OPENLDAP requested but package not found")
+      ENDIF()
+   ELSE()
+     ADD_DEFINITIONS (-D_NO_LDAP)
+   ENDIF(USE_OPENLDAP)
+
   MACRO (FETCH_GIT_TAG workdir edition result)
       execute_process(COMMAND "${GIT_COMMAND}" describe --tags --dirty --abbrev=6 --match ${edition}*
         WORKING_DIRECTORY "${workdir}"
