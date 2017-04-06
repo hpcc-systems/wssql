@@ -1179,7 +1179,6 @@ void CwssqlEx::createWUXMLParams(StringBuffer & xmlparams, HPCCSQLTreeWalker* pa
                 xmlparams.append("<").append(varname.s.str()).append(">");
 
                 IConstNamedValue &item = variables->item(i);
-
                 char * value = ((char *)item.getValue());
 
                 if (value && *value)
@@ -1188,24 +1187,28 @@ void CwssqlEx::createWUXMLParams(StringBuffer & xmlparams, HPCCSQLTreeWalker* pa
                         value++;
 
                     int len = strlen(value);
+                    while(len && isspace(value[len-1]))
+                        len--;
 
-                    while(len && isspace(value[len-1])) //fast trim right
-                        value[--len] = '\0';
+                    value[len] = '\0';//fast trim right, even if len didn't change
 
-                    //WU cloning mechanism doesn't handle quoted strings very well...
-                    //We're forced to blindly remove them here...
-                    if (value[0] == '\'' && value[len-1] == '\'')
+                    if (len >= 2)
                     {
-                        value[len-1] = '\0'; //clip rightmost quote
-                        value++; //clip leftmost quote
+                        //WU cloning mechanism doesn't handle quoted strings very well...
+                        //We're forced to blindly remove them here...
+                        if (value[0] == '\'' && value[len-1] == '\'')
+                        {
+                            value[len-1] = '\0'; //clip rightmost quote
+                            value++; //clip leftmost quote
+                        }
                     }
 
-                    if(value && *value)
+                    if(len)
                       encodeXML(value, xmlparams);
-                // else ??
+                    // else ??
                 }
 
-              xmlparams.append("</").append(varname.s.str()).append(">");
+                xmlparams.append("</").append(varname.s.str()).append(">");
             }
             xmlparams.append("</root>");
         }
