@@ -1179,12 +1179,36 @@ void CwssqlEx::createWUXMLParams(StringBuffer & xmlparams, HPCCSQLTreeWalker* pa
                 xmlparams.append("<").append(varname.s.str()).append(">");
 
                 IConstNamedValue &item = variables->item(i);
-                const char *value = item.getValue();
-                if(value && *value)
-                  encodeXML(value, xmlparams);
-                // else ??
+                char * value = ((char *)item.getValue());
 
-              xmlparams.append("</").append(varname.s.str()).append(">");
+                if (value && *value)
+                {
+                    while(value && isspace(*value)) //fast trim left
+                        value++;
+
+                    int len = strlen(value);
+                    while(len && isspace(value[len-1]))
+                        len--;
+
+                    value[len] = '\0';//fast trim right, even if len didn't change
+
+                    if (len >= 2)
+                    {
+                        //WU cloning mechanism doesn't handle quoted strings very well...
+                        //We're forced to blindly remove them here...
+                        if (value[0] == '\'' && value[len-1] == '\'')
+                        {
+                            value[len-1] = '\0'; //clip rightmost quote
+                            value++; //clip leftmost quote
+                        }
+                    }
+
+                    if(len)
+                      encodeXML(value, xmlparams);
+                    // else ??
+                }
+
+                xmlparams.append("</").append(varname.s.str()).append(">");
             }
             xmlparams.append("</root>");
         }
