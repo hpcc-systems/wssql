@@ -282,7 +282,7 @@ IF ( NOT MAKE_DOCS_ONLY )
         CONFIGURE_FILE(${HPCC_WSSQL_SOURCE_DIR}/cmake_modules/dependencies/${packageRevision}.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/dependencies/${packageRevision}.cmake)
         INCLUDE(${CMAKE_CURRENT_BINARY_DIR}/dependencies/${packageRevision}.cmake)
     ELSE()
-        MESSAGE("-- WARNING: DEPENDENCY FILE FOR ${packageRevision} NOT FOUND, Using deps template.")
+        MESSAGE(WARNING "DEPENDENCY FILE FOR ${packageRevision} NOT FOUND, Using deps template.")
         INCLUDE( ${HPCC_WSSQL_SOURCE_DIR}/cmake_modules/dependencies/template.cmake )
     ENDIF()
 
