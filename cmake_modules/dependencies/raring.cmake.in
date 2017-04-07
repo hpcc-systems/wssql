@@ -1,4 +1,0 @@
-#UBUNTU 13.04
-MESSAGE("---BUILDING UBUNTU 13.04 which is not supported anymore---")
-set ( CPACK_DEBIAN_PACKAGE_DEPENDS "hpccsystems-platform (>= ${HPCC_VERSION}), hpccsystems-platform (<< ${HPCC_VERSION_CEILING})")
-set ( CPACK_RPM_PACKAGE_DESCRIPTION  "${PROJECT_DESCRIPTION}")
