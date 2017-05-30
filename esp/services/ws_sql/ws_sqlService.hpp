@@ -42,7 +42,7 @@ limitations under the License.
 
 #include "dautils.hpp"
 
-#define EMBEDDEDSQLQUERYCOMMENT "\n\n/****************************************************\nOriginal SQL:     \"%s\"\nNormalized SQL: \"%s\"\n****************************************************/\n"
+#define EMBEDDEDSQLQUERYCOMMENT "\n\n/****************************************************\nOriginal SQL:   \"%s\"\nNormalized SQL: \"%s\"\n****************************************************/\n"
 
 static const char* WSSQLACCESS = "WsSqlAccess";
 static const char* WSSQLRESULT = "WsSQLResult";
