@@ -567,7 +567,7 @@ void myDisplayRecognitionError (pANTLR3_BASE_RECOGNIZER recognizer,pANTLR3_UINT8
     throw MakeStringException(-1, "%s", errorMessage.str());
 }
 
-HPCCSQLTreeWalker * CwssqlEx::parseSQL(IEspContext &context, StringBuffer & sqltext)
+HPCCSQLTreeWalker * CwssqlEx::parseSQL(IEspContext &context, StringBuffer & sqltext, bool attemptParameterization)
 {
     int limit = -1;
     pHPCCSQLLexer hpccSqlLexer = NULL;
@@ -615,7 +615,7 @@ HPCCSQLTreeWalker * CwssqlEx::parseSQL(IEspContext &context, StringBuffer & sqlt
 printTree(sqlAST, 0);
 #endif
 
-        hpccSqlTreeWalker.setown(new HPCCSQLTreeWalker(sqlAST, context));
+        hpccSqlTreeWalker.setown(new HPCCSQLTreeWalker(sqlAST, context, attemptParameterization));
 
         hpccsqlparser->free(hpccsqlparser);
         sqltokens->free(sqltokens);
@@ -1355,7 +1355,7 @@ bool CwssqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, IE
             throw MakeStringException(1,"Empty SQL request.");
 
         Owned<HPCCSQLTreeWalker> parsedSQL;
-        parsedSQL.setown(parseSQL(context, sqltext));
+        parsedSQL.setown(parseSQL(context, sqltext, false));
 
         if (parsedSQL->getSqlType() == SQLTypeCall)
         {

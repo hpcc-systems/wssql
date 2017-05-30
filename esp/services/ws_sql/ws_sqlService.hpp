@@ -121,7 +121,7 @@ public:
 
     void fetchRequiredHpccFiles(IArrayOf<SQLTable> * sqltables);
     static void fetchRequiredHpccFiles(IArrayOf<SQLTable> * sqltables, HpccFiles * hpccfilecache);
-    HPCCSQLTreeWalker * parseSQL(IEspContext &context, StringBuffer & sqltext);
+    HPCCSQLTreeWalker * parseSQL(IEspContext &context, StringBuffer & sqltext, bool attemptParameterization = true);
 
     bool executePublishedQueryByName(IEspContext &context, const char * queryset, const char * queryname, StringBuffer &clonedwuid, const char *paramXml, IArrayOf<IConstNamedValue> *variables, const char * targetcluster, int start, int count);
     bool executePublishedQueryByWuId(IEspContext &context, const char * targetwuid, StringBuffer &clonedwuid, const char *paramXml, IArrayOf<IConstNamedValue> *variables, const char * targetcluster, int start, int count);
