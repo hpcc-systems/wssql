@@ -35,6 +35,7 @@ void trimSingleQuotes(StringBuffer & quotedString)
 HPCCSQLTreeWalker::HPCCSQLTreeWalker()
 {
     sqlType = SQLTypeUnknown;
+    parameterizeStaticValues = true;
 }
 
 void HPCCSQLTreeWalker::limitTreeWalker(pANTLR3_BASE_TREE limitAST)
@@ -310,17 +311,20 @@ ISQLExpression * HPCCSQLTreeWalker::expressionTreeWalker(pANTLR3_BASE_TREE exprA
                 rightexp.set(expressionTreeWalker((pANTLR3_BASE_TREE)(exprAST->getChild(exprAST, 1)),exprAST));
 
                 tmpexp.setown( new SQLBinaryExpression(exptype,leftexp, rightexp));
+                if (parameterizeStaticValues)
+                {
+                    if ( leftexp->getExpType() == Value_ExpressionType && rightexp->getExpType() != Value_ExpressionType)
+                    {
+                        leftexp->setValuePlaceHolderType(rightexp->getECLType());
+                        paramList.append(*leftexp.getLink());
+                    }
+                    else if ( rightexp->getExpType() == Value_ExpressionType && leftexp->getExpType() != Value_ExpressionType)
+                    {
+                        rightexp->setValuePlaceHolderType(leftexp->getECLType());
+                        paramList.append(*rightexp.getLink());
+                    }
+                }
 
-                if ( leftexp->getExpType() == Value_ExpressionType && rightexp->getExpType() != Value_ExpressionType)
-                {
-                    leftexp->setValuePlaceHolderType(rightexp->getECLType());
-                    paramList.append(*leftexp.getLink());
-                }
-                else if ( rightexp->getExpType() == Value_ExpressionType && leftexp->getExpType() != Value_ExpressionType)
-                {
-                    rightexp->setValuePlaceHolderType(leftexp->getECLType());
-                    paramList.append(*rightexp.getLink());
-                }
                 break;
             case ISNOTNULL:
             case ISNULL:
@@ -1078,8 +1082,9 @@ void HPCCSQLTreeWalker::assignParameterIndexes()
     parameterizedCount = paramIndex - 1;
 }
 
-HPCCSQLTreeWalker::HPCCSQLTreeWalker(pANTLR3_BASE_TREE ast, IEspContext &context)
+HPCCSQLTreeWalker::HPCCSQLTreeWalker(pANTLR3_BASE_TREE ast, IEspContext &context, bool attemptParameterization)
 {
+    parameterizeStaticValues = attemptParameterization;
     normalizedSQL.clear();
     setLimit(-1);
     setOffset(-1);
