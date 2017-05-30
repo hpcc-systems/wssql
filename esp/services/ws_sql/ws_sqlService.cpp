@@ -1468,6 +1468,7 @@ bool CwssqlEx::onPrepareSQL(IEspContext &context, IEspPrepareSQLRequest &req, IE
                 wu->setCloneable(true);
                 wu->setAction(WUActionCompile);
                 wu.setQueryText(ecltext.str());
+                wu->setJobName("WsSQL PreparedQuery Job");
 
                 StringBuffer xmlparams;
                 createWUXMLParams(xmlparams, parsedSQL, NULL, NULL);
