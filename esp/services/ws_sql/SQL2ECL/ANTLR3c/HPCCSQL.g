@@ -137,6 +137,7 @@ KEY_SYM     : Ki Ei Yi  ;
 KEYS        : Ki Ei Yi Si  ;
 LAST_SYM    : Li Ai Si Ti  ;
 LEFT        : Li Ei Fi Ti  ;
+LIKE_SYM    : Li Ii Ki Ei  ;
 LIMIT       : Li Ii Mi Ii Ti  ;
 LOAD_SYM    : Li Oi Ai Di ;
 LOCAL_SYM   : Li Oi Ci Ai Li ;
@@ -212,6 +213,7 @@ IFNOTEXISTS : ('IF NOT EXISTS' | 'if not exists');
 ISNOTNULL   : ('IS NOT NULL' | 'is not null');
 ISNULL      : ('IS NULL' | 'is null');
 NOT_IN      : ('NOT IN' | 'not in');
+NOT_LIKE    : ('NOT LIKE' | 'not like');
 
 DIVIDE      : (  Di Ii Vi ) | '/' ;
 MOD_SYM     : (  Mi Oi Di ) | '%' ;
@@ -362,6 +364,12 @@ relational_op
   | GET
 ;
 
+strcomp_op
+:
+  LIKE_SYM
+  | NOT_LIKE
+;
+
 list_op
 :
     IN_SYM
@@ -477,11 +485,20 @@ andExpression
 
 relationalExpression
 :
-    additionExpression
+    stringCompExpression
     (
       relational_op^
-      additionExpression
+      stringCompExpression
     )*
+;
+
+stringCompExpression
+:
+  additionExpression
+  (
+    strcomp_op^
+    additionExpression
+  )*
 ;
 
 additionExpression

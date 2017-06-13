@@ -367,6 +367,7 @@ SQLValueExpression::SQLValueExpression()
     field.setName("");
     field.setParenttable("");
     field.setAlias("");
+    isAWildCardPattern = false;
 }
 
 SQLValueExpression::~SQLValueExpression()
@@ -380,6 +381,7 @@ SQLValueExpression::SQLValueExpression(int type, const char * value)
 {
     this->type = type;
     this->value = value;
+    isAWildCardPattern = false;
 }
 
 void SQLValueExpression::trimTextQuotes()
@@ -533,9 +535,21 @@ void SQLBinaryExpression::toECLStringTranslateSource(
 
     if (translation1.length()>0 && translation2.length()>0)
     {
-        eclStr.append(translation1);
-        eclStr.append(getOpStr());
-        eclStr.append(translation2);
+        if ( op == LIKE_SYM || op == NOT_LIKE)
+        {
+            eclStr.append(getOpStr());
+            eclStr.append("( ");
+            eclStr.append(translation1);
+            eclStr.append(" , ");
+            eclStr.append(translation2);
+            eclStr.append(" , true )");
+        }
+        else
+        {
+            eclStr.append(translation1);
+            eclStr.append(getOpStr());
+            eclStr.append(translation2);
+        }
 
     }
     else if (translation1.length()<0 && translation2.length()<0)
@@ -613,9 +627,21 @@ bool SQLBinaryExpression::containsKey(const char * colname)
 
 void SQLBinaryExpression::toString(StringBuffer & targetstr, bool fullOutput)
 {
-    operand1->toString(targetstr, fullOutput);
-    targetstr.append(getOpStr());
-    operand2->toString(targetstr, fullOutput);
+    if ( op == LIKE_SYM || op == NOT_LIKE)
+    {
+        targetstr.append(getOpStr());
+        targetstr.append("( ");
+        operand1->toString(targetstr, fullOutput);
+        targetstr.append(" , ");
+        operand2->toString(targetstr, fullOutput);
+        targetstr.append(" , true )");
+    }
+    else
+    {
+        operand1->toString(targetstr, fullOutput);
+        targetstr.append(getOpStr());
+        operand2->toString(targetstr, fullOutput);
+    }
 }
 
 const char * SQLBinaryExpression::getOpStr()
@@ -652,6 +678,10 @@ const char * SQLBinaryExpression::getOpStr()
             return " IN ";
         case NOT_IN:
             return " NOT IN ";
+        case NOT_LIKE:
+            return " NOT STD.Str.WildMatch";
+        case LIKE_SYM:
+            return " STD.Str.WildMatch";
         default:
             return " ";
     }
