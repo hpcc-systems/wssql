@@ -563,7 +563,13 @@ public:
     {
         if(hasPlaceHolder())
             eclstr.appendf("%s %s := %s : STORED('%s');\n", placeHolderType.str(), placeHolderName.str(), value.str(), placeHolderName.str());
+        if(isAWildCardPattern)
+        {
+            eclstr.appendf("%sTranslated := STD.Str.Translate(  %s , '_%%', '?*');", placeHolderName.str(), placeHolderName.str());
+            placeHolderName.append("Translated");
+        }
     }
+    void setIsWildCardPattern(bool isthisawildcard) {isAWildCardPattern = isthisawildcard;}
 
 private:
     int type; //As defined in HPCCSQLParser.h
@@ -571,6 +577,7 @@ private:
     SQLColumn field;
     StringBuffer placeHolderName;
     StringBuffer placeHolderType;
+    bool isAWildCardPattern;
 };
 
 /*************************************************************************************************/

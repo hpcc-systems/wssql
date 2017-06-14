@@ -307,6 +307,8 @@ ISQLExpression * HPCCSQLTreeWalker::expressionTreeWalker(pANTLR3_BASE_TREE exprA
             case GET:
             case GTH:
             case LTH:
+            case LIKE_SYM:
+            case NOT_LIKE:
                 leftexp.set(expressionTreeWalker((pANTLR3_BASE_TREE)(exprAST->getChild(exprAST, 0)),exprAST));
                 rightexp.set(expressionTreeWalker((pANTLR3_BASE_TREE)(exprAST->getChild(exprAST, 1)),exprAST));
 
@@ -322,6 +324,14 @@ ISQLExpression * HPCCSQLTreeWalker::expressionTreeWalker(pANTLR3_BASE_TREE exprA
                     {
                         rightexp->setValuePlaceHolderType(leftexp->getECLType());
                         paramList.append(*rightexp.getLink());
+                    }
+                }
+                if (exptype == LIKE_SYM || exptype == NOT_LIKE)
+                {
+                    if (rightexp->getExpType() == Value_ExpressionType)
+                    {
+                        SQLValueExpression * valexp = static_cast<SQLValueExpression *>(rightexp.get());
+                        valexp->setIsWildCardPattern(true);
                     }
                 }
 
