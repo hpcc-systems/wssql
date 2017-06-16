@@ -3300,7 +3300,8 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
               <row>
                 <entry></entry>
 
-                <entry></entry>
+                <entry>LIKE <emphasis>pattern</emphasis> where the pattern
+                uses SQL LIKE operators with % and _ wildcards. </entry>
               </row>
 
               <row>
@@ -3341,7 +3342,12 @@ Joe Smith CA
 Select fname, lname, state from TutorialPerson where state=’FL’ AND lname &lt;&gt; ‘Smith’
 //returns data that looks like this:
 John Doe FL 
-Jane Row FL </programlisting>
+Jane Row FL 
+
+Select fname, lname, state from TutorialPerson where state=’FL’ AND lname like ‘Smi%’
+//returns data that looks like this:
+Jim Smith FL
+</programlisting>
 
       <para>The interface supports SQL index hints, which gives the SQL user
       the option to specify the most appropriate HPCC index for the current
@@ -3604,7 +3610,8 @@ Jane Row FL 33024
               <row>
                 <entry></entry>
 
-                <entry></entry>
+                <entry>LIKE <emphasis>pattern</emphasis> where the pattern
+                uses SQL LIKE operators with % and _ wildcards. </entry>
               </row>
 
               <row>
@@ -3966,7 +3973,7 @@ INTO TABLE newCustomerFile4CSV
 
           <programlisting>ADD ALL ANY AS ASC AT AVG BETWEEN BOOL BOOLEAN BY CALL COLUMN CONTAINS COUNT 
 DESC DISTINCT FALSE FOR FROM GROUP HAVING IN INDEX INNER IS JOIN KEY KEYS LAST 
-LEFT LIMIT LOWER MAX MIN MOD NOT NULL OFFSET ON ORDER OUT OUTER POWER SELECT 
+LEFT LIKE LIMIT LOWER MAX MIN MOD NOT NULL OFFSET ON ORDER OUT OUTER POWER SELECT 
 SUM TABLE TRUE UPPER USE WHERE XOR DIV MOD OR AND</programlisting>
         </sect3>
 
