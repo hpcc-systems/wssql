@@ -3305,6 +3305,19 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
               </row>
 
               <row>
+                <entry></entry>
+
+                <entry>NOT LIKE <emphasis>pattern</emphasis> where the pattern
+                uses SQL LIKE operators with % and _ wildcards.</entry>
+              </row>
+
+              <row>
+                <entry></entry>
+
+                <entry></entry>
+              </row>
+
+              <row>
                 <entry><emphasis>limitNumber</emphasis></entry>
 
                 <entry>The number of rows to return. This overrides the
@@ -3347,6 +3360,13 @@ Jane Row FL
 Select fname, lname, state from TutorialPerson where state=’FL’ AND lname like ‘Smi%’
 //returns data that looks like this:
 Jim Smith FL
+
+Select fname, lname, state from TutorialPerson where 
+   state=’FL’ OR (lname='Smith' and fname='Joe') AND fname NOT LIKE 'Ji%' 
+//returns data that looks like this:
+John Doe FL 
+Jane Row FL
+Joe Smith CA
 </programlisting>
 
       <para>The interface supports SQL index hints, which gives the SQL user
@@ -3612,6 +3632,19 @@ Jane Row FL 33024
 
                 <entry>LIKE <emphasis>pattern</emphasis> where the pattern
                 uses SQL LIKE operators with % and _ wildcards. </entry>
+              </row>
+
+              <row>
+                <entry></entry>
+
+                <entry>NOT LIKE <emphasis>pattern</emphasis> where the pattern
+                uses SQL LIKE operators with % and _ wildcards. </entry>
+              </row>
+
+              <row>
+                <entry></entry>
+
+                <entry></entry>
               </row>
 
               <row>
