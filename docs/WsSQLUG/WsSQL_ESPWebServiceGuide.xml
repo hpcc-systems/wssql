@@ -3130,21 +3130,9 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
               </row>
 
               <row>
-                <entry></entry>
-
-                <entry></entry>
-              </row>
-
-              <row>
                 <entry>columnreference</entry>
 
                 <entry>[tablename.]columnname[ [AS] alias ]</entry>
-              </row>
-
-              <row>
-                <entry><emphasis></emphasis></entry>
-
-                <entry></entry>
               </row>
 
               <row>
@@ -3159,12 +3147,6 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
 
                 <entry>The result set will only contain distinct (unique)
                 values</entry>
-              </row>
-
-              <row>
-                <entry></entry>
-
-                <entry></entry>
               </row>
 
               <row>
@@ -3189,12 +3171,6 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
               </row>
 
               <row>
-                <entry></entry>
-
-                <entry></entry>
-              </row>
-
-              <row>
                 <entry>tableref</entry>
 
                 <entry>tableName[ [AS] alias ]</entry>
@@ -3208,22 +3184,10 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
               </row>
 
               <row>
-                <entry></entry>
-
-                <entry></entry>
-              </row>
-
-              <row>
                 <entry><emphasis>alias</emphasis></entry>
 
                 <entry>The alias used to refer to the corresponding table or
                 field reference.</entry>
-              </row>
-
-              <row>
-                <entry></entry>
-
-                <entry></entry>
               </row>
 
               <row>
@@ -3309,12 +3273,6 @@ sudo -u hpcc cp /etc/HPCCSystems/source/NewEnvironment.xml /etc/HPCCSystems/envi
 
                 <entry>NOT LIKE <emphasis>pattern</emphasis> where the pattern
                 uses SQL LIKE operators with % and _ wildcards.</entry>
-              </row>
-
-              <row>
-                <entry></entry>
-
-                <entry></entry>
               </row>
 
               <row>
@@ -3467,21 +3425,9 @@ Jane Row FL 33024
               </row>
 
               <row>
-                <entry></entry>
-
-                <entry></entry>
-              </row>
-
-              <row>
                 <entry>columnreference</entry>
 
                 <entry>[tablename.]columnname[ [AS] alias ]</entry>
-              </row>
-
-              <row>
-                <entry><emphasis></emphasis></entry>
-
-                <entry></entry>
               </row>
 
               <row>
@@ -3499,22 +3445,10 @@ Jane Row FL 33024
               </row>
 
               <row>
-                <entry></entry>
-
-                <entry></entry>
-              </row>
-
-              <row>
                 <entry><emphasis>alias</emphasis></entry>
 
                 <entry>The alias used to refer to the corresponding table or
                 field reference.</entry>
-              </row>
-
-              <row>
-                <entry></entry>
-
-                <entry></entry>
               </row>
 
               <row>
@@ -3526,21 +3460,9 @@ Jane Row FL 33024
               </row>
 
               <row>
-                <entry></entry>
-
-                <entry></entry>
-              </row>
-
-              <row>
                 <entry><emphasis>joinTableName</emphasis></entry>
 
                 <entry>The JOIN file to use.</entry>
-              </row>
-
-              <row>
-                <entry></entry>
-
-                <entry></entry>
               </row>
 
               <row>
@@ -3548,12 +3470,6 @@ Jane Row FL 33024
 
                 <entry>Specifies the relationship between columns in the
                 joined tables using logical expression.</entry>
-              </row>
-
-              <row>
-                <entry></entry>
-
-                <entry></entry>
               </row>
 
               <row>
@@ -3642,22 +3558,12 @@ Jane Row FL 33024
               </row>
 
               <row>
-                <entry></entry>
-
-                <entry></entry>
-              </row>
-
-              <row>
                 <entry><emphasis>limitNumber</emphasis></entry>
 
                 <entry>Optional. The number of rows to return. This overrides
                 the default configuration attribute (<emphasis
                 role="code">EclResultLimit </emphasis>) but cannot be set to
                 ALL.</entry>
-              </row>
-
-              <row>
-                <entry></entry>
               </row>
             </tbody>
           </tgroup>
@@ -3668,8 +3574,6 @@ Jane Row FL 33024
       <para><superscript>2</superscript>Can only contain references to
       aggregate functions<superscript></superscript>if used with
       <emphasis>having</emphasis> clause.</para>
-
-      <para></para>
 
       <para>Aggregate functions can only be expressed in logicalExpressions by
       using <emphasis>Group by</emphasis>and
