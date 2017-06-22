@@ -24,8 +24,7 @@ http://hpccsystems.com
 Steps for building in Linux:
 
 - Check out source hpcc-systems/wssql
-- Check out pre-req source hpcc-systems/HPCC-Platform
-  - check ~/wssql/platform-version-prereq.cmake for minimum version required
+- Run `git submodules --init --recursive` to pull all necessary sources
 - Setup Antlr and Antlr3c - Downloads available from ANTLR's github page https://github.com/antlr/website-antlr3/tree/gh-pages/download
   - "antlr-${ANTLR_VER}-complete.jar" and "antlr-runtime-${ANTLR_VER}.jar" are required.
   - Build process looks for these files here: /usr/local/ANTLR/${ANTLR_VER} where ANTLR_VER = 3.4
@@ -40,3 +39,6 @@ Steps for building in Linux:
 - To build the makefiles just created above, run: make
 - To create a build package, run: make package
 
+If a user wishes to do a parallel build:
+- Check out pre-req source hpcc-systems/HPCC-Platform
+  - check ~/wssql/platform-version-prereq.cmake for minimum version required
