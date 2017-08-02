@@ -101,6 +101,7 @@ private:
     int parameterizedCount;
 
     StringBuffer normalizedSQL;
+    bool parameterizeStaticValues;
 
 public:
 
@@ -136,7 +137,8 @@ public:
 
     void expandWildCardColumn();
     HPCCSQLTreeWalker();
-    HPCCSQLTreeWalker(pANTLR3_BASE_TREE t, IEspContext &context);
+    HPCCSQLTreeWalker(pANTLR3_BASE_TREE t, IEspContext &context, bool attemptParameterization = true);
+
     virtual ~HPCCSQLTreeWalker();
 
     int getParameterizedCount() const
