@@ -92,8 +92,8 @@ if(NOT MAKE_DOCS_ONLY)
     add_subdirectory(${HPCC_SOURCE_DIR} oss EXCLUDE_FROM_ALL)
     message(STATUS "End setup of HPCC-Platform build dependency")
 
-    HPCC_add_subdirectory(esp)
-    HPCC_add_subdirectory(initfiles)
+    HPCC_ADD_SUBDIRECTORY(esp)
+    HPCC_ADD_SUBDIRECTORY(initfiles)
 
     ###
     ## CPack install and packaging setup.
@@ -275,6 +275,10 @@ if(NOT MAKE_DOCS_ONLY)
     endif()
 
     if(MAKE_DOCS)
+        message(STATUS "Making documents")
         add_subdirectory(docs)
     endif()
+else()
+    message(STATUS "Only making documents")
+    add_subdirectory(docs)
 endif()
